@@ -7,19 +7,15 @@ const Sidebar = () => {
   const addNode = useFlowStore((s) => s.addNode)
   const nodes = useFlowStore((s) => s.nodes)
 
-  const COLS = 3
-  const COL_WIDTH = 280
-  const ROW_HEIGHT = 160
+  const ROW_HEIGHT = 180
 
   const handleAddBlock = (type: BlockType) => {
     const meta = BLOCK_META[type]
     const idx = nodes.length
-    const col = idx % COLS
-    const row = Math.floor(idx / COLS)
     const newNode: FlomptNode = {
       id: `${type}-${Date.now()}`,
       type: 'block',
-      position: { x: 60 + col * COL_WIDTH, y: 60 + row * ROW_HEIGHT },
+      position: { x: 60, y: 60 + idx * ROW_HEIGHT },
       data: {
         type,
         label: meta.label,

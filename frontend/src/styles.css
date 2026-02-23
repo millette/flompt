@@ -624,10 +624,15 @@ body {
     height: 20px !important;
     border-radius: 50% !important;
     border-width: 2px !important;
+    z-index: 1 !important;
   }
 
-  .react-flow__handle-top  { top: -10px !important; }
+  .react-flow__handle-top    { top: -10px !important; }
   .react-flow__handle-bottom { bottom: -10px !important; }
+
+  /* Edge en cours de création : ne dépasse pas la tab bar */
+  .react-flow__edgedrag,
+  .react-flow__connection { z-index: 1 !important; }
 }
 
 /* ── Responsive — Très petit (≤ 380px) ───────────────────────────────────── */
