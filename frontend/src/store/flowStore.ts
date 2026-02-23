@@ -1,7 +1,14 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import { addEdge, applyNodeChanges, applyEdgeChanges } from 'reactflow'
 import type { Connection, NodeChange, EdgeChange } from 'reactflow'
 import type { FlomptNode, FlomptEdge, CompiledPrompt } from '@/types/blocks'
+
+// ── Snapshot type pour undo/redo ─────────────────────────────────────────────
+interface Snapshot {
+  nodes: FlomptNode[]
+  edges: FlomptEdge[]
+}
 
 interface FlowState {
   nodes: FlomptNode[]
@@ -10,6 +17,10 @@ interface FlowState {
   compiledPrompt: CompiledPrompt | null
   isDecomposing: boolean
   isCompiling: boolean
+
+  // Historique undo/redo
+  past: Snapshot[]
+  future: Snapshot[]
 
   // Actions
   setRawPrompt: (prompt: string) => void
@@ -25,60 +36,129 @@ interface FlowState {
   setIsDecomposing: (v: boolean) => void
   setIsCompiling: (v: boolean) => void
   reset: () => void
+  undo: () => void
+  redo: () => void
 }
 
-export const useFlowStore = create<FlowState>((set) => ({
-  nodes: [],
-  edges: [],
-  rawPrompt: '',
-  compiledPrompt: null,
-  isDecomposing: false,
-  isCompiling: false,
+const snapshot = (state: FlowState): Snapshot => ({
+  nodes: state.nodes,
+  edges: state.edges,
+})
 
-  setRawPrompt: (prompt) => set({ rawPrompt: prompt }),
-  setNodes: (nodes) => set({ nodes }),
-  setEdges: (edges) => set({ edges }),
+const MAX_HISTORY = 30
 
-  onNodesChange: (changes) =>
-    set((state) => ({
-      nodes: applyNodeChanges(changes, state.nodes) as FlomptNode[],
-    })),
-
-  onEdgesChange: (changes) =>
-    set((state) => ({
-      edges: applyEdgeChanges(changes, state.edges) as FlomptEdge[],
-    })),
-
-  onConnect: (connection) =>
-    set((state) => ({
-      edges: addEdge({ ...connection, animated: true }, state.edges) as FlomptEdge[],
-    })),
-
-  updateNodeContent: (id, content) =>
-    set((state) => ({
-      nodes: state.nodes.map((n) =>
-        n.id === id ? { ...n, data: { ...n.data, content } } : n
-      ),
-    })),
-
-  addNode: (node) =>
-    set((state) => ({ nodes: [...state.nodes, node] })),
-
-  removeNode: (id) =>
-    set((state) => ({
-      nodes: state.nodes.filter((n) => n.id !== id),
-      edges: state.edges.filter((e) => e.source !== id && e.target !== id),
-    })),
-
-  setCompiledPrompt: (prompt) => set({ compiledPrompt: prompt }),
-  setIsDecomposing: (v) => set({ isDecomposing: v }),
-  setIsCompiling: (v) => set({ isCompiling: v }),
-
-  reset: () =>
-    set({
+export const useFlowStore = create<FlowState>()(
+  persist(
+    (set) => ({
       nodes: [],
       edges: [],
       rawPrompt: '',
       compiledPrompt: null,
+      isDecomposing: false,
+      isCompiling: false,
+      past: [],
+      future: [],
+
+      setRawPrompt: (prompt) => set({ rawPrompt: prompt }),
+
+      setNodes: (nodes) =>
+        set((state) => ({
+          past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
+          future: [],
+          nodes,
+        })),
+
+      setEdges: (edges) =>
+        set((state) => ({
+          past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
+          future: [],
+          edges,
+        })),
+
+      onNodesChange: (changes) =>
+        set((state) => ({
+          nodes: applyNodeChanges(changes, state.nodes) as FlomptNode[],
+        })),
+
+      onEdgesChange: (changes) =>
+        set((state) => ({
+          edges: applyEdgeChanges(changes, state.edges) as FlomptEdge[],
+        })),
+
+      onConnect: (connection) =>
+        set((state) => ({
+          edges: addEdge({ ...connection, animated: true }, state.edges) as FlomptEdge[],
+        })),
+
+      updateNodeContent: (id, content) =>
+        set((state) => ({
+          nodes: state.nodes.map((n) =>
+            n.id === id ? { ...n, data: { ...n.data, content } } : n
+          ),
+        })),
+
+      addNode: (node) =>
+        set((state) => ({
+          past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
+          future: [],
+          nodes: [...state.nodes, node],
+        })),
+
+      removeNode: (id) =>
+        set((state) => ({
+          past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
+          future: [],
+          nodes: state.nodes.filter((n) => n.id !== id),
+          edges: state.edges.filter((e) => e.source !== id && e.target !== id),
+        })),
+
+      setCompiledPrompt: (prompt) => set({ compiledPrompt: prompt }),
+      setIsDecomposing: (v) => set({ isDecomposing: v }),
+      setIsCompiling: (v) => set({ isCompiling: v }),
+
+      reset: () =>
+        set({
+          nodes: [],
+          edges: [],
+          rawPrompt: '',
+          compiledPrompt: null,
+          past: [],
+          future: [],
+        }),
+
+      undo: () =>
+        set((state) => {
+          if (state.past.length === 0) return state
+          const prev = state.past[state.past.length - 1]
+          return {
+            past: state.past.slice(0, -1),
+            future: [snapshot(state), ...state.future].slice(0, MAX_HISTORY),
+            nodes: prev.nodes,
+            edges: prev.edges,
+          }
+        }),
+
+      redo: () =>
+        set((state) => {
+          if (state.future.length === 0) return state
+          const next = state.future[0]
+          return {
+            past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
+            future: state.future.slice(1),
+            nodes: next.nodes,
+            edges: next.edges,
+          }
+        }),
     }),
-}))
+    {
+      name: 'flompt-session',
+      partialize: (state) => ({
+        nodes: state.nodes,
+        edges: state.edges,
+        rawPrompt: state.rawPrompt,
+        compiledPrompt: state.compiledPrompt,
+        // isDecomposing / isCompiling / past / future : états transitoires, non persistés
+      }),
+    }
+  )
+)

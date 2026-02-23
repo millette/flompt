@@ -7,12 +7,19 @@ const Sidebar = () => {
   const addNode = useFlowStore((s) => s.addNode)
   const nodes = useFlowStore((s) => s.nodes)
 
+  const COLS = 3
+  const COL_WIDTH = 280
+  const ROW_HEIGHT = 160
+
   const handleAddBlock = (type: BlockType) => {
     const meta = BLOCK_META[type]
+    const idx = nodes.length
+    const col = idx % COLS
+    const row = Math.floor(idx / COLS)
     const newNode: FlomptNode = {
       id: `${type}-${Date.now()}`,
       type: 'block',
-      position: { x: 100 + Math.random() * 200, y: 100 + nodes.length * 80 },
+      position: { x: 60 + col * COL_WIDTH, y: 60 + row * ROW_HEIGHT },
       data: {
         type,
         label: meta.label,
@@ -25,8 +32,8 @@ const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      <h3 className="sidebar-title">Blocs</h3>
-      <p className="sidebar-hint">Cliquez pour ajouter</p>
+      <h3 className="panel-title">Blocs</h3>
+      <p className="sidebar-hint">Cliquez pour ajouter au canvas</p>
       <div className="block-list">
         {(Object.keys(BLOCK_META) as BlockType[]).map((type) => {
           const meta = BLOCK_META[type]
@@ -34,10 +41,11 @@ const Sidebar = () => {
             <button
               key={type}
               className="block-pill"
-              style={{ borderColor: meta.color, color: meta.color }}
+              style={{ borderColor: `${meta.color}55`, color: meta.color }}
               onClick={() => handleAddBlock(type)}
               title={meta.description}
             >
+              <span className="block-pill-icon">{meta.icon}</span>
               {meta.label}
             </button>
           )

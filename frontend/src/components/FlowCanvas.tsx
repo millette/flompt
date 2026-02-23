@@ -7,11 +7,13 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import { useFlowStore } from '@/store/flowStore'
 import BlockNode from './BlockNode'
+import { BLOCK_META } from '@/types/blocks'
+import type { BlockType } from '@/types/blocks'
 
 const nodeTypes = { block: BlockNode }
 
 const FlowCanvas = () => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useFlowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing } = useFlowStore()
 
   return (
     <div className="flow-canvas">
@@ -24,17 +26,29 @@ const FlowCanvas = () => {
         nodeTypes={nodeTypes}
         fitView
         deleteKeyCode="Delete"
+        snapToGrid
+        snapGrid={[20, 20]}
       >
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#333" />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#1e1e3a" />
         <Controls />
         <MiniMap
-          nodeColor={(n) => {
-            const data = n.data as { type: string }
-            return '#6366f1'
-          }}
-          style={{ background: '#1a1a2e' }}
+          nodeColor={(n) => BLOCK_META[(n.data as { type: BlockType }).type]?.color ?? '#7c3aed'}
+          style={{ background: 'rgba(7, 7, 26, 0.9)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px' }}
         />
       </ReactFlow>
+
+      {/* Skeleton loading overlay */}
+      {isDecomposing && (
+        <div className="skeleton-overlay">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="skeleton-block"
+              style={{ animationDelay: `${i * 0.12}s` }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
