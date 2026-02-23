@@ -521,7 +521,8 @@ body {
   .left-panel, .right-panel {
     width: 100%;
     min-width: unset;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     border-right: none;
     border-left: none;
     border-bottom: none;
@@ -529,10 +530,16 @@ body {
     padding: 16px;
   }
 
-  /* Canvas = pleine taille */
+  /* Canvas = pleine taille — flex: 1 + min-height: 0 obligatoire pour React Flow */
   .canvas-wrap {
+    flex: 1;
     width: 100%;
+    min-height: 0;
+  }
+
+  .canvas-wrap .flow-canvas {
     height: 100%;
+    width: 100%;
   }
 
   /* Masquer les panneaux inactifs sur mobile */
