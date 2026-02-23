@@ -30,7 +30,7 @@ const FlowCanvas = () => {
         snapToGrid
         snapGrid={[20, 20]}
         connectionMode={ConnectionMode.Loose}
-        connectOnClick={false}
+        connectOnClick={true}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#1e1e3a" />
         <Controls />
