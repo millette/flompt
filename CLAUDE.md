@@ -3,10 +3,17 @@
 ## Règles pour Noryk
 
 ### Après chaque mise à jour
-Toujours rappeler le lien du projet déployé à la fin du message :
+À la fin de chaque message contenant une modification du projet, **vérifier et s'assurer** que tout est déployé :
+
+1. Vérifier que le frontend Vite tourne → `curl -s -o /dev/null -w "%{http_code}" http://localhost:5173`
+2. Vérifier que le backend FastAPI tourne → `curl -s -o /dev/null -w "%{http_code}" http://localhost:8000`
+3. Vérifier que le tunnel serveo répond → `curl -s -o /dev/null -w "%{http_code}" https://[url]`
+4. Si l'un des trois est down → le relancer avant d'envoyer le lien
+5. Envoyer le lien **uniquement** une fois les 3 vérifications OK
+
 🌐 **https://[url-serveo-active]**
 
-Le lien change à chaque redémarrage du tunnel serveo — toujours vérifier qu'il est actif avant de l'envoyer.
+Ne jamais envoyer le lien sans avoir confirmé qu'il répond (HTTP 200).
 
 ### Stack
 - **Frontend** : React 18 + TypeScript + React Flow v11 + Zustand + Vite (port 5173)
