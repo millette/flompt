@@ -1,0 +1,109 @@
+"""
+Decomposer Service
+
+Analyse un prompt brut et retourne une liste de FlomptNodes + FlomptEdges.
+Utilise l'AI service si disponible, sinon fallback sur la décomposition heuristique.
+"""
+
+import re
+import uuid
+from app.models.blocks import (
+    BlockData, BlockType, FlomptNode, FlomptEdge,
+    DecomposeResponse, Position
+)
+from app.services.ai_service import decompose_with_ai, ANTHROPIC_API_KEY, OPENAI_API_KEY
+
+BLOCK_META = {
+    BlockType.role: {"label": "Role", "description": "Définit la persona / le rôle de l'IA"},
+    BlockType.context: {"label": "Context", "description": "Fournit le contexte de la tâche"},
+    BlockType.objective: {"label": "Objective", "description": "Ce qu'on veut accomplir"},
+    BlockType.input: {"label": "Input", "description": "Données fournies à l'IA"},
+    BlockType.constraints: {"label": "Constraints", "description": "Règles et limites à respecter"},
+    BlockType.output_format: {"label": "Output Format", "description": "Format attendu de la réponse"},
+    BlockType.examples: {"label": "Examples", "description": "Few-shot examples"},
+    BlockType.chain_of_thought: {"label": "Chain of Thought", "description": "Étapes de raisonnement"},
+}
+
+# Keywords heuristics for fallback
+HEURISTIC_KEYWORDS: dict[BlockType, list[str]] = {
+    BlockType.role: ["you are", "act as", "tu es", "agis comme", "your role"],
+    BlockType.context: ["context", "background", "given that", "étant donné", "in this scenario"],
+    BlockType.objective: ["your goal", "you must", "you should", "ton objectif", "you need to", "task:"],
+    BlockType.input: ["input:", "data:", "the following", "voici", "here is"],
+    BlockType.constraints: ["do not", "never", "always", "ne pas", "forbidden", "constraint", "rule:"],
+    BlockType.output_format: ["output", "format", "return", "respond with", "retourne", "répondre en"],
+    BlockType.examples: ["example", "for instance", "e.g.", "par exemple", "such as"],
+    BlockType.chain_of_thought: ["step by step", "think", "reason", "étape", "raisonne", "chain of thought"],
+}
+
+
+def _build_nodes_and_edges(raw_blocks: list[dict]) -> DecomposeResponse:
+    """Convert raw block dicts to FlomptNodes and auto-link them."""
+    nodes: list[FlomptNode] = []
+    edges: list[FlomptEdge] = []
+
+    x, y = 100.0, 50.0
+    for i, block in enumerate(raw_blocks):
+        block_type = BlockType(block["type"])
+        meta = BLOCK_META[block_type]
+        node_id = f"{block_type.value}-{uuid.uuid4().hex[:6]}"
+
+        nodes.append(FlomptNode(
+            id=node_id,
+            type="block",
+            position=Position(x=x, y=y),
+            data=BlockData(
+                type=block_type,
+                label=meta["label"],
+                content=block.get("content", ""),
+                description=meta["description"],
+            )
+        ))
+
+        if i > 0:
+            edges.append(FlomptEdge(
+                id=f"e{i-1}-{i}",
+                source=nodes[i - 1].id,
+                target=node_id,
+                animated=True,
+            ))
+
+        y += 180.0
+
+    return DecomposeResponse(nodes=nodes, edges=edges)
+
+
+def _heuristic_decompose(raw_prompt: str) -> list[dict]:
+    """Fallback: keyword-based decomposition."""
+    lower = raw_prompt.lower()
+    found: list[dict] = []
+
+    # Default order
+    ordered = [
+        BlockType.role, BlockType.context, BlockType.objective,
+        BlockType.input, BlockType.constraints, BlockType.output_format,
+        BlockType.examples, BlockType.chain_of_thought,
+    ]
+
+    for block_type in ordered:
+        keywords = HEURISTIC_KEYWORDS[block_type]
+        if any(kw in lower for kw in keywords):
+            found.append({"type": block_type.value, "content": ""})
+
+    # If nothing matched, just put everything in objective
+    if not found:
+        found = [{"type": BlockType.objective.value, "content": raw_prompt}]
+
+    return found
+
+
+async def decompose(raw_prompt: str) -> DecomposeResponse:
+    """Main entry point — AI if available, else heuristic."""
+    ai_available = bool(ANTHROPIC_API_KEY or OPENAI_API_KEY)
+
+    if ai_available:
+        raw_blocks = await decompose_with_ai(raw_prompt)
+    else:
+        raw_blocks = _heuristic_decompose(raw_prompt)
+
+    return _build_nodes_and_edges(raw_blocks)
