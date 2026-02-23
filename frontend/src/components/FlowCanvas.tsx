@@ -3,6 +3,7 @@ import ReactFlow, {
   Controls,
   MiniMap,
   BackgroundVariant,
+  ConnectionMode,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useFlowStore } from '@/store/flowStore'
@@ -28,6 +29,8 @@ const FlowCanvas = () => {
         deleteKeyCode="Delete"
         snapToGrid
         snapGrid={[20, 20]}
+        connectionMode={ConnectionMode.Loose}
+        connectOnClick={false}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#1e1e3a" />
         <Controls />
