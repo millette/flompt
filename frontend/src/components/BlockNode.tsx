@@ -10,6 +10,7 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const updateNodeContent = useFlowStore((s) => s.updateNodeContent)
   const removeNode = useFlowStore((s) => s.removeNode)
   const addNode = useFlowStore((s) => s.addNode)
+  const onNodesChange = useFlowStore((s) => s.onNodesChange)
   const nodes = useFlowStore((s) => s.nodes)
   const [collapsed, setCollapsed] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -24,10 +25,12 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const handleDuplicate = () => {
     const currentNode = nodes.find((n) => n.id === id)
     if (!currentNode) return
+    // Désélectionner le nœud original pour éviter le drag groupé
+    onNodesChange([{ id, type: 'select', selected: false }])
     addNode({
       ...currentNode,
       id: `${data.type}-${Date.now()}`,
-      position: { x: currentNode.position.x + 30, y: currentNode.position.y + 30 },
+      position: { x: currentNode.position.x + 40, y: currentNode.position.y + 40 },
       data: { ...data },
     })
   }

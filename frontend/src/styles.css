@@ -832,6 +832,8 @@ body {
 }
 
 /* ── React Flow overrides ─────────────────────────────────────────────────── */
+/* Les wrappers de nœuds doivent laisser les handles déborder */
+.react-flow__node { overflow: visible !important; }
 .react-flow__controls {
   background: var(--bg-3) !important;
   border: 1px solid var(--border-strong) !important;
