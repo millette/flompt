@@ -20,7 +20,7 @@ flompt.dev {
 
 	# ── Docs → GitBook ───────────────────────────────────────────
 	handle_path /docs* {
-		rewrite * /flompt-docs{path}
+		rewrite * /docs{path}
 		reverse_proxy https://hamzas-organization-18.gitbook.io {
 			header_up Host hamzas-organization-18.gitbook.io
 			header_up X-Forwarded-Host flompt.dev
