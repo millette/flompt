@@ -135,6 +135,7 @@ const en: Translations = {
     examples:        { label: 'Examples',        description: 'Few-shot examples' },
     chain_of_thought:{ label: 'Chain of Thought',description: 'Reasoning steps' },
     output_format:   { label: 'Output',          description: 'Expected format of the response' },
+    language:        { label: 'Language',        description: 'Language the AI should respond in' },
   },
 }
 
@@ -210,6 +211,7 @@ const fr: Translations = {
     examples:        { label: 'Exemples',        description: 'Exemples few-shot' },
     chain_of_thought:{ label: 'Raisonnement',    description: 'Étapes de raisonnement' },
     output_format:   { label: 'Sortie',          description: 'Format attendu de la réponse' },
+    language:        { label: 'Langue',          description: 'Langue de réponse de l\'IA' },
   },
 }
 

@@ -22,6 +22,7 @@ BLOCK_META = {
     BlockType.output_format: {"label": "Output Format", "description": "Format attendu de la réponse"},
     BlockType.examples: {"label": "Examples", "description": "Few-shot examples"},
     BlockType.chain_of_thought: {"label": "Chain of Thought", "description": "Étapes de raisonnement"},
+    BlockType.language: {"label": "Language", "description": "Langue de réponse de l'IA"},
 }
 
 # Keywords heuristics for fallback
@@ -34,6 +35,7 @@ HEURISTIC_KEYWORDS: dict[BlockType, list[str]] = {
     BlockType.output_format: ["output", "format", "return", "respond with", "retourne", "répondre en"],
     BlockType.examples: ["example", "for instance", "e.g.", "par exemple", "such as"],
     BlockType.chain_of_thought: ["step by step", "think", "reason", "étape", "raisonne", "chain of thought"],
+    BlockType.language: ["in english", "in french", "en français", "en anglais", "respond in", "répondre en", "language:", "langue:"],
 }
 
 
@@ -91,7 +93,7 @@ def _heuristic_decompose(raw_prompt: str) -> list[dict]:
     ordered = [
         BlockType.role, BlockType.context, BlockType.objective,
         BlockType.input, BlockType.constraints, BlockType.output_format,
-        BlockType.examples, BlockType.chain_of_thought,
+        BlockType.examples, BlockType.chain_of_thought, BlockType.language,
     ]
 
     for block_type in ordered:

@@ -673,6 +673,22 @@ body {
   border-radius: calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px) 0 0;
 }
 
+/* === Language — Pill / Capsule shape === */
+.block-node[data-block-type="language"] {
+  border-radius: 99px;
+  border: 2px solid var(--block-color);
+  border-left: 2px solid var(--block-color);
+  min-width: 220px;
+  max-width: 260px;
+}
+.block-node[data-block-type="language"] .block-header {
+  border-radius: 99px 99px 0 0;
+  border-bottom: 1px solid var(--border);
+}
+.block-node[data-block-type="language"] .block-icon {
+  background: color-mix(in srgb, var(--block-color) 22%, transparent);
+}
+
 /* ── Output ───────────────────────────────────────────────────────────────── */
 .prompt-output-panel { display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }

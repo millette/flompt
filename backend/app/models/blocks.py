@@ -12,6 +12,7 @@ class BlockType(str, Enum):
     output_format = "output_format"
     examples = "examples"
     chain_of_thought = "chain_of_thought"
+    language = "language"
 
 
 class BlockData(BaseModel):

@@ -7,6 +7,7 @@ import {
   LogOut,
   Lightbulb,
   GitBranch,
+  Globe,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -21,6 +22,7 @@ export type BlockType =
   | 'output_format'
   | 'examples'
   | 'chain_of_thought'
+  | 'language'
 
 export interface BlockData {
   type: BlockType
@@ -95,6 +97,12 @@ export const BLOCK_META: Record<BlockType, { label: string; description: string;
     description: 'Format attendu de la réponse',
     color: '#ff6b9d',   // accent-light — signal « fin », aligné DA
     icon: LogOut,
+  },
+  language: {
+    label: 'Langue',
+    description: 'Langue de réponse de l\'IA',
+    color: '#38bdf8',   // sky-400 — international, communication
+    icon: Globe,
   },
 }
 

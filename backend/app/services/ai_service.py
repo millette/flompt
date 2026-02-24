@@ -6,6 +6,7 @@ Supporte Anthropic (claude-3-5-haiku) et OpenAI (gpt-4o-mini).
 import os
 import json
 import httpx
+import asyncio
 from typing import Optional
 
 # ─── Config (lazy getters — read at call time, not import time) ──────────────
@@ -22,7 +23,9 @@ def _get_provider() -> str:
 def _get_model() -> str:
     return os.getenv("AI_MODEL", "claude-sonnet-4-20250514")
 
-TIMEOUT = 30.0
+TIMEOUT = 60.0
+MAX_RETRIES = 3
+RETRY_DELAYS = [2, 5, 10]  # seconds — exponential backoff
 
 
 def _strip_markdown_json(text: str) -> str:
@@ -49,6 +52,7 @@ Block types available:
 - output_format: Expected response format and structure
 - examples: Few-shot examples (input/output pairs)
 - chain_of_thought: Explicit reasoning steps required
+- language: The language the AI should respond in (auto-detect from the user's prompt language)
 
 Return ONLY valid JSON, no markdown:
 {"blocks": [{"type": "<type>", "content": "<detailed content>", "summary": "<2-5 word label>"}]}
@@ -58,8 +62,9 @@ Rules:
 - The "summary" field is a very short label (2-5 words max) that summarizes the block at a glance (e.g. "Expert marketing digital", "Bullet points JSON", "Max 200 mots")
 - Write content and summary in the SAME language as the user's prompt
 - Only include blocks that are semantically present or implied
-- Minimum 1 block, maximum 8 blocks
-- If unclear, default to objective"""
+- ALWAYS include a "language" block — detect the language of the user's prompt and set it as the content (e.g. "English", "French", "Spanish")
+- Minimum 2 blocks, maximum 9 blocks
+- If unclear, default to objective + language"""
 
 COMPILE_SYSTEM_PROMPT = """You are a prompt optimization expert. Recompile structured blocks into a single optimized prompt.
 
@@ -119,14 +124,38 @@ async def _call_openai(system: str, user: str) -> str:
         return resp.json()["choices"][0]["message"]["content"]
 
 
-# ─── Dispatcher ───────────────────────────────────────────────────────────────
+# ─── Dispatcher with retry ────────────────────────────────────────────────────
+
+RETRYABLE_STATUS = {429, 500, 502, 503, 529}
 
 async def _call_llm(system: str, user: str) -> str:
-    if _get_anthropic_key() and _get_provider() == "anthropic":
-        return await _call_anthropic(system, user)
-    elif _get_openai_key():
-        return await _call_openai(system, user)
-    raise RuntimeError("No API key configured (ANTHROPIC_API_KEY or OPENAI_API_KEY)")
+    if not (_get_anthropic_key() and _get_provider() == "anthropic") and not _get_openai_key():
+        raise RuntimeError("No API key configured (ANTHROPIC_API_KEY or OPENAI_API_KEY)")
+
+    last_error = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            if _get_anthropic_key() and _get_provider() == "anthropic":
+                return await _call_anthropic(system, user)
+            else:
+                return await _call_openai(system, user)
+        except httpx.HTTPStatusError as e:
+            last_error = e
+            if e.response.status_code in RETRYABLE_STATUS and attempt < MAX_RETRIES - 1:
+                delay = RETRY_DELAYS[min(attempt, len(RETRY_DELAYS) - 1)]
+                print(f"[AI] {e.response.status_code} — retry {attempt + 1}/{MAX_RETRIES} in {delay}s")
+                await asyncio.sleep(delay)
+            else:
+                raise
+        except (httpx.TimeoutException, httpx.ConnectError) as e:
+            last_error = e
+            if attempt < MAX_RETRIES - 1:
+                delay = RETRY_DELAYS[min(attempt, len(RETRY_DELAYS) - 1)]
+                print(f"[AI] Timeout/connection error — retry {attempt + 1}/{MAX_RETRIES} in {delay}s")
+                await asyncio.sleep(delay)
+            else:
+                raise
+    raise last_error  # type: ignore
 
 
 # ─── Public API ───────────────────────────────────────────────────────────────
