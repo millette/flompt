@@ -91,6 +91,32 @@
     .nav-links { display: flex; align-items: center; gap: 28px; }
     .nav-links a { font-size: 0.875rem; color: var(--text-muted); transition: color 150ms; }
     .nav-links a:hover { color: var(--text); }
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--text-muted); border-radius: 2px;
+      transition: all 200ms;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile-menu {
+      display: none; position: fixed; top: 60px; left: 0; right: 0;
+      background: rgba(28, 28, 30, 0.97); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px 20px; flex-direction: column; gap: 4px; z-index: 99;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a {
+      font-size: 1rem; color: var(--text-muted); padding: 12px 0;
+      border-bottom: 1px solid var(--border); transition: color 150ms;
+    }
+    .nav-mobile-menu a:last-child { border-bottom: none; padding-top: 16px; }
+    .nav-mobile-menu a:hover { color: var(--text); }
+    .nav-mobile-menu .btn-cta { justify-content: center; margin-top: 4px; }
     .btn-cta, .nav-links a.btn-cta {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 10px 22px; border-radius: 99px;
@@ -240,7 +266,8 @@
       .hero h1 { font-size: 2rem; }
       .steps { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
-      .nav-links a:not(.btn-cta) { display: none; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
       .footer-inner { flex-direction: column; text-align: center; }
     }
   </style>
@@ -271,14 +298,24 @@
         <span>flompt</span>
       </a>
       <div class="nav-links">
-        <a href="#how-it-works">How it works</a>
-        <a href="#features">Features</a>
+        <a href="/docs">Docs</a>
         <a href="/blog/en">Blog</a>
         <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
         <a href="/app" class="btn-cta">Open App</a>
       </div>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+
+  <!-- ── MOBILE MENU ─────────────────────────────────── -->
+  <div class="nav-mobile-menu" id="mobile-menu">
+    <a href="/docs">Docs</a>
+    <a href="/blog/en">Blog</a>
+    <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+    <a href="/app" class="btn-cta">Open App &rarr;</a>
+  </div>
 
   <!-- ── HERO ───────────────────────────────────────── -->
   <section class="hero">
@@ -414,6 +451,7 @@
         </div>
         <div class="footer-links">
           <a href="/app">App</a>
+          <a href="/docs">Docs</a>
           <a href="/blog/en">Blog</a>
           <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
         </div>
@@ -422,5 +460,20 @@
     </div>
   </footer>
 
+  <script>
+    const btn = document.getElementById('hamburger');
+    const menu = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    });
+    // Fermer le menu en cliquant sur un lien
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', false);
+    }));
+  </script>
 </body>
 </html>
