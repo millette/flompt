@@ -11,10 +11,12 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import { useFlowStore } from '@/store/flowStore'
 import BlockNode from './BlockNode'
+import CustomEdge from './CustomEdge'
 import { BLOCK_META } from '@/types/blocks'
 import type { BlockType, FlomptNode } from '@/types/blocks'
 
 const nodeTypes = { block: BlockNode }
+const edgeTypes = { custom: CustomEdge }
 
 const CanvasInner = () => {
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode } = useFlowStore()
@@ -62,12 +64,14 @@ const CanvasInner = () => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         deleteKeyCode="Delete"
         snapToGrid
         snapGrid={[20, 20]}
         connectionMode={ConnectionMode.Loose}
         connectOnClick={true}
+        defaultEdgeOptions={{ type: 'custom' }}
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#1e1e3a" />

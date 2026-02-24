@@ -17,6 +17,7 @@ interface FlowState {
   compiledPrompt: CompiledPrompt | null
   isDecomposing: boolean
   isCompiling: boolean
+  lastSaved: number | null  // timestamp ms
 
   // Historique undo/redo
   past: Snapshot[]
@@ -56,6 +57,7 @@ export const useFlowStore = create<FlowState>()(
       compiledPrompt: null,
       isDecomposing: false,
       isCompiling: false,
+      lastSaved: null,
       past: [],
       future: [],
 
@@ -66,6 +68,7 @@ export const useFlowStore = create<FlowState>()(
           past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
           future: [],
           nodes,
+          lastSaved: Date.now(),
         })),
 
       setEdges: (edges) =>
@@ -73,6 +76,7 @@ export const useFlowStore = create<FlowState>()(
           past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
           future: [],
           edges,
+          lastSaved: Date.now(),
         })),
 
       onNodesChange: (changes) =>
@@ -87,7 +91,8 @@ export const useFlowStore = create<FlowState>()(
 
       onConnect: (connection) =>
         set((state) => ({
-          edges: addEdge({ ...connection, animated: true }, state.edges) as FlomptEdge[],
+          edges: addEdge({ ...connection, type: 'custom' }, state.edges) as FlomptEdge[],
+          lastSaved: Date.now(),
         })),
 
       updateNodeContent: (id, content) =>
@@ -102,6 +107,7 @@ export const useFlowStore = create<FlowState>()(
           past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
           future: [],
           nodes: [...state.nodes, node],
+          lastSaved: Date.now(),
         })),
 
       removeNode: (id) =>
@@ -110,6 +116,7 @@ export const useFlowStore = create<FlowState>()(
           future: [],
           nodes: state.nodes.filter((n) => n.id !== id),
           edges: state.edges.filter((e) => e.source !== id && e.target !== id),
+          lastSaved: Date.now(),
         })),
 
       setCompiledPrompt: (prompt) => set({ compiledPrompt: prompt }),

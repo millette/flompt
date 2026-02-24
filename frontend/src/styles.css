@@ -131,7 +131,7 @@ body {
 }
 .right-panel { border-right: none; border-left: 1px solid var(--border); }
 
-.flow-canvas { flex: 1; background: var(--bg); position: relative; }
+.flow-canvas { flex: 1; min-height: 0; width: 100%; background: var(--bg); position: relative; }
 
 .panel-divider {
   height: 1px;
@@ -568,7 +568,7 @@ body {
 }
 
 /* ── Canvas wrapper ───────────────────────────────────────────────────────── */
-.canvas-wrap { flex: 1; position: relative; overflow: hidden; }
+.canvas-wrap { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
 
 /* ── Responsive — Tablet (≤ 1024px) ──────────────────────────────────────── */
 @media (max-width: 1024px) {
@@ -725,4 +725,152 @@ body {
   .block-list { grid-template-columns: 1fr; }
   .header-actions { gap: 4px; }
   .btn-icon { width: 26px; height: 26px; font-size: 0.75rem; }
+}
+
+/* ── Custom Edges ─────────────────────────────────────────────────────────── */
+@keyframes edge-flow {
+  from { stroke-dashoffset: 24; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.edge-delete-btn {
+  z-index: 10;
+}
+.edge-delete-btn button {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: rgba(7, 7, 26, 0.9);
+  color: #ef4444;
+  font-size: 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(8px);
+}
+.edge-delete-btn button:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  transform: scale(1.2);
+}
+
+/* ── Auto-save indicator ─────────────────────────────────────────────────── */
+.autosave-indicator {
+  font-size: 0.63rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  white-space: nowrap;
+  animation: fade-in 0.3s ease;
+}
+
+/* ── Keyboard Shortcuts Modal ─────────────────────────────────────────────── */
+.shortcuts-btn {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.shortcuts-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(7, 7, 26, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in 0.15s ease;
+}
+
+.shortcuts-modal {
+  background: var(--bg-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(124, 58, 237, 0.1);
+  animation: scale-in 0.15s ease;
+}
+
+@keyframes scale-in {
+  from { transform: scale(0.94); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.shortcuts-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 24px;
+}
+
+.shortcut-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.shortcuts-hint {
+  font-size: 0.66rem;
+  color: var(--text-dim);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }

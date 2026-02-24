@@ -3,6 +3,7 @@ import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
 import PromptOutput from '@/components/PromptOutput'
+import KeyboardShortcuts from '@/components/KeyboardShortcuts'
 import { useFlowStore } from '@/store/flowStore'
 import './styles.css'
 
@@ -34,8 +35,14 @@ const useBackendStatus = () => {
   return status
 }
 
+const formatSavedTime = (ts: number | null): string | null => {
+  if (!ts) return null
+  const d = new Date(ts)
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`
+}
+
 const App = () => {
-  const { undo, redo, reset, past, future, nodes } = useFlowStore()
+  const { undo, redo, reset, past, future, nodes, lastSaved } = useFlowStore()
   const [activeTab, setActiveTab] = useState<Tab>('canvas')
   const backendStatus = useBackendStatus()
 
@@ -74,9 +81,17 @@ const App = () => {
           </span>
         </div>
 
+        {/* Auto-save indicator */}
+        {lastSaved && (
+          <span className="autosave-indicator hide-mobile" title="Sauvegardé automatiquement">
+            💾 {formatSavedTime(lastSaved)}
+          </span>
+        )}
+
         <div className="header-actions">
           <button className="btn-icon" onClick={undo} disabled={past.length === 0} title="Annuler (Ctrl+Z)">↩</button>
           <button className="btn-icon" onClick={redo} disabled={future.length === 0} title="Rétablir (Ctrl+Y)">↪</button>
+          <KeyboardShortcuts />
           <button
             className="btn-icon"
             onClick={() => { if (confirm('Réinitialiser le canvas ?')) reset() }}
