@@ -1076,17 +1076,6 @@ body {
 
   .react-flow__minimap { display: none !important; }
 
-  .react-flow__handle {
-    width: 20px !important;
-    height: 20px !important;
-    border-radius: 50% !important;
-    border-width: 2px !important;
-    z-index: 1 !important;
-  }
-
-  .react-flow__handle-top    { top: -10px !important; }
-  .react-flow__handle-bottom { bottom: -10px !important; }
-
   .react-flow__edgedrag,
   .react-flow__connection { z-index: 1 !important; }
 }
@@ -1106,12 +1095,12 @@ body {
 
 .edge-delete-btn { z-index: 10; }
 .edge-delete-btn button {
-  width: 18px; height: 18px;
+  width: 22px; height: 22px;
   border-radius: 50%;
-  border: 1px solid rgba(239, 68, 68, 0.5);
+  border: 1.5px solid rgba(239, 68, 68, 0.5);
   background: var(--bg-2);
   color: var(--error);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all var(--transition-fast);
@@ -1120,6 +1109,15 @@ body {
   background: rgba(239, 68, 68, 0.15);
   border-color: var(--error);
   transform: scale(1.2);
+}
+@media (max-width: 768px) {
+  .edge-delete-btn button {
+    width: 34px; height: 34px;
+    font-size: 0.85rem;
+    border-width: 2px;
+    background: rgba(28, 28, 30, 0.95);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
 }
 
 /* ── Auto-save indicator ─────────────────────────────────────────────────── */
@@ -1275,10 +1273,33 @@ body {
 .react-flow__handle {
   background: var(--accent) !important;
   border: 2px solid var(--bg-3) !important;
-  width: 8px !important;
-  height: 8px !important;
+  width: 12px !important;
+  height: 12px !important;
+  z-index: 10 !important;
+  translate: -50% -50% !important;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
+.react-flow__handle-top    { top: 0 !important; left: 50% !important; }
+.react-flow__handle-bottom { top: 100% !important; left: 50% !important; }
 .react-flow__handle:hover {
   background: var(--accent-light) !important;
-  transform: scale(1.4);
+  transform: scale(1.8);
+}
+@media (max-width: 768px) {
+  .react-flow__handle {
+    width: 16px !important;
+    height: 16px !important;
+    border-width: 2px !important;
+    z-index: 10 !important;
+  }
+  .react-flow__handle:hover {
+    transform: scale(1.5);
+  }
+
+  /* When a connection is in progress, scale up all handles */
+  .react-flow.connecting .react-flow__handle {
+    transform: scale(1.8);
+    background: var(--accent-light) !important;
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
 }
