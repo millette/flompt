@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/favicon.svg" width="80" height="80" alt="flompt logo" />
+  <img src="app/public/favicon.svg" width="80" height="80" alt="flompt logo" />
 </p>
 
 <h1 align="center">flompt</h1>
@@ -79,9 +79,9 @@ cp .env.example .env  # Add your API key
 uvicorn app.main:app --reload --port 8000
 ```
 
-**Frontend**
+**App (Frontend)**
 ```bash
-cd frontend
+cd app
 npm install
 npm run dev
 ```
