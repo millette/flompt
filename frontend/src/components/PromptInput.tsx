@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Zap, Loader } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt } from '@/services/api'
 
@@ -39,7 +40,10 @@ const PromptInput = () => {
         onClick={handleDecompose}
         disabled={isDecomposing || !rawPrompt.trim()}
       >
-        {isDecomposing ? 'Décomposition...' : '⚡ Décomposer en blocs'}
+        {isDecomposing
+          ? <><Loader size={14} className="icon-spin" /> Décomposition...</>
+          : <><Zap size={14} /> Décomposer en blocs</>
+        }
       </button>
     </div>
   )

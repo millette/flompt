@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { compilePrompt } from '@/services/api'
 
@@ -63,19 +64,22 @@ const PromptOutput = () => {
           <pre className="compiled-output">{compiledPrompt.raw}</pre>
           <div className="export-actions">
             <button className="btn btn-secondary" onClick={handleCopy} style={{ marginBottom: 0 }}>
-              {copied ? '✅ Copié !' : '📋 Copier'}
+              {copied
+                ? <><ClipboardCheck size={13} /> Copié !</>
+                : <><Clipboard size={13} /> Copier</>
+              }
             </button>
             <button className="btn btn-secondary export-btn" onClick={handleExportTxt} title="Exporter en .txt" style={{ marginBottom: 0 }}>
-              ↓ .txt
+              <FileText size={13} /> .txt
             </button>
             <button className="btn btn-secondary export-btn" onClick={handleExportJSON} title="Exporter en .json" style={{ marginBottom: 0 }}>
-              ↓ .json
+              <Braces size={13} /> .json
             </button>
           </div>
         </>
       ) : (
         <div className="output-placeholder">
-          <span className="output-placeholder-icon">✨</span>
+          <Sparkles size={28} className="output-placeholder-icon" />
           <span>Construis ton flowchart<br />puis compile pour voir le résultat.</span>
         </div>
       )}
@@ -87,7 +91,10 @@ const PromptOutput = () => {
         onClick={handleCompile}
         disabled={isCompiling || nodes.length === 0}
       >
-        {isCompiling ? '⏳ Compilation...' : '✅ Compiler'}
+        {isCompiling
+          ? <><Loader size={14} className="icon-spin" /> Compilation...</>
+          : <><Play size={14} /> Compiler</>
+        }
       </button>
     </div>
   )

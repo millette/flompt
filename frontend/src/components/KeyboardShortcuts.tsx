@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Keyboard, X } from 'lucide-react'
 
 const SHORTCUTS = [
   { keys: ['Ctrl', 'Z'], label: 'Annuler' },
@@ -33,7 +34,7 @@ const KeyboardShortcuts = () => {
         onClick={() => setOpen((v) => !v)}
         title="Raccourcis clavier (?)"
       >
-        ?
+        <Keyboard size={14} />
       </button>
 
       {open && (
@@ -41,7 +42,7 @@ const KeyboardShortcuts = () => {
           <div className="shortcuts-modal" onClick={(e) => e.stopPropagation()}>
             <div className="shortcuts-header">
               <h2 className="shortcuts-title">Raccourcis clavier</h2>
-              <button className="btn-icon" onClick={() => setOpen(false)}>✕</button>
+              <button className="btn-icon" onClick={() => setOpen(false)}><X size={14} /></button>
             </div>
             <div className="shortcuts-list">
               {SHORTCUTS.map((s, i) => (

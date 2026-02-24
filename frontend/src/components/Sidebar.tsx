@@ -33,6 +33,7 @@ const Sidebar = () => {
       <div className="block-list">
         {(Object.keys(BLOCK_META) as BlockType[]).map((type) => {
           const meta = BLOCK_META[type]
+          const Icon = meta.icon
           return (
             <button
               key={type}
@@ -43,7 +44,9 @@ const Sidebar = () => {
               onDragStart={(e) => handleDragStart(e, type)}
               title={meta.description}
             >
-              <span className="block-pill-icon">{meta.icon}</span>
+              <span className="block-pill-icon">
+                <Icon size={13} />
+              </span>
               {meta.label}
             </button>
           )

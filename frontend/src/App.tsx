@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Undo2, Redo2, X, Save, Workflow, PenLine, Network, Sparkles } from 'lucide-react'
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
@@ -9,10 +10,10 @@ import './styles.css'
 
 type Tab = 'input' | 'canvas' | 'output'
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'input',  label: 'Prompt',  icon: '✏️' },
-  { id: 'canvas', label: 'Canvas',  icon: '⬡' },
-  { id: 'output', label: 'Résultat', icon: '✨' },
+const TABS: { id: Tab; label: string; Icon: typeof Workflow }[] = [
+  { id: 'input',  label: 'Prompt',   Icon: PenLine },
+  { id: 'canvas', label: 'Canvas',   Icon: Network },
+  { id: 'output', label: 'Résultat', Icon: Sparkles },
 ]
 
 const useBackendStatus = () => {
@@ -61,7 +62,7 @@ const App = () => {
     <div className="app">
       <header className="header">
         <div className="header-brand">
-          <div className="logo-icon">⬡</div>
+          <div className="logo-icon"><Workflow size={15} color="white" /></div>
           <h1 className="logo">flompt</h1>
           <span className="tagline hide-mobile">Visual Prompt Builder</span>
         </div>
@@ -84,20 +85,26 @@ const App = () => {
         {/* Auto-save indicator */}
         {lastSaved && (
           <span className="autosave-indicator hide-mobile" title="Sauvegardé automatiquement">
-            💾 {formatSavedTime(lastSaved)}
+            <Save size={11} /> {formatSavedTime(lastSaved)}
           </span>
         )}
 
         <div className="header-actions">
-          <button className="btn-icon" onClick={undo} disabled={past.length === 0} title="Annuler (Ctrl+Z)">↩</button>
-          <button className="btn-icon" onClick={redo} disabled={future.length === 0} title="Rétablir (Ctrl+Y)">↪</button>
+          <button className="btn-icon" onClick={undo} disabled={past.length === 0} title="Annuler (Ctrl+Z)">
+            <Undo2 size={14} />
+          </button>
+          <button className="btn-icon" onClick={redo} disabled={future.length === 0} title="Rétablir (Ctrl+Y)">
+            <Redo2 size={14} />
+          </button>
           <KeyboardShortcuts />
           <button
             className="btn-icon"
             onClick={() => { if (confirm('Réinitialiser le canvas ?')) reset() }}
             title="Réinitialiser"
             style={{ color: 'var(--error)', borderColor: 'rgba(239,68,68,0.2)' }}
-          >✕</button>
+          >
+            <X size={14} />
+          </button>
         </div>
       </header>
 
@@ -118,14 +125,14 @@ const App = () => {
       </main>
 
       <nav className="tab-bar">
-        {TABS.map((tab) => (
+        {TABS.map(({ id, label, Icon }) => (
           <button
-            key={tab.id}
-            className={`tab-btn${activeTab === tab.id ? ' tab-btn--active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+            key={id}
+            className={`tab-btn${activeTab === id ? ' tab-btn--active' : ''}`}
+            onClick={() => setActiveTab(id)}
           >
-            <span className="tab-icon">{tab.icon}</span>
-            <span className="tab-label">{tab.label}</span>
+            <Icon size={18} className="tab-icon" />
+            <span className="tab-label">{label}</span>
           </button>
         ))}
       </nav>

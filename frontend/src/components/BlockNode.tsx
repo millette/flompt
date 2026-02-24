@@ -1,12 +1,14 @@
 import { memo, useState, useRef, useEffect } from 'react'
 import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
+import { Copy, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { BLOCK_META } from '@/types/blocks'
 import type { BlockData } from '@/types/blocks'
 import { useFlowStore } from '@/store/flowStore'
 
 const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const meta = BLOCK_META[data.type]
+  const Icon = meta.icon
   const updateNodeContent = useFlowStore((s) => s.updateNodeContent)
   const removeNode = useFlowStore((s) => s.removeNode)
   const addNode = useFlowStore((s) => s.addNode)
@@ -25,7 +27,6 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const handleDuplicate = () => {
     const currentNode = nodes.find((n) => n.id === id)
     if (!currentNode) return
-    // Désélectionner le nœud original pour éviter le drag groupé
     onNodesChange([{ id, type: 'select', selected: false }])
     addNode({
       ...currentNode,
@@ -44,19 +45,25 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
 
       <div className="block-header" style={{ backgroundColor: meta.color }}>
         <div className="block-header-left">
-          <span className="block-icon">{meta.icon}</span>
+          <span className="block-icon">
+            <Icon size={13} />
+          </span>
           <span className="block-label">{meta.label}</span>
         </div>
         <div className="block-actions">
-          <button className="block-collapse" onClick={handleDuplicate} title="Dupliquer">⧉</button>
+          <button className="block-collapse" onClick={handleDuplicate} title="Dupliquer">
+            <Copy size={11} />
+          </button>
           <button
             className="block-collapse"
             onClick={() => setCollapsed((c) => !c)}
             title={collapsed ? 'Développer' : 'Réduire'}
           >
-            {collapsed ? '▶' : '▼'}
+            {collapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
           </button>
-          <button className="block-remove" onClick={() => removeNode(id)} title="Supprimer">✕</button>
+          <button className="block-remove" onClick={() => removeNode(id)} title="Supprimer">
+            <X size={11} />
+          </button>
         </div>
       </div>
 

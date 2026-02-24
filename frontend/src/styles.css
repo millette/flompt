@@ -831,7 +831,24 @@ body {
   flex-wrap: wrap;
 }
 
-/* ── React Flow overrides ─────────────────────────────────────────────────── */
+/* ── Lucide icon helpers ──────────────────────────────────────────────────── */
+/* Spinner pour loading states */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.icon-spin { animation: spin 0.8s linear infinite; }
+
+/* Aligner les icones SVG inline dans les boutons */
+.btn svg, .btn-icon svg { display: block; flex-shrink: 0; }
+.autosave-indicator { display: flex; align-items: center; gap: 5px; }
+
+/* Output placeholder icon override (Lucide remplace le span) */
+.output-placeholder-icon { opacity: 0.2; }
+
+/* Tab icon (Lucide remplace le span emoji) */
+.tab-btn .tab-icon { display: block; }
+
+/* React Flow overrides ─────────────────────────────────────────────────────── */
 /* Les wrappers de nœuds doivent laisser les handles déborder */
 .react-flow__node { overflow: visible !important; }
 .react-flow__controls {

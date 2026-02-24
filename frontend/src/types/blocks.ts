@@ -1,3 +1,15 @@
+import {
+  UserRound,
+  Layers,
+  Target,
+  LogIn,
+  ShieldAlert,
+  LayoutList,
+  Lightbulb,
+  GitBranch,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
 // ─── Block Types ────────────────────────────────────────────────────────────
 
 export type BlockType =
@@ -33,54 +45,54 @@ export interface FlomptEdge {
 
 // ─── Block Metadata ──────────────────────────────────────────────────────────
 
-export const BLOCK_META: Record<BlockType, { label: string; description: string; color: string; icon: string }> = {
+export const BLOCK_META: Record<BlockType, { label: string; description: string; color: string; icon: LucideIcon }> = {
   role: {
     label: 'Role',
     description: "Définit la persona / le rôle de l'IA",
     color: '#7c3aed',
-    icon: '🎭',
+    icon: UserRound,
   },
   context: {
     label: 'Context',
     description: 'Fournit le contexte de la tâche',
     color: '#0ea5e9',
-    icon: '📋',
+    icon: Layers,
   },
   objective: {
     label: 'Objective',
     description: "Ce qu'on veut accomplir",
     color: '#10b981',
-    icon: '🎯',
+    icon: Target,
   },
   input: {
     label: 'Input',
     description: "Données fournies à l'IA",
     color: '#f59e0b',
-    icon: '📥',
+    icon: LogIn,
   },
   constraints: {
     label: 'Constraints',
     description: 'Règles et limites à respecter',
     color: '#ef4444',
-    icon: '⛔',
+    icon: ShieldAlert,
   },
   output_format: {
     label: 'Output Format',
     description: 'Format attendu de la réponse',
     color: '#8b5cf6',
-    icon: '📄',
+    icon: LayoutList,
   },
   examples: {
     label: 'Examples',
     description: 'Few-shot examples',
     color: '#ec4899',
-    icon: '💡',
+    icon: Lightbulb,
   },
   chain_of_thought: {
     label: 'Chain of Thought',
     description: 'Étapes de raisonnement',
     color: '#14b8a6',
-    icon: '🔗',
+    icon: GitBranch,
   },
 }
 
