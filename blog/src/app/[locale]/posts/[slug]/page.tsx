@@ -52,7 +52,7 @@ export default async function PostPage({ params }: PageProps) {
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-2 py-0.5 rounded-full"
+                  className="text-[10px] px-1.5 py-px rounded-full"
                   style={{
                     border: "1px solid var(--border-medium)",
                     color: "var(--text-muted)",
