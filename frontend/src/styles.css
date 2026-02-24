@@ -585,7 +585,7 @@ body {
 .block-node[data-block-type="constraints"]::after {
   content: '';
   position: absolute;
-  inset: 0.5px;
+  inset: 1.5px;
   background: var(--bg-3);
   clip-path: polygon(10% 0%, 90% 0%, 100% 18%, 100% 82%, 90% 100%, 10% 100%, 0% 82%, 0% 18%);
   z-index: 0;
