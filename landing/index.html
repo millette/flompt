@@ -36,7 +36,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -87,14 +87,14 @@
     }
     .nav-brand { display: flex; align-items: center; gap: 10px; }
     .nav-brand img { width: 26px; height: 26px; border-radius: 6px; }
-    .nav-brand span { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.04em; }
+    .nav-brand span { font-family: 'Caveat', cursive; font-size: 1.5rem; font-weight: 700; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
     .nav-links { display: flex; align-items: center; gap: 28px; }
     .nav-links a { font-size: 0.875rem; color: var(--text-muted); transition: color 150ms; }
     .nav-links a:hover { color: var(--text); }
-    .btn-cta {
+    .btn-cta, .nav-links a.btn-cta {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 10px 22px; border-radius: 99px;
-      background: var(--accent); color: white;
+      background: var(--accent); color: #ffffff;
       font-size: 0.875rem; font-weight: 600;
       transition: all 200ms; border: none; cursor: pointer;
     }
@@ -228,7 +228,7 @@
     }
     .footer-brand { display: flex; align-items: center; gap: 8px; }
     .footer-brand img { width: 20px; height: 20px; border-radius: 4px; }
-    .footer-brand span { font-weight: 700; font-size: 0.9rem; }
+    .footer-brand span { font-family: 'Caveat', cursive; font-weight: 700; font-size: 1.8rem; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
     .footer-links { display: flex; align-items: center; gap: 24px; }
     .footer-links a { font-size: 0.8rem; color: var(--text-dim); transition: color 150ms; }
     .footer-links a:hover { color: var(--text-muted); }
@@ -268,7 +268,6 @@
   <nav>
     <div class="nav-inner">
       <a href="/" class="nav-brand">
-        <img src="/app/favicon.svg" alt="flompt logo" />
         <span>flompt</span>
       </a>
       <div class="nav-links">
@@ -411,7 +410,6 @@
     <div class="container">
       <div class="footer-inner">
         <div class="footer-brand">
-          <img src="/app/favicon.svg" alt="flompt" />
           <span>flompt</span>
         </div>
         <div class="footer-links">

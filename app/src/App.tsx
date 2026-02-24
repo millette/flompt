@@ -38,7 +38,6 @@ const App = () => {
     <div className="app">
       <header className="header">
         <a href="/" className="header-brand" style={{ textDecoration: 'none' }}>
-          <img src="/app/favicon.svg" alt="flompt" className="logo-img" width={22} height={22} />
           <h1 className="logo">flompt</h1>
         </a>
 

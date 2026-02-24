@@ -2,9 +2,11 @@ flompt.dev {
 	# Enable compression
 	encode gzip zstd
 
-	# ── Blog (Next.js) → port 3001 ───────────────────────────────
-	handle /blog* {
-		reverse_proxy 127.0.0.1:3001
+	# ── Blog (static export) ─────────────────────────────────────
+	handle_path /blog* {
+		root * /projects/flompt/blog/out
+		try_files {path} {path}.html {path}/index.html /index.html
+		file_server
 	}
 
 	# ── API routes → FastAPI backend (matched FIRST) ─────────────
@@ -17,9 +19,9 @@ flompt.dev {
 	}
 
 	# ── App SPA → /app ───────────────────────────────────────────
-	handle /app* {
+	handle_path /app* {
 		root * /projects/flompt/app/dist
-		try_files {path} /app/index.html
+		try_files {path} /index.html
 		file_server {
 			precompressed gzip
 		}

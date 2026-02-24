@@ -94,10 +94,11 @@ body {
 }
 
 .logo {
-  font-size: 1.08rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--text);
+  font-family: 'Caveat', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 
 .tagline {

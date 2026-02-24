@@ -23,13 +23,21 @@ export default function Header({ locale }: { locale: Locale }) {
       <div className="max-w-3xl mx-auto px-6 h-full flex items-center justify-between">
         {/* Brand */}
         <Link href={`/${locale}`} className="flex items-center gap-1.5">
-          <span className="text-lg font-extrabold tracking-tight" style={{ color: "var(--accent)" }}>
+          <span
+            style={{
+              fontFamily: "var(--font-handwritten), cursive",
+              fontSize: "1.5rem",
+              fontWeight: 700,
+              color: "var(--accent)",
+              textShadow: "0 0 10px var(--accent-glow)",
+            }}
+          >
             flompt
           </span>
           <span
-            className="text-xl"
             style={{
               fontFamily: "var(--font-handwritten), cursive",
+              fontSize: "1.5rem",
               color: "var(--text-muted)",
             }}
           >
@@ -62,7 +70,7 @@ export default function Header({ locale }: { locale: Locale }) {
                 textShadow: "0 0 8px var(--accent-glow)",
               }}
             >
-              Access App
+              Home
             </a>
           </nav>
 
