@@ -9,16 +9,28 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const meta = BLOCK_META[data.type]
   const updateNodeContent = useFlowStore((s) => s.updateNodeContent)
   const removeNode = useFlowStore((s) => s.removeNode)
+  const addNode = useFlowStore((s) => s.addNode)
+  const nodes = useFlowStore((s) => s.nodes)
   const [collapsed, setCollapsed] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-resize textarea
   useEffect(() => {
     const el = textareaRef.current
     if (!el || collapsed) return
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
   }, [data.content, collapsed])
+
+  const handleDuplicate = () => {
+    const currentNode = nodes.find((n) => n.id === id)
+    if (!currentNode) return
+    addNode({
+      ...currentNode,
+      id: `${data.type}-${Date.now()}`,
+      position: { x: currentNode.position.x + 30, y: currentNode.position.y + 30 },
+      data: { ...data },
+    })
+  }
 
   return (
     <div
@@ -27,13 +39,13 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
     >
       <Handle type="target" position={Position.Top} />
 
-      {/* Header */}
       <div className="block-header" style={{ backgroundColor: meta.color }}>
         <div className="block-header-left">
           <span className="block-icon">{meta.icon}</span>
           <span className="block-label">{meta.label}</span>
         </div>
         <div className="block-actions">
+          <button className="block-collapse" onClick={handleDuplicate} title="Dupliquer">⧉</button>
           <button
             className="block-collapse"
             onClick={() => setCollapsed((c) => !c)}
@@ -41,13 +53,10 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
           >
             {collapsed ? '▶' : '▼'}
           </button>
-          <button className="block-remove" onClick={() => removeNode(id)} title="Supprimer">
-            ✕
-          </button>
+          <button className="block-remove" onClick={() => removeNode(id)} title="Supprimer">✕</button>
         </div>
       </div>
 
-      {/* Body */}
       {!collapsed && (
         <div className="block-body">
           <textarea

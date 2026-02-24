@@ -478,6 +478,90 @@ body {
 .prompt-textarea:focus-visible { outline: none; }
 .block-content:focus-visible   { outline: none; }
 
+/* ── Canvas empty state ───────────────────────────────────────────────────── */
+.canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 5;
+  animation: fade-in 400ms ease;
+}
+.canvas-empty-icon {
+  font-size: 3rem;
+  opacity: 0.08;
+  line-height: 1;
+}
+.canvas-empty-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: -0.02em;
+}
+.canvas-empty-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.7;
+}
+.canvas-empty-hint strong { color: var(--text-muted); }
+
+/* ── Backend status ───────────────────────────────────────────────────────── */
+.backend-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  font-size: 0.68rem;
+  font-weight: 500;
+  margin-right: 8px;
+}
+.backend-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.backend-status--online  { border-color: rgba(16,185,129,0.3); }
+.backend-status--online  .backend-dot { background: #10b981; box-shadow: 0 0 6px #10b981; animation: pulse-dot 2s infinite; }
+.backend-status--online  .backend-label { color: #10b981; }
+.backend-status--offline { border-color: rgba(239,68,68,0.3); }
+.backend-status--offline .backend-dot { background: #ef4444; }
+.backend-status--offline .backend-label { color: #ef4444; }
+.backend-status--checking .backend-dot { background: var(--text-dim); animation: pulse-dot 1s infinite; }
+.backend-status--checking .backend-label { color: var(--text-dim); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Node count ───────────────────────────────────────────────────────────── */
+.node-count {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  padding: 3px 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  margin-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Export actions ───────────────────────────────────────────────────────── */
+.export-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.export-actions .btn { flex: 1; }
+.export-btn { font-size: 0.72rem !important; }
+
 /* ── Tab bar (mobile nav) ─────────────────────────────────────────────────── */
 .tab-bar {
   display: none; /* caché par défaut, visible seulement sur mobile */

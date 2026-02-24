@@ -3,7 +3,7 @@ import { useFlowStore } from '@/store/flowStore'
 import { compilePrompt } from '@/services/api'
 
 const PromptOutput = () => {
-  const { nodes, compiledPrompt, setCompiledPrompt, setIsCompiling, isCompiling } = useFlowStore()
+  const { nodes, edges, compiledPrompt, setCompiledPrompt, setIsCompiling, isCompiling } = useFlowStore()
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,6 +31,24 @@ const PromptOutput = () => {
     })
   }
 
+  const handleExportTxt = () => {
+    if (!compiledPrompt) return
+    const blob = new Blob([compiledPrompt.raw], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = 'flompt-prompt.txt'; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleExportJSON = () => {
+    const data = { nodes, edges, compiledPrompt, exportedAt: new Date().toISOString() }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = 'flompt-session.json'; a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="prompt-output-panel">
       <div className="output-header">
@@ -43,9 +61,17 @@ const PromptOutput = () => {
       {compiledPrompt ? (
         <>
           <pre className="compiled-output">{compiledPrompt.raw}</pre>
-          <button className="btn btn-secondary" onClick={handleCopy}>
-            {copied ? '✅ Copié !' : '📋 Copier'}
-          </button>
+          <div className="export-actions">
+            <button className="btn btn-secondary" onClick={handleCopy} style={{ marginBottom: 0 }}>
+              {copied ? '✅ Copié !' : '📋 Copier'}
+            </button>
+            <button className="btn btn-secondary export-btn" onClick={handleExportTxt} title="Exporter en .txt" style={{ marginBottom: 0 }}>
+              ↓ .txt
+            </button>
+            <button className="btn btn-secondary export-btn" onClick={handleExportJSON} title="Exporter en .json" style={{ marginBottom: 0 }}>
+              ↓ .json
+            </button>
+          </div>
         </>
       ) : (
         <div className="output-placeholder">

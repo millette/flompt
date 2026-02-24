@@ -14,9 +14,30 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'output', label: 'Résultat', icon: '✨' },
 ]
 
+const useBackendStatus = () => {
+  const [status, setStatus] = useState<'checking' | 'online' | 'offline'>('checking')
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const res = await fetch('/api/decompose', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: 'ping' }), signal: AbortSignal.timeout(3000) })
+        setStatus(res.ok ? 'online' : 'offline')
+      } catch {
+        setStatus('offline')
+      }
+    }
+    check()
+    const interval = setInterval(check, 15000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return status
+}
+
 const App = () => {
-  const { undo, redo, reset, past, future } = useFlowStore()
+  const { undo, redo, reset, past, future, nodes } = useFlowStore()
   const [activeTab, setActiveTab] = useState<Tab>('canvas')
+  const backendStatus = useBackendStatus()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,7 +52,6 @@ const App = () => {
 
   return (
     <div className="app">
-      {/* Header */}
       <header className="header">
         <div className="header-brand">
           <div className="logo-icon">⬡</div>
@@ -40,6 +60,19 @@ const App = () => {
         </div>
 
         <div className="header-spacer" />
+
+        {/* Node count */}
+        {nodes.length > 0 && (
+          <span className="node-count hide-mobile">{nodes.length} bloc{nodes.length > 1 ? 's' : ''}</span>
+        )}
+
+        {/* Backend status */}
+        <div className={`backend-status backend-status--${backendStatus}`} title={`Backend ${backendStatus}`}>
+          <span className="backend-dot" />
+          <span className="backend-label hide-mobile">
+            {backendStatus === 'checking' ? 'Connexion...' : backendStatus === 'online' ? 'Backend OK' : 'Backend off'}
+          </span>
+        </div>
 
         <div className="header-actions">
           <button className="btn-icon" onClick={undo} disabled={past.length === 0} title="Annuler (Ctrl+Z)">↩</button>
@@ -53,27 +86,22 @@ const App = () => {
         </div>
       </header>
 
-      {/* Main layout */}
       <main className="main">
-        {/* Left panel */}
         <aside className={`left-panel${activeTab !== 'input' ? ' panel-hidden' : ''}`}>
           <PromptInput />
           <div className="panel-divider" />
           <Sidebar />
         </aside>
 
-        {/* Canvas */}
         <div className={`canvas-wrap${activeTab !== 'canvas' ? ' panel-hidden' : ''}`}>
           <FlowCanvas />
         </div>
 
-        {/* Right panel */}
         <aside className={`right-panel${activeTab !== 'output' ? ' panel-hidden' : ''}`}>
           <PromptOutput />
         </aside>
       </main>
 
-      {/* Mobile tab bar */}
       <nav className="tab-bar">
         {TABS.map((tab) => (
           <button
