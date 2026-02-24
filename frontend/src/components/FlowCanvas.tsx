@@ -21,7 +21,7 @@ const nodeTypes = { block: BlockNode }
 const edgeTypes = { custom: CustomEdge }
 
 const CanvasInner = () => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode, setActiveTab } = useFlowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode, setActiveTab, activeTab } = useFlowStore()
   const { t } = useLocale()
   const { fitView, screenToFlowPosition } = useReactFlow()
   const prevNodeCount = useRef(nodes.length)
@@ -34,6 +34,13 @@ const CanvasInner = () => {
     }
     prevNodeCount.current = nodes.length
   }, [nodes.length, fitView])
+
+  // Reset zoom when switching to canvas tab (especially on mobile)
+  useEffect(() => {
+    if (activeTab === 'canvas' && nodes.length > 0) {
+      setTimeout(() => fitView({ padding: 0.2, duration: 300 }), 100)
+    }
+  }, [activeTab, fitView])
 
   // Drag-and-drop depuis la sidebar
   const onDragOver = useCallback((e: React.DragEvent) => {

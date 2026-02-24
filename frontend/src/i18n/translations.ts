@@ -25,6 +25,7 @@ export interface Translations {
     decompose: string
     decomposing: string
     errorDecompose: string
+    paste: string
   }
   promptOutput: {
     title: string
@@ -79,6 +80,7 @@ const en: Translations = {
     decompose: 'Decompose into blocks',
     decomposing: 'Decomposing…',
     errorDecompose: 'Decomposition error. Make sure the backend is running.',
+    paste: 'Paste from clipboard',
   },
   promptOutput: {
     title: 'Result',
@@ -152,6 +154,7 @@ const fr: Translations = {
     decompose: 'Décomposer en blocs',
     decomposing: 'Décomposition…',
     errorDecompose: 'Erreur lors de la décomposition. Vérifiez que le backend est lancé.',
+    paste: 'Coller depuis le presse-papiers',
   },
   promptOutput: {
     title: 'Résultat',

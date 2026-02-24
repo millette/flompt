@@ -1,25 +1,24 @@
 flompt.dev {
-	# Serve the built frontend
-	root * /projects/flompt/frontend/dist
-	file_server {
-		precompressed gzip
-	}
-
 	# Enable compression
 	encode gzip zstd
 
-	# Proxy API requests to the FastAPI backend
+	# ── API routes → FastAPI backend (matched FIRST) ─────────────
 	handle /api/* {
 		reverse_proxy 127.0.0.1:8000
 	}
 
-	# Proxy health endpoint
 	handle /health {
 		reverse_proxy 127.0.0.1:8000
 	}
 
-	# SPA fallback: serve index.html for all non-file routes
-	try_files {path} /index.html
+	# ── Frontend SPA (catch-all fallback) ────────────────────────
+	handle {
+		root * /projects/flompt/frontend/dist
+		try_files {path} /index.html
+		file_server {
+			precompressed gzip
+		}
+	}
 
 	# ── Security headers ──────────────────────────────────────────
 	header {
