@@ -43,16 +43,16 @@ export default async function PostPage({ params }: PageProps) {
       </Link>
 
       <header className="mb-12">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex flex-col gap-2 mb-4">
           <time className="text-sm" style={{ color: "var(--text-dim)" }} dateTime={post.date}>
             {formatDate(post.date, locale as Locale)}
           </time>
           {post.tags && post.tags.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] px-1.5 py-px rounded-full"
+                  className="text-[10px] px-1.5 py-px rounded-full whitespace-nowrap"
                   style={{
                     border: "1px solid var(--border-medium)",
                     color: "var(--text-muted)",

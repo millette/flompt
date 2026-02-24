@@ -38,7 +38,7 @@ export default function PostCard({
               {post.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] px-1.5 py-px"
+                  className="text-[10px] px-1.5 py-px whitespace-nowrap"
                   style={{
                     borderRadius: "var(--radius-pill)",
                     border: "1px solid var(--border-medium)",
