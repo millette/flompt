@@ -1,14 +1,14 @@
 {
-  "name": "flompt — Visual Prompt Builder",
+  "name": "flompt — flow + prompt",
   "short_name": "flompt",
-  "description": "Décompose, édite en flowchart et recompile vos prompts IA.",
+  "description": "Visual AI prompt builder. Decompose, edit as a flowchart, recompile into optimized instructions.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1c1c1e",
   "theme_color": "#FF3570",
   "orientation": "any",
   "categories": ["developer", "productivity", "utilities"],
-  "lang": "fr",
+  "lang": "en",
   "icons": [
     {
       "src": "/favicon.svg",
