@@ -3,7 +3,7 @@
 ## Identité du projet
 - **flompt** = flow + prompt — Visual AI Prompt Builder
 - **URL** : https://flompt.dev
-- **Repo legacy** : https://github.com/Nyrok/flompt-legacy (monorepo original, renommé)
+- **Repo** : https://github.com/Nyrok/flompt (monorepo)
 - **Organisation** : https://github.com/flompt (à créer — 5 repos séparés prévus)
 - **Git email** : nyrokgaming1@gmail.com
 
