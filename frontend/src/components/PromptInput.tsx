@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Zap, Loader, ClipboardPaste } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
-import { decomposePrompt } from '@/services/api'
+import { decomposePrompt, classifyError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 
 const PromptInput = () => {
@@ -26,7 +26,8 @@ const PromptInput = () => {
     } catch (e) {
       // Switch back to input tab to show the error
       setActiveTab('input')
-      setError(t.promptInput.errorDecompose)
+      const errType = classifyError(e)
+      setError(t.errors[errType])
       console.error(e)
     } finally {
       setIsDecomposing(false)

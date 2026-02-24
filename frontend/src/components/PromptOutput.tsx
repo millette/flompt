@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader, Share2 } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
-import { compilePrompt } from '@/services/api'
+import { compilePrompt, classifyError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 
 const PromptOutput = () => {
@@ -20,7 +20,8 @@ const PromptOutput = () => {
       setCompiledPrompt(result)
     } catch (e) {
       console.error(e)
-      setError(t.promptOutput.errorCompile)
+      const errType = classifyError(e)
+      setError(t.errors[errType])
     } finally {
       setIsCompiling(false)
     }

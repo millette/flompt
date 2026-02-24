@@ -39,6 +39,13 @@ export interface Translations {
     exportJson: string
     share: string
   }
+  errors: {
+    overloaded: string
+    timeout: string
+    network: string
+    server: string
+    unknown: string
+  }
   sidebar: {
     title: string
     hint: string
@@ -80,7 +87,7 @@ const en: Translations = {
     placeholder: 'Paste your prompt here…',
     decompose: 'Decompose into blocks',
     decomposing: 'Decomposing…',
-    errorDecompose: 'Decomposition error. Make sure the backend is running.',
+    errorDecompose: 'Decomposition failed. Please try again.',
     paste: 'Paste from clipboard',
   },
   promptOutput: {
@@ -90,10 +97,17 @@ const en: Translations = {
     copy: 'Copy',
     copied: 'Copied!',
     placeholder: 'Build your flowchart\nthen compile to see the result.',
-    errorCompile: 'Compilation error. Make sure the backend is running.',
+    errorCompile: 'Compilation failed. Please try again.',
     exportTxt: '.txt',
     exportJson: '.json',
     share: 'Share flompt',
+  },
+  errors: {
+    overloaded: 'AI is overloaded right now. Please wait a moment and try again.',
+    timeout: 'Request timed out. The AI took too long to respond — try again.',
+    network: 'Connection lost. Check your internet and try again.',
+    server: 'Server error. Please try again in a few seconds.',
+    unknown: 'Something went wrong. Please try again.',
   },
   sidebar: {
     title: 'Blocks',
@@ -156,7 +170,7 @@ const fr: Translations = {
     placeholder: 'Colle ton prompt ici…',
     decompose: 'Décomposer en blocs',
     decomposing: 'Décomposition…',
-    errorDecompose: 'Erreur lors de la décomposition. Vérifiez que le backend est lancé.',
+    errorDecompose: 'La décomposition a échoué. Réessayez.',
     paste: 'Coller depuis le presse-papiers',
   },
   promptOutput: {
@@ -166,10 +180,17 @@ const fr: Translations = {
     copy: 'Copier',
     copied: 'Copié !',
     placeholder: 'Construis ton flowchart\npuis compile pour voir le résultat.',
-    errorCompile: 'Erreur lors de la compilation. Vérifiez que le backend est lancé.',
+    errorCompile: 'La compilation a échoué. Réessayez.',
     exportTxt: '.txt',
     exportJson: '.json',
     share: 'Partager flompt',
+  },
+  errors: {
+    overloaded: 'L\'IA est surchargée. Patientez un instant et réessayez.',
+    timeout: 'Délai dépassé. L\'IA a mis trop de temps — réessayez.',
+    network: 'Connexion perdue. Vérifiez votre internet et réessayez.',
+    server: 'Erreur serveur. Réessayez dans quelques secondes.',
+    unknown: 'Une erreur est survenue. Réessayez.',
   },
   sidebar: {
     title: 'Blocs',
