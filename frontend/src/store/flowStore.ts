@@ -62,7 +62,7 @@ export const useFlowStore = create<FlowState>()(
       isDecomposing: false,
       isCompiling: false,
       lastSaved: null,
-      activeTab: 'canvas' as Tab,
+      activeTab: 'input' as Tab,
       past: [],
       future: [],
 
