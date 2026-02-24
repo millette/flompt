@@ -14,8 +14,39 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "flompt blog",
-  description: "Prompt engineering, visual prompt building, and AI optimization",
+  metadataBase: new URL("https://flompt.dev"),
+  title: {
+    default: "flompt blog",
+    template: "%s | flompt blog",
+  },
+  description:
+    "Prompt engineering, visual prompt building, and AI optimization. Practical guides in French and English.",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: "flompt blog",
+    images: [
+      {
+        url: "https://flompt.dev/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "flompt — Visual AI Prompt Builder",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["https://flompt.dev/og-image.png"],
+  },
 };
 
 export default async function RootLayout({

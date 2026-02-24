@@ -11,9 +11,32 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const t = getTranslations(locale as Locale);
+  const title = locale === "fr" ? "Derniers articles" : "Latest articles";
+  const url = `https://flompt.dev/blog/${locale}`;
+
   return {
-    title: `${t.home.latestArticles} | flompt blog`,
+    title,
     description: t.home.subtitle,
+    alternates: {
+      canonical: url,
+      languages: {
+        fr: "https://flompt.dev/blog/fr",
+        en: "https://flompt.dev/blog/en",
+        "x-default": "https://flompt.dev/blog/fr",
+      },
+    },
+    openGraph: {
+      type: "website",
+      url,
+      title: `${title} | flompt blog`,
+      description: t.home.subtitle,
+      locale: locale === "fr" ? "fr_FR" : "en_US",
+      alternateLocale: locale === "fr" ? ["en_US"] : ["fr_FR"],
+    },
+    twitter: {
+      title: `${title} | flompt blog`,
+      description: t.home.subtitle,
+    },
   };
 }
 
@@ -22,27 +45,58 @@ export default async function HomePage({ params }: PageProps) {
   const t = getTranslations(locale as Locale);
   const posts = getAllPosts(locale as Locale);
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name:
+      locale === "fr"
+        ? "flompt blog — Derniers articles"
+        : "flompt blog — Latest articles",
+    description: t.home.subtitle,
+    url: `https://flompt.dev/blog/${locale}`,
+    inLanguage: locale,
+    publisher: {
+      "@type": "Person",
+      name: "Nyrok",
+      url: "https://github.com/Nyrok",
+    },
+    hasPart: posts.map((post) => ({
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.excerpt,
+      datePublished: post.date,
+      url: `https://flompt.dev/blog/${locale}/posts/${post.slug}`,
+      keywords: post.tags?.join(", "),
+    })),
+  };
+
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
-      <section>
-        <h2
-          className="text-sm font-semibold uppercase tracking-wider mb-6"
-          style={{ color: "var(--text-dim)" }}
-        >
-          {t.home.latestArticles}
-        </h2>
-        <div className="flex flex-col gap-4">
-          {posts.length > 0 ? (
-            posts.map((post) => (
-              <PostCard key={post.slug} post={post} locale={locale as Locale} />
-            ))
-          ) : (
-            <p className="py-8" style={{ color: "var(--text-muted)" }}>
-              {t.home.noArticles}
-            </p>
-          )}
-        </div>
-      </section>
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <section>
+          <h2
+            className="text-sm font-semibold uppercase tracking-wider mb-6"
+            style={{ color: "var(--text-dim)" }}
+          >
+            {t.home.latestArticles}
+          </h2>
+          <div className="flex flex-col gap-4">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <PostCard key={post.slug} post={post} locale={locale as Locale} />
+              ))
+            ) : (
+              <p className="py-8" style={{ color: "var(--text-muted)" }}>
+                {t.home.noArticles}
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

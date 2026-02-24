@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 
-# Sitemap
+# Sitemaps
 Sitemap: https://flompt.dev/sitemap.xml
+Sitemap: https://flompt.dev/blog/sitemap.xml
 
 # Crawl-delay (be polite)
 Crawl-delay: 1

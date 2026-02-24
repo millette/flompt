@@ -19,9 +19,46 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = await getPostBySlug(slug, locale as Locale);
   if (!post) return { title: "Not found" };
 
+  const postUrl = `https://flompt.dev/blog/${locale}/posts/${slug}`;
+  const altLocale = locale === "fr" ? "en" : "fr";
+  const ogImage = post.coverImage ?? "https://flompt.dev/og-image.png";
+
   return {
-    title: `${post.title} | flompt blog`,
+    title: post.title,
     description: post.excerpt,
+    authors: [{ name: "Nyrok", url: "https://github.com/Nyrok" }],
+    keywords: post.tags,
+    alternates: {
+      canonical: postUrl,
+      languages: {
+        [locale]: postUrl,
+        [altLocale]: `https://flompt.dev/blog/${altLocale}/posts/${slug}`,
+        "x-default": `https://flompt.dev/blog/fr/posts/${slug}`,
+      },
+    },
+    openGraph: {
+      type: "article",
+      url: postUrl,
+      title: post.title,
+      description: post.excerpt,
+      publishedTime: post.date,
+      locale: locale === "fr" ? "fr_FR" : "en_US",
+      alternateLocale: locale === "fr" ? ["en_US"] : ["fr_FR"],
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${post.title} | flompt blog`,
+        },
+      ],
+      tags: post.tags,
+    },
+    twitter: {
+      title: post.title,
+      description: post.excerpt,
+      images: [ogImage],
+    },
   };
 }
 
@@ -32,8 +69,41 @@ export default async function PostPage({ params }: PageProps) {
 
   if (!post) notFound();
 
+  const postUrl = `https://flompt.dev/blog/${locale}/posts/${slug}`;
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.date,
+    url: postUrl,
+    inLanguage: locale,
+    keywords: post.tags?.join(", "),
+    author: {
+      "@type": "Person",
+      name: "Nyrok",
+      url: "https://github.com/Nyrok",
+    },
+    publisher: {
+      "@type": "Person",
+      name: "Nyrok",
+      url: "https://github.com/Nyrok",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": postUrl,
+    },
+    ...(post.coverImage && { image: post.coverImage }),
+  };
+
   return (
     <article className="max-w-3xl mx-auto px-6 py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
       <Link
         href={`/${locale}`}
         className="inline-flex items-center text-sm transition-colors mb-8"
