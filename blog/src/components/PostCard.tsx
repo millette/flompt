@@ -1,0 +1,80 @@
+import Link from "next/link";
+import type { PostMeta } from "@/lib/posts";
+import { formatDate } from "@/lib/formatDate";
+import { getTranslations } from "@/i18n/translations";
+import type { Locale } from "@/i18n/config";
+
+export default function PostCard({
+  post,
+  locale,
+}: {
+  post: PostMeta;
+  locale: Locale;
+}) {
+  const t = getTranslations(locale);
+
+  return (
+    <article>
+      <Link
+        href={`/${locale}/posts/${post.slug}`}
+        className="block p-5 transition-all group"
+        style={{
+          backgroundColor: "var(--bg-card)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "var(--radius-standard)",
+        }}
+      >
+        {/* Date + Tags */}
+        <div className="flex items-center gap-3 mb-3">
+          <time
+            className="text-sm"
+            style={{ color: "var(--text-dim)" }}
+            dateTime={post.date}
+          >
+            {formatDate(post.date, locale)}
+          </time>
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex gap-2">
+              {post.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-2 py-0.5"
+                  style={{
+                    borderRadius: "var(--radius-pill)",
+                    border: "1px solid var(--border-medium)",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Title */}
+        <h2
+          className="text-xl font-semibold mb-2 transition-colors group-hover:opacity-80"
+          style={{ color: "var(--text-primary)" }}
+        >
+          {post.title}
+        </h2>
+
+        {/* Excerpt */}
+        {post.excerpt && (
+          <p className="leading-relaxed mb-3" style={{ color: "var(--text-muted)" }}>
+            {post.excerpt}
+          </p>
+        )}
+
+        {/* Read more */}
+        <span
+          className="inline-block text-sm font-medium transition-transform group-hover:translate-x-1"
+          style={{ color: "var(--accent)" }}
+        >
+          {t.post.readMore} &rarr;
+        </span>
+      </Link>
+    </article>
+  );
+}
