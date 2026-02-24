@@ -57,7 +57,7 @@
       --font: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       font-family: var(--font);
@@ -116,7 +116,8 @@
     }
     .nav-mobile-menu a:last-child { border-bottom: none; padding-top: 16px; }
     .nav-mobile-menu a:hover { color: var(--text); }
-    .nav-mobile-menu .btn-cta { justify-content: center; margin-top: 4px; }
+    .nav-mobile-menu a.btn-cta { color: #ffffff; justify-content: center; margin-top: 4px; }
+    .nav-mobile-menu a.btn-cta:hover { color: #ffffff; }
     .btn-cta, .nav-links a.btn-cta {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 10px 22px; border-radius: 99px;
@@ -264,6 +265,8 @@
     @media (max-width: 768px) {
       .hero { padding-top: 120px; padding-bottom: 60px; }
       .hero h1 { font-size: 2rem; }
+      .hero::before { width: 100vw; }
+      .cta-final::before { width: 100vw; }
       .steps { grid-template-columns: 1fr; }
       .features-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
@@ -333,7 +336,7 @@
           View on GitHub
         </a>
       </div>
-      <p class="hero-sub">No sign-up required. Works with Claude, GPT, and any LLM.</p>
+      <p class="hero-sub">No sign-up required.</p>
     </div>
   </section>
 
