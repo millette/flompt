@@ -45,53 +45,54 @@ export interface FlomptEdge {
 
 // ─── Block Metadata ──────────────────────────────────────────────────────────
 
+// Palette Tailwind-400 harmonisée — teintes pastel sur fond sombre Mermaid
 export const BLOCK_META: Record<BlockType, { label: string; description: string; color: string; icon: LucideIcon }> = {
   role: {
     label: 'Role',
     description: "Définit la persona / le rôle de l'IA",
-    color: '#7c3aed',
+    color: '#c084fc',   // violet-400 — famille rose Mermaid
     icon: UserRound,
   },
   context: {
     label: 'Context',
     description: 'Fournit le contexte de la tâche',
-    color: '#0ea5e9',
+    color: '#818cf8',   // indigo-400 — neutre cool
     icon: Layers,
   },
   objective: {
     label: 'Objective',
     description: "Ce qu'on veut accomplir",
-    color: '#10b981',
+    color: '#34d399',   // emerald-400 — frais, distinct
     icon: Target,
   },
   input: {
     label: 'Input',
     description: "Données fournies à l'IA",
-    color: '#f59e0b',
+    color: '#fb923c',   // orange-400 — chaud, lisible
     icon: LogIn,
   },
   constraints: {
     label: 'Constraints',
     description: 'Règles et limites à respecter',
-    color: '#ef4444',
+    color: '#fb7185',   // rose-400 — proche accent Mermaid
     icon: ShieldAlert,
   },
   output_format: {
     label: 'Output Format',
     description: 'Format attendu de la réponse',
-    color: '#8b5cf6',
+    color: '#60a5fa',   // blue-400 — distinct de indigo
     icon: LayoutList,
   },
   examples: {
     label: 'Examples',
     description: 'Few-shot examples',
-    color: '#ec4899',
+    color: '#f472b6',   // pink-400 — très proche Mermaid #FF3570
     icon: Lightbulb,
   },
   chain_of_thought: {
     label: 'Chain of Thought',
     description: 'Étapes de raisonnement',
-    color: '#14b8a6',
+    color: '#22d3ee',   // cyan-400 — contraste froid propre
     icon: GitBranch,
   },
 }

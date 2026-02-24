@@ -38,12 +38,12 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
 
   return (
     <div
-      style={{ borderColor: meta.color }}
+      style={{ '--block-color': meta.color } as React.CSSProperties}
       className={`block-node ${selected ? 'selected' : ''}`}
     >
       <Handle type="target" position={Position.Top} />
 
-      <div className="block-header" style={{ backgroundColor: meta.color }}>
+      <div className="block-header">
         <div className="block-header-left">
           <span className="block-icon">
             <Icon size={13} />

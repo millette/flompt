@@ -63,18 +63,20 @@ const PromptOutput = () => {
         <>
           <pre className="compiled-output">{compiledPrompt.raw}</pre>
           <div className="export-actions">
-            <button className="btn btn-secondary" onClick={handleCopy} style={{ marginBottom: 0 }}>
+            <button className="btn btn-secondary export-copy" onClick={handleCopy}>
               {copied
                 ? <><ClipboardCheck size={13} /> Copié !</>
                 : <><Clipboard size={13} /> Copier</>
               }
             </button>
-            <button className="btn btn-secondary export-btn" onClick={handleExportTxt} title="Exporter en .txt" style={{ marginBottom: 0 }}>
-              <FileText size={13} /> .txt
-            </button>
-            <button className="btn btn-secondary export-btn" onClick={handleExportJSON} title="Exporter en .json" style={{ marginBottom: 0 }}>
-              <Braces size={13} /> .json
-            </button>
+            <div className="export-row2">
+              <button className="btn btn-secondary export-btn" onClick={handleExportTxt} title="Exporter en .txt">
+                <FileText size={13} /> .txt
+              </button>
+              <button className="btn btn-secondary export-btn" onClick={handleExportJSON} title="Exporter en .json">
+                <Braces size={13} /> .json
+              </button>
+            </div>
           </div>
         </>
       ) : (

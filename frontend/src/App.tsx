@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Undo2, Redo2, X, Save, Workflow, PenLine, Network, Sparkles } from 'lucide-react'
+// useBackendStatus retiré — badge supprimé à la demande
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
@@ -16,26 +17,6 @@ const TABS: { id: Tab; label: string; Icon: typeof Workflow }[] = [
   { id: 'output', label: 'Résultat', Icon: Sparkles },
 ]
 
-const useBackendStatus = () => {
-  const [status, setStatus] = useState<'checking' | 'online' | 'offline'>('checking')
-
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const res = await fetch('/api/decompose', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: 'ping' }), signal: AbortSignal.timeout(3000) })
-        setStatus(res.ok ? 'online' : 'offline')
-      } catch {
-        setStatus('offline')
-      }
-    }
-    check()
-    const interval = setInterval(check, 15000)
-    return () => clearInterval(interval)
-  }, [])
-
-  return status
-}
-
 const formatSavedTime = (ts: number | null): string | null => {
   if (!ts) return null
   const d = new Date(ts)
@@ -45,7 +26,6 @@ const formatSavedTime = (ts: number | null): string | null => {
 const App = () => {
   const { undo, redo, reset, past, future, nodes, lastSaved } = useFlowStore()
   const [activeTab, setActiveTab] = useState<Tab>('canvas')
-  const backendStatus = useBackendStatus()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -64,7 +44,6 @@ const App = () => {
         <div className="header-brand">
           <div className="logo-icon"><Workflow size={15} color="white" /></div>
           <h1 className="logo">flompt</h1>
-          <span className="tagline hide-mobile">Visual Prompt Builder</span>
         </div>
 
         <div className="header-spacer" />
@@ -73,14 +52,6 @@ const App = () => {
         {nodes.length > 0 && (
           <span className="node-count hide-mobile">{nodes.length} bloc{nodes.length > 1 ? 's' : ''}</span>
         )}
-
-        {/* Backend status */}
-        <div className={`backend-status backend-status--${backendStatus}`} title={`Backend ${backendStatus}`}>
-          <span className="backend-dot" />
-          <span className="backend-label hide-mobile">
-            {backendStatus === 'checking' ? 'Connexion...' : backendStatus === 'online' ? 'Backend OK' : 'Backend off'}
-          </span>
-        </div>
 
         {/* Auto-save indicator */}
         {lastSaved && (

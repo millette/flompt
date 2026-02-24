@@ -121,7 +121,7 @@ body {
   padding: 16px;
   overflow-y: auto;
 }
-.right-panel { border-right: none; border-left: 1px solid var(--border); }
+.right-panel { border-right: none; border-left: 1px solid var(--border); overflow-x: hidden; }
 
 .flow-canvas { flex: 1; min-height: 0; width: 100%; background: var(--bg); position: relative; }
 
@@ -287,72 +287,63 @@ body {
   flex-shrink: 0;
 }
 
-/* ── Block Node ─── style Mermaid : card plate, accent left border ─────────── */
+/* ── Block Node ─── Mermaid DA : flat card, left accent bar, no fill header ── */
 .block-node {
   background: var(--bg-3);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--block-color, var(--border-strong));
+  border-radius: var(--radius);           /* 8px — plus angulaire, style Mermaid */
   min-width: 220px;
   max-width: 280px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
   animation: node-enter 200ms cubic-bezier(0.34, 1.4, 0.64, 1);
   overflow: visible;
   position: relative;
 }
 
-/* Barre colorée gauche à la Mermaid */
-.block-node::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 8px; bottom: 8px;
-  width: 3px;
-  border-radius: 99px;
-  background: currentColor;
-  opacity: 0.7;
-}
-
 @keyframes node-enter {
-  from { opacity: 0; transform: scale(0.88) translateY(8px); }
+  from { opacity: 0; transform: scale(0.9) translateY(6px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .block-node:hover {
-  border-color: var(--border-focus);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+  border-color: rgba(255,255,255,0.18);
+  border-left-color: var(--block-color, var(--border-strong));
 }
 
 .block-node.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow), 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 0 0 1.5px var(--block-color, var(--accent)), 0 6px 24px rgba(0,0,0,0.5);
+  border-left-color: var(--block-color, var(--accent));
 }
 
 .block-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 9px 10px 9px 16px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 8px 8px 8px 12px;
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
   border-bottom: 1px solid var(--border);
-  overflow: hidden;
+  background: rgba(255,255,255,0.02);    /* légère surbrillance header */
 }
 
-.block-header-left { display: flex; align-items: center; gap: 7px; }
+.block-header-left { display: flex; align-items: center; gap: 8px; }
 
 .block-icon {
-  font-size: 0.82rem;
   display: flex; align-items: center; justify-content: center;
-  width: 20px; height: 20px;
+  width: 22px; height: 22px;
   border-radius: 5px;
-  background: var(--accent-bg);
+  background: color-mix(in srgb, var(--block-color, #fff) 14%, transparent);
+  color: var(--block-color, var(--text-muted));
   flex-shrink: 0;
 }
 
 .block-label {
-  font-size: 0.67rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
 }
 
 .block-actions { display: flex; align-items: center; gap: 2px; }
@@ -427,11 +418,15 @@ body {
   font-size: 0.73rem;
   white-space: pre-wrap;
   overflow-y: auto;
+  overflow-x: hidden;
   color: var(--text);
   max-height: 280px;
   font-family: var(--font-mono);
   line-height: 1.75;
   animation: fade-in 200ms ease;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 @keyframes fade-in {
@@ -569,11 +564,14 @@ body {
 /* ── Export actions ───────────────────────────────────────────────────────── */
 .export-actions {
   display: flex;
-  gap: 6px;
+  flex-direction: column;
+  gap: 5px;
   margin-bottom: 6px;
 }
-.export-actions .btn { flex: 1; }
-.export-btn { font-size: 0.72rem !important; }
+.export-copy { width: 100%; margin-bottom: 0 !important; }
+.export-row2 { display: flex; gap: 5px; }
+.export-row2 .btn { flex: 1; margin-bottom: 0 !important; }
+.export-btn { font-size: 0.76rem !important; }
 
 /* ── Tab bar (mobile nav) ─────────────────────────────────────────────────── */
 .tab-bar {
