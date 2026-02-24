@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -14,6 +14,7 @@ import { useFlowStore } from '@/store/flowStore'
 import { compilePrompt } from '@/services/api'
 import BlockNode from './BlockNode'
 import CustomEdge from './CustomEdge'
+import OnboardingCanvas from './OnboardingCanvas'
 import { BLOCK_META } from '@/types/blocks'
 import type { BlockType, FlomptNode } from '@/types/blocks'
 import { useLocale } from '@/i18n/LocaleContext'
@@ -27,6 +28,12 @@ const CanvasInner = () => {
   const { fitView, screenToFlowPosition } = useReactFlow()
   const prevNodeCount = useRef(nodes.length)
   const wrapperRef = useRef<HTMLDivElement>(null)
+
+  const [showOnboarding, setShowOnboarding] = useState(() =>
+    typeof window !== 'undefined' &&
+    window.innerWidth >= 900 &&
+    !localStorage.getItem('flompt-onboarded')
+  )
 
   // Auto-fit quand les noeuds changent (décomposition)
   useEffect(() => {
@@ -93,16 +100,20 @@ const CanvasInner = () => {
         />
       </ReactFlow>
 
-      {/* Empty state */}
+      {/* Empty state / Onboarding */}
       {nodes.length === 0 && !isDecomposing && (
-        <div className="canvas-empty">
-          <div className="canvas-empty-icon">⬡</div>
-          <p className="canvas-empty-title">{t.canvas.empty}</p>
-          <p className="canvas-empty-hint">
-            {t.canvas.emptyHint}<strong>{t.promptInput.decompose}</strong>,<br />
-            {t.canvas.emptyDecompose}
-          </p>
-        </div>
+        showOnboarding
+          ? <OnboardingCanvas onDone={() => setShowOnboarding(false)} />
+          : (
+            <div className="canvas-empty">
+              <div className="canvas-empty-icon">⬡</div>
+              <p className="canvas-empty-title">{t.canvas.empty}</p>
+              <p className="canvas-empty-hint">
+                {t.canvas.emptyHint}<strong>{t.promptInput.decompose}</strong>,<br />
+                {t.canvas.emptyDecompose}
+              </p>
+            </div>
+          )
       )}
 
       {/* Loading overlay */}

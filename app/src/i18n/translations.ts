@@ -67,6 +67,19 @@ export interface Translations {
     close: string
     list: { keys: string[]; label: string }[]
   }
+  onboarding: {
+    heading: string
+    tagline: string
+    step1title: string
+    step1desc: string
+    step2title: string
+    step2desc: string
+    step3title: string
+    step3desc: string
+    tryExample: string
+    skip: string
+    samplePrompt: string
+  }
   blocks: Record<BlockType, BlockTranslation>
 }
 
@@ -139,6 +152,19 @@ const en: Translations = {
       { keys: ['Bg drag'], label: 'Pan canvas' },
       { keys: ['?'], label: 'Show shortcuts' },
     ],
+  },
+  onboarding: {
+    heading: 'How flompt works',
+    tagline: 'Build your first prompt in 3 steps.',
+    step1title: 'Paste your prompt',
+    step1desc: 'Drop any raw text in the left panel — no special format needed.',
+    step2title: 'AI decomposes it',
+    step2desc: 'Click Decompose. Blocks appear on this canvas: Role, Objective, Constraints and more.',
+    step3title: 'Edit, connect, compile',
+    step3desc: 'Drag blocks around, edit their content, then compile into an optimized prompt.',
+    tryExample: 'Try with an example →',
+    skip: 'Start from scratch',
+    samplePrompt: 'You are a senior Python developer. Review the following code for bugs, performance issues, and style violations. Be concise, prioritize critical issues, and explain each finding in one sentence. Respond with a numbered list.',
   },
   blocks: {
     input:           { label: 'Input',           description: 'Data provided to the AI' },
@@ -233,6 +259,19 @@ const fr: Translations = {
     chain_of_thought:{ label: 'Raisonnement',    description: 'Étapes de raisonnement' },
     output_format:   { label: 'Sortie',          description: 'Format attendu de la réponse' },
     language:        { label: 'Langue',          description: 'Langue de réponse de l\'IA' },
+  },
+  onboarding: {
+    heading: 'Comment fonctionne flompt',
+    tagline: 'Construis ton premier prompt en 3 étapes.',
+    step1title: 'Colle ton prompt',
+    step1desc: 'Dépose n\'importe quel texte dans le panneau gauche — aucun format requis.',
+    step2title: 'L\'IA le décompose',
+    step2desc: 'Clique sur Décomposer. Les blocs apparaissent sur ce canvas : Rôle, Objectif, Contraintes et plus.',
+    step3title: 'Édite, connecte, compile',
+    step3desc: 'Déplace les blocs, affine leur contenu, puis compile en prompt optimisé.',
+    tryExample: 'Essayer avec un exemple →',
+    skip: 'Commencer from zéro',
+    samplePrompt: 'Tu es un expert en rédaction de contenu. Écris une bio professionnelle pour un développeur fullstack avec 5 ans d\'expérience en React et Python. Sois concis, accrocheur et professionnel. Maximum 150 mots. Inclus ses technologies principales et un trait de personnalité.',
   },
 }
 

@@ -896,6 +896,110 @@ body {
 }
 .canvas-empty-hint strong { color: var(--text-muted); }
 
+/* ── Onboarding ───────────────────────────────────────────────────────────── */
+.onboarding-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+  animation: fade-in 350ms ease;
+}
+.onboarding-card {
+  pointer-events: all;
+  width: 380px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 28px 28px 22px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.025),
+    0 28px 80px rgba(0,0,0,0.75),
+    0 0 60px rgba(255,53,112,0.05);
+  animation: scale-in 300ms ease;
+}
+.onboarding-header { margin-bottom: 22px; }
+.onboarding-logo {
+  font-family: 'Caveat', cursive;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 6px;
+}
+.onboarding-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
+}
+.onboarding-tagline { font-size: 0.76rem; color: var(--text-muted); }
+.onboarding-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.onboarding-step { display: flex; align-items: flex-start; gap: 13px; }
+.onboarding-step-num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 1px;
+}
+.onboarding-step-title {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.onboarding-step-desc { font-size: 0.74rem; color: var(--text-muted); line-height: 1.55; }
+.onboarding-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.onboarding-cta {
+  padding: 11px 20px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 200ms, box-shadow 200ms;
+  text-align: center;
+}
+.onboarding-cta:hover {
+  background: var(--accent-light);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.onboarding-skip {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.74rem;
+  cursor: pointer;
+  transition: color 150ms;
+  padding: 4px 0;
+  text-align: center;
+}
+.onboarding-skip:hover { color: var(--text-muted); }
+
 /* ── Canvas FAB (mobile only — navigate to compile) ──────────────────────── */
 .canvas-fab {
   display: none;
