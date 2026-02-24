@@ -96,9 +96,11 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
           </span>
           <span className="block-label">{tr.label}</span>
           <select
-            className="language-select"
+            className="language-select nodrag nopan"
             value={matchLang()}
             onChange={(e) => { e.stopPropagation(); handleLangChange(e.target.value) }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
             <option value="" disabled>—</option>
