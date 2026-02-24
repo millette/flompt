@@ -20,15 +20,3 @@ Think of it as **Figma for Prompts** — visual, structured, and collaborative.
 
 > No sign-up required. Free forever. Self-hostable under MIT license.
 
----
-
-## Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 18 + TypeScript + React Flow v11 + Zustand + Vite |
-| Backend | FastAPI + Uvicorn (Python 3.12) |
-| AI | Anthropic Claude (pluggable, also supports OpenAI) |
-| Reverse Proxy | Caddy with auto-TLS |
-| i18n | English / French |
-| License | MIT |
