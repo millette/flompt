@@ -2,6 +2,13 @@
 
 ## Règles pour Noryk
 
+### Avant de déclarer une feature terminée
+**Toujours tester** ce qui a été modifié :
+1. `npx tsc --noEmit` ou `vite build` → 0 erreur TypeScript
+2. Si modification CSS/layout → vérifier visuellement (screenshot puppeteer ou curl)
+3. Si modification backend → tester l'endpoint avec curl
+4. Ne jamais dire "c'est fait" sans avoir vérifié que ça compile et que ça s'affiche
+
 ### Après chaque mise à jour
 À la fin de chaque message contenant une modification du projet, **vérifier et s'assurer** que tout est déployé :
 
