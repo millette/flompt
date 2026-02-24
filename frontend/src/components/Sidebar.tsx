@@ -2,20 +2,22 @@ import { BLOCK_META } from '@/types/blocks'
 import type { BlockType } from '@/types/blocks'
 import { useFlowStore } from '@/store/flowStore'
 import type { FlomptNode } from '@/types/blocks'
+import { useLocale } from '@/i18n/LocaleContext'
 
 const Sidebar = () => {
   const addNode = useFlowStore((s) => s.addNode)
   const nodes = useFlowStore((s) => s.nodes)
+  const { t } = useLocale()
   const ROW_HEIGHT = 180
 
   const createNode = (type: BlockType, position?: { x: number; y: number }): FlomptNode => {
-    const meta = BLOCK_META[type]
+    const tr = t.blocks[type]
     const idx = nodes.length
     return {
       id: `${type}-${Date.now()}`,
       type: 'block',
       position: position ?? { x: 60, y: 60 + idx * ROW_HEIGHT },
-      data: { type, label: meta.label, content: '', description: meta.description },
+      data: { type, label: tr.label, content: '', description: tr.description },
     }
   }
 
@@ -28,11 +30,12 @@ const Sidebar = () => {
 
   return (
     <aside className="sidebar">
-      <h3 className="panel-title">Blocs</h3>
-      <p className="sidebar-hint">Clic pour ajouter · Glisser vers le canvas</p>
+      <h3 className="panel-title">{t.sidebar.title}</h3>
+      <p className="sidebar-hint">{t.sidebar.hint}</p>
       <div className="block-list">
         {(Object.keys(BLOCK_META) as BlockType[]).map((type) => {
           const meta = BLOCK_META[type]
+          const tr = t.blocks[type]
           const Icon = meta.icon
           return (
             <button
@@ -42,12 +45,12 @@ const Sidebar = () => {
               onClick={() => handleAddBlock(type)}
               draggable
               onDragStart={(e) => handleDragStart(e, type)}
-              title={meta.description}
+              title={tr.description}
             >
               <span className="block-pill-icon">
                 <Icon size={13} />
               </span>
-              {meta.label}
+              {tr.label}
             </button>
           )
         })}

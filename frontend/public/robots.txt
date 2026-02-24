@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://flompt.dev/sitemap.xml
+
+# Crawl-delay (be polite)
+Crawl-delay: 1
+
+# Block API endpoints from indexing
+Disallow: /api/

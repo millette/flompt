@@ -1,19 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Keyboard, X } from 'lucide-react'
-
-const SHORTCUTS = [
-  { keys: ['Ctrl', 'Z'], label: 'Annuler' },
-  { keys: ['Ctrl', 'Y'], label: 'Rétablir' },
-  { keys: ['Ctrl', '⇧', 'Z'], label: 'Rétablir (alt)' },
-  { keys: ['Del'], label: 'Supprimer le bloc sélectionné' },
-  { keys: ['Ctrl', 'A'], label: 'Tout sélectionner' },
-  { keys: ['Scroll'], label: 'Zoom in/out' },
-  { keys: ['Click', 'drag'], label: 'Déplacer un bloc' },
-  { keys: ['Bg drag'], label: 'Déplacer le canvas' },
-  { keys: ['?'], label: 'Afficher les raccourcis' },
-]
+import { useLocale } from '@/i18n/LocaleContext'
 
 const KeyboardShortcuts = () => {
+  const { t } = useLocale()
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -32,7 +22,7 @@ const KeyboardShortcuts = () => {
       <button
         className="btn-icon shortcuts-btn"
         onClick={() => setOpen((v) => !v)}
-        title="Raccourcis clavier (?)"
+        title={`${t.shortcuts.title} (?)`}
       >
         <Keyboard size={14} />
       </button>
@@ -41,11 +31,11 @@ const KeyboardShortcuts = () => {
         <div className="shortcuts-overlay" onClick={() => setOpen(false)}>
           <div className="shortcuts-modal" onClick={(e) => e.stopPropagation()}>
             <div className="shortcuts-header">
-              <h2 className="shortcuts-title">Raccourcis clavier</h2>
+              <h2 className="shortcuts-title">{t.shortcuts.title}</h2>
               <button className="btn-icon" onClick={() => setOpen(false)}><X size={14} /></button>
             </div>
             <div className="shortcuts-list">
-              {SHORTCUTS.map((s, i) => (
+              {t.shortcuts.list.map((s, i) => (
                 <div key={i} className="shortcut-row">
                   <div className="shortcut-keys">
                     {s.keys.map((k, j) => (
@@ -56,7 +46,7 @@ const KeyboardShortcuts = () => {
                 </div>
               ))}
             </div>
-            <p className="shortcuts-hint">Appuie sur <span className="shortcut-key">Esc</span> ou <span className="shortcut-key">?</span> pour fermer</p>
+            <p className="shortcuts-hint">{t.shortcuts.close}</p>
           </div>
         </div>
       )}

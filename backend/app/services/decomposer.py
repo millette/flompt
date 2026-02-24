@@ -11,7 +11,7 @@ from app.models.blocks import (
     BlockData, BlockType, FlomptNode, FlomptEdge,
     DecomposeResponse, Position
 )
-from app.services.ai_service import decompose_with_ai, ANTHROPIC_API_KEY, OPENAI_API_KEY
+from app.services.ai_service import decompose_with_ai, _get_anthropic_key, _get_openai_key
 
 BLOCK_META = {
     BlockType.role: {"label": "Role", "description": "Définit la persona / le rôle de l'IA"},
@@ -48,6 +48,14 @@ def _build_nodes_and_edges(raw_blocks: list[dict]) -> DecomposeResponse:
         meta = BLOCK_META[block_type]
         node_id = f"{block_type.value}-{uuid.uuid4().hex[:6]}"
 
+        content = block.get("content", "")
+        summary = block.get("summary", "")
+        # Fallback: truncate content as summary if AI didn't provide one
+        if not summary and content:
+            summary = content[:40].strip()
+            if len(content) > 40:
+                summary += "…"
+
         nodes.append(FlomptNode(
             id=node_id,
             type="block",
@@ -55,8 +63,9 @@ def _build_nodes_and_edges(raw_blocks: list[dict]) -> DecomposeResponse:
             data=BlockData(
                 type=block_type,
                 label=meta["label"],
-                content=block.get("content", ""),
+                content=content,
                 description=meta["description"],
+                summary=summary,
             )
         ))
 
@@ -99,7 +108,7 @@ def _heuristic_decompose(raw_prompt: str) -> list[dict]:
 
 async def decompose(raw_prompt: str) -> DecomposeResponse:
     """Main entry point — AI if available, else heuristic."""
-    ai_available = bool(ANTHROPIC_API_KEY or OPENAI_API_KEY)
+    ai_available = bool(_get_anthropic_key() or _get_openai_key())
 
     if ai_available:
         raw_blocks = await decompose_with_ai(raw_prompt)

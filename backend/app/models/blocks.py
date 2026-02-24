@@ -19,6 +19,7 @@ class BlockData(BaseModel):
     label: str
     content: str
     description: str
+    summary: str = ""
 
 
 class Position(BaseModel):

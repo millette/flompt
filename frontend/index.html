@@ -1,14 +1,129 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" dir="ltr" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>flompt — Visual Prompt Builder</title>
+
+    <!-- ── Primary Meta Tags ──────────────────────────────────────────── -->
+    <title>flompt — Visual Prompt Builder | Construis des prompts IA visuellement</title>
+    <meta name="title" content="flompt — Visual Prompt Builder | Construis des prompts IA visuellement" />
+    <meta name="description" content="flompt décompose, édite en flowchart et recompile vos prompts en instructions optimisées pour l'IA. Outil gratuit de prompt engineering visuel avec React Flow." />
+    <meta name="keywords" content="prompt builder, visual prompt, prompt engineering, AI prompt, flowchart prompt, IA, prompt optimizer, Claude, GPT, LLM, React Flow, flompt" />
+    <meta name="author" content="Nyrok" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://flompt.dev/" />
+
+    <!-- ── Language alternates ────────────────────────────────────────── -->
+    <link rel="alternate" hreflang="fr" href="https://flompt.dev/" />
+    <link rel="alternate" hreflang="en" href="https://flompt.dev/" />
+    <link rel="alternate" hreflang="x-default" href="https://flompt.dev/" />
+
+    <!-- ── Open Graph / Facebook ──────────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flompt.dev/" />
+    <meta property="og:title" content="flompt — Visual Prompt Builder" />
+    <meta property="og:description" content="Décompose, édite en flowchart et recompile tes prompts IA. Prompt engineering visuel, gratuit et open-source." />
+    <meta property="og:image" content="https://flompt.dev/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="flompt — Visual Prompt Builder interface avec des blocs de flowchart connectés" />
+    <meta property="og:site_name" content="flompt" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="en_US" />
+
+    <!-- ── Twitter Card ───────────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://flompt.dev/" />
+    <meta name="twitter:title" content="flompt — Visual Prompt Builder" />
+    <meta name="twitter:description" content="Décompose, édite en flowchart et recompile tes prompts IA. Prompt engineering visuel." />
+    <meta name="twitter:image" content="https://flompt.dev/og-image.png" />
+    <meta name="twitter:image:alt" content="flompt — Visual Prompt Builder" />
+
+    <!-- ── Favicons & PWA ─────────────────────────────────────────────── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#FF3570" />
+    <meta name="msapplication-TileColor" content="#1c1c1e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="flompt" />
+
+    <!-- ── Structured Data (JSON-LD) ──────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "flompt",
+      "url": "https://flompt.dev",
+      "description": "Visual Prompt Builder — Décompose, édite en flowchart et recompile vos prompts en instructions optimisées pour l'IA.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Nyrok",
+        "url": "https://github.com/Nyrok"
+      },
+      "softwareVersion": "0.1.0",
+      "screenshot": "https://flompt.dev/og-image.png",
+      "featureList": [
+        "Décomposition de prompts en blocs visuels",
+        "Éditeur flowchart drag-and-drop",
+        "Recompilation en prompt optimisé",
+        "Support Claude et GPT",
+        "Export TXT et JSON",
+        "Interface bilingue FR/EN"
+      ],
+      "inLanguage": ["fr", "en"],
+      "isAccessibleForFree": true
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "name": "flompt",
+      "codeRepository": "https://github.com/Nyrok/flompt",
+      "programmingLanguage": ["TypeScript", "Python"],
+      "runtimePlatform": "Web Browser",
+      "author": {
+        "@type": "Person",
+        "name": "Nyrok"
+      }
+    }
+    </script>
+
+    <!-- ── Performance & Fonts ────────────────────────────────────────── -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- ── Noscript fallback ──────────────────────────────────────────── -->
+    <noscript>
+      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1c1c1e;color:#f0f0f0;font-family:Inter,system-ui,sans-serif;text-align:center;padding:2rem;">
+        <div>
+          <h1 style="font-size:1.5rem;margin-bottom:1rem;">flompt — Visual Prompt Builder</h1>
+          <p style="color:#9a9a9a;max-width:400px;line-height:1.6;">
+            flompt est un outil de prompt engineering visuel qui décompose vos prompts en blocs éditables sur un flowchart, puis les recompile en instructions optimisées pour l'IA.
+          </p>
+          <p style="color:#FF3570;margin-top:1rem;">JavaScript est requis pour utiliser flompt.</p>
+        </div>
+      </div>
+    </noscript>
   </body>
 </html>

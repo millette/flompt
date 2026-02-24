@@ -6,7 +6,7 @@ Utilise l'AI service si disponible, sinon fallback sur la compilation structuré
 """
 
 from app.models.blocks import BlockData, BlockType, CompiledPrompt
-from app.services.ai_service import compile_with_ai, ANTHROPIC_API_KEY, OPENAI_API_KEY
+from app.services.ai_service import compile_with_ai, _get_anthropic_key, _get_openai_key
 
 # Ordre canonique des blocs dans le prompt final
 CANONICAL_ORDER: list[BlockType] = [
@@ -60,7 +60,7 @@ def _structural_compile(blocks: list[BlockData]) -> str:
 
 async def compile(blocks: list[BlockData]) -> CompiledPrompt:
     """Main entry point — AI si disponible, sinon structurel."""
-    ai_available = bool(ANTHROPIC_API_KEY or OPENAI_API_KEY)
+    ai_available = bool(_get_anthropic_key() or _get_openai_key())
 
     if ai_available:
         optimized = await compile_with_ai([b.model_dump() for b in blocks])

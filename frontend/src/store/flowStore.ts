@@ -10,6 +10,8 @@ interface Snapshot {
   edges: FlomptEdge[]
 }
 
+export type Tab = 'input' | 'canvas' | 'output'
+
 interface FlowState {
   nodes: FlomptNode[]
   edges: FlomptEdge[]
@@ -18,6 +20,7 @@ interface FlowState {
   isDecomposing: boolean
   isCompiling: boolean
   lastSaved: number | null  // timestamp ms
+  activeTab: Tab
 
   // Historique undo/redo
   past: Snapshot[]
@@ -36,6 +39,7 @@ interface FlowState {
   setCompiledPrompt: (prompt: CompiledPrompt | null) => void
   setIsDecomposing: (v: boolean) => void
   setIsCompiling: (v: boolean) => void
+  setActiveTab: (tab: Tab) => void
   reset: () => void
   undo: () => void
   redo: () => void
@@ -58,6 +62,7 @@ export const useFlowStore = create<FlowState>()(
       isDecomposing: false,
       isCompiling: false,
       lastSaved: null,
+      activeTab: 'canvas' as Tab,
       past: [],
       future: [],
 
@@ -122,6 +127,7 @@ export const useFlowStore = create<FlowState>()(
       setCompiledPrompt: (prompt) => set({ compiledPrompt: prompt }),
       setIsDecomposing: (v) => set({ isDecomposing: v }),
       setIsCompiling: (v) => set({ isCompiling: v }),
+      setActiveTab: (tab) => set({ activeTab: tab }),
 
       reset: () =>
         set({

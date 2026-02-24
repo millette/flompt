@@ -1,0 +1,35 @@
+{
+  "name": "flompt — Visual Prompt Builder",
+  "short_name": "flompt",
+  "description": "Décompose, édite en flowchart et recompile vos prompts IA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1c1c1e",
+  "theme_color": "#FF3570",
+  "orientation": "any",
+  "categories": ["developer", "productivity", "utilities"],
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

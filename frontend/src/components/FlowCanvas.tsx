@@ -9,17 +9,20 @@ import ReactFlow, {
   ReactFlowProvider,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
+import { ArrowRight, Loader } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import BlockNode from './BlockNode'
 import CustomEdge from './CustomEdge'
 import { BLOCK_META } from '@/types/blocks'
 import type { BlockType, FlomptNode } from '@/types/blocks'
+import { useLocale } from '@/i18n/LocaleContext'
 
 const nodeTypes = { block: BlockNode }
 const edgeTypes = { custom: CustomEdge }
 
 const CanvasInner = () => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode } = useFlowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode, setActiveTab } = useFlowStore()
+  const { t } = useLocale()
   const { fitView, screenToFlowPosition } = useReactFlow()
   const prevNodeCount = useRef(nodes.length)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -45,15 +48,15 @@ const CanvasInner = () => {
     const bounds = wrapperRef.current?.getBoundingClientRect()
     if (!bounds) return
     const position = screenToFlowPosition({ x: e.clientX, y: e.clientY })
-    const meta = BLOCK_META[type]
+    const tr = t.blocks[type]
     const newNode: FlomptNode = {
       id: `${type}-${Date.now()}`,
       type: 'block',
       position,
-      data: { type, label: meta.label, content: '', description: meta.description },
+      data: { type, label: tr.label, content: '', description: tr.description },
     }
     addNode(newNode)
-  }, [screenToFlowPosition, addNode])
+  }, [screenToFlowPosition, addNode, t.blocks])
 
   return (
     <div className="flow-canvas" ref={wrapperRef} onDragOver={onDragOver} onDrop={onDrop}>
@@ -86,18 +89,40 @@ const CanvasInner = () => {
       {nodes.length === 0 && !isDecomposing && (
         <div className="canvas-empty">
           <div className="canvas-empty-icon">⬡</div>
-          <p className="canvas-empty-title">Canvas vide</p>
-          <p className="canvas-empty-hint">Colle un prompt à gauche et clique sur <strong>Décomposer</strong>,<br />ou glisse un bloc depuis la sidebar.</p>
+          <p className="canvas-empty-title">{t.canvas.empty}</p>
+          <p className="canvas-empty-hint">
+            {t.canvas.emptyHint}<strong>{t.promptInput.decompose}</strong>,<br />
+            {t.canvas.emptyDecompose}
+          </p>
         </div>
       )}
 
-      {/* Skeleton loading overlay */}
+      {/* Loading overlay */}
       {isDecomposing && (
-        <div className="skeleton-overlay">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="skeleton-block" style={{ animationDelay: `${i * 0.12}s` }} />
-          ))}
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner">
+              <Loader size={28} className="icon-spin" />
+            </div>
+            <p className="loading-text">{t.promptInput.decomposing}</p>
+            <div className="loading-blocks">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="loading-block-pill" style={{ animationDelay: `${i * 0.15}s` }} />
+              ))}
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Mobile FAB: navigate to compile */}
+      {nodes.length > 0 && (
+        <button
+          className="canvas-fab"
+          onClick={() => setActiveTab('output')}
+          title={t.promptOutput.compile}
+        >
+          <ArrowRight size={22} />
+        </button>
       )}
     </div>
   )

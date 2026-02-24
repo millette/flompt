@@ -1,31 +1,25 @@
-import { useEffect, useState } from 'react'
-import { Undo2, Redo2, X, Save, Workflow, PenLine, Network, Sparkles } from 'lucide-react'
-// useBackendStatus retiré — badge supprimé à la demande
+import { useEffect } from 'react'
+import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2 } from 'lucide-react'
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
 import PromptOutput from '@/components/PromptOutput'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
 import { useFlowStore } from '@/store/flowStore'
+import type { Tab } from '@/store/flowStore'
+import { useLocale } from '@/i18n/LocaleContext'
+import type { Locale } from '@/i18n/translations'
 import './styles.css'
 
-type Tab = 'input' | 'canvas' | 'output'
-
-const TABS: { id: Tab; label: string; Icon: typeof Workflow }[] = [
-  { id: 'input',  label: 'Prompt',   Icon: PenLine },
-  { id: 'canvas', label: 'Canvas',   Icon: Network },
-  { id: 'output', label: 'Résultat', Icon: Sparkles },
+const TAB_IDS: { id: Tab; Icon: typeof Workflow }[] = [
+  { id: 'input',  Icon: PenLine },
+  { id: 'canvas', Icon: Network },
+  { id: 'output', Icon: Sparkles },
 ]
 
-const formatSavedTime = (ts: number | null): string | null => {
-  if (!ts) return null
-  const d = new Date(ts)
-  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`
-}
-
 const App = () => {
-  const { undo, redo, reset, past, future, nodes, lastSaved } = useFlowStore()
-  const [activeTab, setActiveTab] = useState<Tab>('canvas')
+  const { undo, redo, reset, past, future, nodes, activeTab, setActiveTab, isDecomposing } = useFlowStore()
+  const { t, locale, setLocale } = useLocale()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +31,8 @@ const App = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, redo])
+
+  const toggleLocale = () => setLocale(locale === 'en' ? 'fr' : 'en' as Locale)
 
   return (
     <div className="app">
@@ -50,36 +46,35 @@ const App = () => {
 
         {/* Node count */}
         {nodes.length > 0 && (
-          <span className="node-count hide-mobile">{nodes.length} bloc{nodes.length > 1 ? 's' : ''}</span>
-        )}
-
-        {/* Auto-save indicator */}
-        {lastSaved && (
-          <span className="autosave-indicator hide-mobile" title="Sauvegardé automatiquement">
-            <Save size={11} /> {formatSavedTime(lastSaved)}
-          </span>
+          <span className="node-count hide-mobile">{t.nodeCount(nodes.length)}</span>
         )}
 
         <div className="header-actions">
-          <button className="btn-icon" onClick={undo} disabled={past.length === 0} title="Annuler (Ctrl+Z)">
+          <button className="btn-icon" onClick={undo} disabled={past.length === 0} title={t.header.undo}>
             <Undo2 size={14} />
           </button>
-          <button className="btn-icon" onClick={redo} disabled={future.length === 0} title="Rétablir (Ctrl+Y)">
+          <button className="btn-icon" onClick={redo} disabled={future.length === 0} title={t.header.redo}>
             <Redo2 size={14} />
           </button>
           <KeyboardShortcuts />
           <button
-            className="btn-icon"
-            onClick={() => { if (confirm('Réinitialiser le canvas ?')) reset() }}
-            title="Réinitialiser"
-            style={{ color: 'var(--error)', borderColor: 'rgba(239,68,68,0.2)' }}
+            className="btn-locale"
+            onClick={toggleLocale}
+            title={locale === 'en' ? 'Passer en français' : 'Switch to English'}
           >
-            <X size={14} />
+            {locale.toUpperCase()}
+          </button>
+          <button
+            className="btn-icon btn-clear-desktop"
+            onClick={() => { if (confirm(t.header.resetConfirm)) reset() }}
+            title={t.header.reset}
+          >
+            <Trash2 size={14} />
           </button>
         </div>
       </header>
 
-      <main className="main">
+      <main className={`main${isDecomposing ? ' is-decomposing' : ''}`}>
         <aside className={`left-panel${activeTab !== 'input' ? ' panel-hidden' : ''}`}>
           <PromptInput />
           <div className="panel-divider" />
@@ -96,14 +91,14 @@ const App = () => {
       </main>
 
       <nav className="tab-bar">
-        {TABS.map(({ id, label, Icon }) => (
+        {TAB_IDS.map(({ id, Icon }) => (
           <button
             key={id}
             className={`tab-btn${activeTab === id ? ' tab-btn--active' : ''}`}
             onClick={() => setActiveTab(id)}
           >
             <Icon size={18} className="tab-icon" />
-            <span className="tab-label">{label}</span>
+            <span className="tab-label">{t.tabs[id]}</span>
           </button>
         ))}
       </nav>

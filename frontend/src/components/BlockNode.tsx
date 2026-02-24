@@ -1,27 +1,36 @@
-import { memo, useState, useRef, useEffect } from 'react'
+import { memo, useState, useRef, useLayoutEffect } from 'react'
 import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
 import { Copy, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { BLOCK_META } from '@/types/blocks'
 import type { BlockData } from '@/types/blocks'
 import { useFlowStore } from '@/store/flowStore'
+import { useLocale } from '@/i18n/LocaleContext'
 
 const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const meta = BLOCK_META[data.type]
   const Icon = meta.icon
+  const { t } = useLocale()
+  const tr = t.blocks[data.type]
   const updateNodeContent = useFlowStore((s) => s.updateNodeContent)
   const removeNode = useFlowStore((s) => s.removeNode)
   const addNode = useFlowStore((s) => s.addNode)
   const onNodesChange = useFlowStore((s) => s.onNodesChange)
   const nodes = useFlowStore((s) => s.nodes)
-  const [collapsed, setCollapsed] = useState(false)
+  // Collapsed by default if block has an AI-generated summary
+  const [collapsed, setCollapsed] = useState(!!data.summary)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
+  // Auto-resize textarea — useLayoutEffect prevents cursor jump
+  useLayoutEffect(() => {
     const el = textareaRef.current
     if (!el || collapsed) return
+    const start = el.selectionStart
+    const end = el.selectionEnd
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
+    // Restore cursor position after height change
+    try { el.setSelectionRange(start, end) } catch {}
   }, [data.content, collapsed])
 
   const handleDuplicate = () => {
@@ -36,32 +45,43 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
     })
   }
 
+  // Display: summary if available, otherwise the block type label
+  const displayLabel = data.summary || tr.label
+
   return (
     <div
+      data-block-type={data.type}
       style={{ '--block-color': meta.color } as React.CSSProperties}
       className={`block-node ${selected ? 'selected' : ''}`}
     >
       <Handle type="target" position={Position.Top} />
 
-      <div className="block-header">
+      <div className="block-header" onClick={() => setCollapsed((c) => !c)} style={{ cursor: 'pointer' }}>
         <div className="block-header-left">
           <span className="block-icon">
             <Icon size={13} />
           </span>
-          <span className="block-label">{meta.label}</span>
+          {data.summary ? (
+            <div className="block-label-wrap">
+              <span className="block-label">{displayLabel}</span>
+              <span className="block-type-badge">{tr.label}</span>
+            </div>
+          ) : (
+            <span className="block-label">{displayLabel}</span>
+          )}
         </div>
         <div className="block-actions">
-          <button className="block-collapse" onClick={handleDuplicate} title="Dupliquer">
+          <button className="block-collapse" onClick={(e) => { e.stopPropagation(); handleDuplicate() }} title={t.block.duplicate}>
             <Copy size={11} />
           </button>
           <button
             className="block-collapse"
-            onClick={() => setCollapsed((c) => !c)}
-            title={collapsed ? 'Développer' : 'Réduire'}
+            onClick={(e) => { e.stopPropagation(); setCollapsed((c) => !c) }}
+            title={collapsed ? t.block.expand : t.block.collapse}
           >
             {collapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
           </button>
-          <button className="block-remove" onClick={() => removeNode(id)} title="Supprimer">
+          <button className="block-remove" onClick={(e) => { e.stopPropagation(); removeNode(id) }} title={t.block.delete}>
             <X size={11} />
           </button>
         </div>
@@ -73,12 +93,12 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
             ref={textareaRef}
             className="block-content"
             value={data.content}
-            placeholder={meta.description}
+            placeholder={tr.description}
             onChange={(e) => updateNodeContent(id, e.target.value)}
             style={{ minHeight: '64px', height: 'auto' }}
           />
           <div className="block-footer">
-            <span className="block-char-count">{data.content.length} car.</span>
+            <span className="block-char-count">{data.content.length} {t.block.chars}</span>
           </div>
         </div>
       )}
