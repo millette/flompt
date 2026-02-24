@@ -7,10 +7,29 @@ import type { BlockData } from '@/types/blocks'
 import { useFlowStore } from '@/store/flowStore'
 import { useLocale } from '@/i18n/LocaleContext'
 
+const LANGUAGES = [
+  { code: 'en', en: 'English',    fr: 'Anglais' },
+  { code: 'fr', en: 'French',     fr: 'Français' },
+  { code: 'es', en: 'Spanish',    fr: 'Espagnol' },
+  { code: 'de', en: 'German',     fr: 'Allemand' },
+  { code: 'it', en: 'Italian',    fr: 'Italien' },
+  { code: 'pt', en: 'Portuguese', fr: 'Portugais' },
+  { code: 'zh', en: 'Chinese',    fr: 'Chinois' },
+  { code: 'ja', en: 'Japanese',   fr: 'Japonais' },
+  { code: 'ko', en: 'Korean',     fr: 'Coréen' },
+  { code: 'ar', en: 'Arabic',     fr: 'Arabe' },
+  { code: 'ru', en: 'Russian',    fr: 'Russe' },
+  { code: 'nl', en: 'Dutch',      fr: 'Néerlandais' },
+  { code: 'pl', en: 'Polish',     fr: 'Polonais' },
+  { code: 'sv', en: 'Swedish',    fr: 'Suédois' },
+  { code: 'tr', en: 'Turkish',    fr: 'Turc' },
+  { code: 'hi', en: 'Hindi',      fr: 'Hindi' },
+]
+
 const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   const meta = BLOCK_META[data.type]
   const Icon = meta.icon
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const tr = t.blocks[data.type]
   const updateNodeContent = useFlowStore((s) => s.updateNodeContent)
   const removeNode = useFlowStore((s) => s.removeNode)
@@ -48,6 +67,57 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
   // Display: summary if available, otherwise the block type label
   const displayLabel = data.summary || tr.label
 
+  // ── Language block: compact select ──
+  if (data.type === 'language') {
+    // Match current content to a language option
+    const matchLang = () => {
+      const lower = data.content.toLowerCase().trim()
+      const found = LANGUAGES.find(
+        (l) => l.en.toLowerCase() === lower || l.fr.toLowerCase() === lower || l.code === lower
+      )
+      return found?.code || ''
+    }
+
+    const handleLangChange = (code: string) => {
+      const lang = LANGUAGES.find((l) => l.code === code)
+      if (lang) updateNodeContent(id, lang.en)
+    }
+
+    return (
+      <div
+        data-block-type="language"
+        style={{ '--block-color': meta.color } as React.CSSProperties}
+        className={`block-node block-node--language ${selected ? 'selected' : ''}`}
+      >
+        <Handle type="target" position={Position.Top} />
+        <div className="language-block-inner">
+          <span className="block-icon">
+            <Icon size={13} />
+          </span>
+          <span className="block-label">{tr.label}</span>
+          <select
+            className="language-select"
+            value={matchLang()}
+            onChange={(e) => { e.stopPropagation(); handleLangChange(e.target.value) }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <option value="" disabled>—</option>
+            {LANGUAGES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {locale === 'fr' ? l.fr : l.en}
+              </option>
+            ))}
+          </select>
+          <button className="block-remove" onClick={(e) => { e.stopPropagation(); removeNode(id) }} title={t.block.delete}>
+            <X size={11} />
+          </button>
+        </div>
+        <Handle type="source" position={Position.Bottom} />
+      </div>
+    )
+  }
+
+  // ── Standard blocks ──
   return (
     <div
       data-block-type={data.type}

@@ -673,20 +673,66 @@ body {
   border-radius: calc(var(--radius-xl) - 1px) calc(var(--radius-xl) - 1px) 0 0;
 }
 
-/* === Language — Pill / Capsule shape === */
+/* === Language — Compact inline select block === */
 .block-node[data-block-type="language"] {
   border-radius: 99px;
-  border: 2px solid var(--block-color);
-  border-left: 2px solid var(--block-color);
-  min-width: 220px;
-  max-width: 260px;
+  border: 1.5px solid var(--block-color);
+  border-left: 1.5px solid var(--block-color);
+  min-width: auto;
+  max-width: none;
+  overflow: visible;
 }
-.block-node[data-block-type="language"] .block-header {
-  border-radius: 99px 99px 0 0;
-  border-bottom: 1px solid var(--border);
+.block-node--language .language-block-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 10px;
 }
-.block-node[data-block-type="language"] .block-icon {
+.block-node--language .block-icon {
   background: color-mix(in srgb, var(--block-color) 22%, transparent);
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.block-node--language .block-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.language-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 24px 4px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--transition-fast);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9a9a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  min-width: 90px;
+}
+.language-select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.language-select option {
+  background: var(--bg-3);
+  color: var(--text);
+}
+.block-node--language .block-remove {
+  margin-left: 2px;
+  flex-shrink: 0;
 }
 
 /* ── Output ───────────────────────────────────────────────────────────────── */
