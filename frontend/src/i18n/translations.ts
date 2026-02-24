@@ -37,6 +37,7 @@ export interface Translations {
     errorCompile: string
     exportTxt: string
     exportJson: string
+    share: string
   }
   sidebar: {
     title: string
@@ -92,6 +93,7 @@ const en: Translations = {
     errorCompile: 'Compilation error. Make sure the backend is running.',
     exportTxt: '.txt',
     exportJson: '.json',
+    share: 'Share flompt',
   },
   sidebar: {
     title: 'Blocks',
@@ -166,6 +168,7 @@ const fr: Translations = {
     errorCompile: 'Erreur lors de la compilation. Vérifiez que le backend est lancé.',
     exportTxt: '.txt',
     exportJson: '.json',
+    share: 'Partager flompt',
   },
   sidebar: {
     title: 'Blocs',

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader } from 'lucide-react'
+import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader, Share2 } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { compilePrompt } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
@@ -50,6 +50,23 @@ const PromptOutput = () => {
     const a = document.createElement('a')
     a.href = url; a.download = 'flompt-session.json'; a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'flompt — Visual AI Prompt Builder',
+      text: 'Check out flompt! Turn any AI prompt into a visual flow. Free & open-source.',
+      url: 'https://flompt.dev',
+    }
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    } catch { /* user cancelled */ }
   }
 
   return (
@@ -113,6 +130,11 @@ const PromptOutput = () => {
           ? <><Loader size={14} className="icon-spin" /> {t.promptOutput.compiling}</>
           : <><Play size={14} /> {t.promptOutput.compile}</>
         }
+      </button>
+
+      {/* Share CTA */}
+      <button className="btn btn-secondary btn-share" onClick={handleShare}>
+        <Share2 size={13} /> {t.promptOutput.share}
       </button>
     </div>
   )

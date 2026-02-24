@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1c1c1e"/>
+      <stop offset="100%" style="stop-color:#242424"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF3570"/>
+      <stop offset="100%" style="stop-color:#ff6b9d"/>
+    </linearGradient>
+    <linearGradient id="blockGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2f2f2f"/>
+      <stop offset="100%" style="stop-color:#2a2a2a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.04">
+    <line x1="0" y1="0" x2="0" y2="630" stroke="white" stroke-width="1" transform="translate(60,0)" />
+    <line x1="0" y1="0" x2="0" y2="630" stroke="white" stroke-width="1" transform="translate(120,0)" />
+    <line x1="0" y1="0" x2="0" y2="630" stroke="white" stroke-width="1" transform="translate(180,0)" />
+    <line x1="0" y1="0" x2="0" y2="630" stroke="white" stroke-width="1" transform="translate(240,0)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,60)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,120)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,180)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,240)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,300)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,360)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,420)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,480)" />
+    <line x1="0" y1="0" x2="1200" y2="0" stroke="white" stroke-width="1" transform="translate(0,540)" />
+  </g>
+
+  <!-- Left side: Logo + Text -->
+  <g transform="translate(80, 160)">
+    <!-- Logo icon -->
+    <rect width="64" height="64" rx="14" fill="url(#accent)"/>
+    <g fill="none" stroke="white" stroke-width="4" stroke-linecap="round" transform="translate(12,12)">
+      <rect x="10" y="2" width="20" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="white"/>
+      <rect x="0" y="28" width="20" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="white"/>
+      <rect x="20" y="28" width="20" height="12" rx="3" fill="rgba(255,255,255,0.2)" stroke="white"/>
+      <line x1="16" y1="14" x2="10" y2="28"/>
+      <line x1="24" y1="14" x2="30" y2="28"/>
+    </g>
+
+    <!-- Title -->
+    <text x="80" y="28" fill="#f0f0f0" font-family="Inter, system-ui, sans-serif" font-size="52" font-weight="800" letter-spacing="-2">flompt</text>
+
+    <!-- Tagline pill -->
+    <rect x="80" y="42" width="180" height="28" rx="14" fill="#2f2f2f" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <text x="170" y="61" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="500" text-anchor="middle">flow + prompt</text>
+
+    <!-- Description -->
+    <text x="0" y="120" fill="#f0f0f0" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="600">
+      Turn Any Prompt into
+    </text>
+    <text x="0" y="158" fill="#f0f0f0" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="600">
+      a <tspan fill="#FF3570">Visual Flow</tspan>
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="205" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="400">
+      Decompose · Edit as Flowchart · Recompile
+    </text>
+
+    <!-- CTA -->
+    <rect x="0" y="240" width="180" height="44" rx="22" fill="url(#accent)"/>
+    <text x="90" y="268" fill="white" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">flompt.dev →</text>
+
+    <!-- Badges -->
+    <text x="200" y="268" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="500">Free · Open Source · No Sign-up</text>
+  </g>
+
+  <!-- Right side: Visual Flow Demo -->
+  <g transform="translate(680, 80)">
+    <!-- Role block (hexagon-ish) -->
+    <g transform="translate(120, 40)">
+      <rect width="200" height="70" rx="8" fill="url(#blockGrad)" stroke="#8b5cf6" stroke-width="2"/>
+      <rect width="3" height="70" rx="1.5" fill="#8b5cf6"/>
+      <text x="20" y="28" fill="#8b5cf6" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" letter-spacing="1" text-transform="uppercase">ROLE</text>
+      <text x="20" y="50" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400">Expert code reviewer</text>
+      <!-- Handle bottom -->
+      <circle cx="100" cy="70" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+    </g>
+
+    <!-- Connection line 1 -->
+    <line x1="220" y1="110" x2="140" y2="180" stroke="#FF3570" stroke-width="2" opacity="0.5" stroke-dasharray="6 3"/>
+    <line x1="220" y1="110" x2="340" y2="180" stroke="#FF3570" stroke-width="2" opacity="0.5" stroke-dasharray="6 3"/>
+
+    <!-- Context block -->
+    <g transform="translate(20, 180)">
+      <rect width="200" height="70" rx="8" fill="url(#blockGrad)" stroke="#06b6d4" stroke-width="2" transform="skewX(-4)"/>
+      <text x="24" y="28" fill="#06b6d4" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" letter-spacing="1">CONTEXT</text>
+      <text x="24" y="50" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400">React TypeScript project</text>
+      <!-- Handles -->
+      <circle cx="100" cy="0" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+      <circle cx="100" cy="70" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+    </g>
+
+    <!-- Objective block -->
+    <g transform="translate(260, 180)">
+      <rect width="200" height="70" rx="8" fill="url(#blockGrad)" stroke="#f59e0b" stroke-width="2"/>
+      <rect width="5" height="70" fill="#f59e0b"/>
+      <rect x="195" y="0" width="5" height="70" fill="#f59e0b"/>
+      <text x="22" y="28" fill="#f59e0b" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" letter-spacing="1">OBJECTIVE</text>
+      <text x="22" y="50" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400">Find security issues</text>
+      <!-- Handles -->
+      <circle cx="100" cy="0" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+      <circle cx="100" cy="70" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+    </g>
+
+    <!-- Connection lines 2 -->
+    <line x1="120" y1="250" x2="220" y2="320" stroke="#FF3570" stroke-width="2" opacity="0.5" stroke-dasharray="6 3"/>
+    <line x1="360" y1="250" x2="220" y2="320" stroke="#FF3570" stroke-width="2" opacity="0.5" stroke-dasharray="6 3"/>
+
+    <!-- Constraints block (octagon-ish) -->
+    <g transform="translate(120, 320)">
+      <rect width="200" height="70" rx="8" fill="url(#blockGrad)" stroke="#ef4444" stroke-width="2"/>
+      <text x="20" y="28" fill="#ef4444" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" letter-spacing="1">CONSTRAINTS</text>
+      <text x="20" y="50" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400">Max 5 issues, severity...</text>
+      <!-- Handle top -->
+      <circle cx="100" cy="0" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+      <!-- Handle bottom -->
+      <circle cx="100" cy="70" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+    </g>
+
+    <!-- Connection line 3 -->
+    <line x1="220" y1="390" x2="220" y2="440" stroke="#FF3570" stroke-width="2" opacity="0.5" stroke-dasharray="6 3"/>
+
+    <!-- Output Format block -->
+    <g transform="translate(120, 440)">
+      <rect width="200" height="60" rx="8 8 20 20" fill="url(#blockGrad)" stroke="#10b981" stroke-width="2"/>
+      <text x="20" y="25" fill="#10b981" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="700" letter-spacing="1">OUTPUT FORMAT</text>
+      <text x="20" y="45" fill="#9a9a9a" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="400">JSON with fixes array</text>
+      <!-- Handle top -->
+      <circle cx="100" cy="0" r="6" fill="#FF3570" stroke="#2a2a2a" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="622" width="1200" height="8" fill="url(#accent)"/>
+</svg>

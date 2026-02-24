@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2 } from 'lucide-react'
+import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2, Github, Star } from 'lucide-react'
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
@@ -64,6 +64,15 @@ const App = () => {
           >
             {locale.toUpperCase()}
           </button>
+          <a
+            className="btn-icon btn-github"
+            href="https://github.com/Nyrok/flompt"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Star on GitHub"
+          >
+            <Github size={14} />
+          </a>
           <button
             className="btn-icon btn-clear-desktop"
             onClick={() => { if (confirm(t.header.resetConfirm)) reset() }}
