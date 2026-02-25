@@ -46,6 +46,7 @@ class FlomptEdge(BaseModel):
 
 class DecomposeRequest(BaseModel):
     prompt: str
+    job_id: Optional[str] = None
 
 
 class DecomposeResponse(BaseModel):

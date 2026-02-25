@@ -1,11 +1,44 @@
 import { useState, useRef, useEffect } from 'react'
 import { Zap, Loader, ClipboardPaste, Download } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
-import { decomposePrompt, classifyError } from '@/services/api'
+import { decomposePrompt, getJobStatus, classifyError, classifyJobError } from '@/services/api'
+import type { DecomposeResponse } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
 
 const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
+
+/** Poll toutes les secondes jusqu'à ce que le job soit terminé (done/error). */
+async function pollJobResult(
+  jobId: string,
+  onStatus: (pos: number, status: 'queued' | 'processing') => void,
+): Promise<DecomposeResponse> {
+  while (true) {
+    await new Promise<void>(resolve => setTimeout(resolve, 1000))
+
+    const job = await getJobStatus(jobId)
+
+    if (job.status === 'done' && job.result) {
+      return job.result
+    }
+
+    if (job.status === 'error') {
+      const err = new Error(job.error ?? 'Job failed')
+      ;(err as Error & { jobError?: string }).jobError = job.error ?? ''
+      throw err
+    }
+
+    // Mettre à jour l'affichage de la position / traitement
+    if (job.status === 'queued') {
+      onStatus(job.position ?? 1, 'queued')
+    } else if (job.status === 'processing') {
+      onStatus(0, 'processing')
+    }
+    // 'unknown' : job pas encore enregistré côté queue (race condition rarissime), on attend
+  }
+}
+
+// ─── Composant ────────────────────────────────────────────────────────────────
 
 const PromptInput = () => {
   const {
@@ -13,18 +46,18 @@ const PromptInput = () => {
     setNodes, setEdges,
     setIsDecomposing, isDecomposing,
     setActiveTab,
+    queueStatus, setQueueStatus,
   } = useFlowStore()
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
   const [platformName, setPlatformName] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // ── Réception de l'import depuis la plateforme (mode extension uniquement) ──
+  // ── Réception import depuis la plateforme (extension uniquement) ──────────
   useEffect(() => {
     if (!isExt) return
 
     const handler = (event: MessageEvent) => {
-      // Nom de la plateforme envoyé au chargement → label du bouton immédiat
       if (event.data?.type === 'FLOMPT_PLATFORM_INFO') {
         const platform = event.data.platform as string
         if (platform && platform !== 'Unknown') setPlatformName(platform)
@@ -42,30 +75,51 @@ const PromptInput = () => {
     return () => window.removeEventListener('message', handler)
   }, [setRawPrompt])
 
-  /** Demande le prompt actuel à la plateforme — déclenché par le bouton */
   const handleImportFromPlatform = () => {
     window.parent.postMessage({ type: 'FLOMPT_SYNC_REQUEST' }, '*')
   }
 
   const handleDecompose = async () => {
     if (!rawPrompt.trim()) return
+
     const prompt = rawPrompt
+    const jobId = crypto.randomUUID()
+
     setError(null)
+    setQueueStatus(null)
     setIsDecomposing(true)
     analytics.decomposeClicked()
     setTimeout(() => setActiveTab('canvas'), 0)
+
     try {
-      const { nodes, edges } = await decomposePrompt(prompt)
-      setNodes(nodes)
-      setEdges(edges)
-      analytics.decomposeCompleted(nodes.length)
+      // ── 1. Soumettre le job — retour immédiat ─────────────────────────────
+      const { position } = await decomposePrompt(prompt, jobId)
+      setQueueStatus({ position, status: 'queued' })
+
+      // ── 2. Attendre le résultat par polling ───────────────────────────────
+      const result = await pollJobResult(jobId, (pos, status) => {
+        setQueueStatus({ position: pos, status })
+      })
+
+      // ── 3. Appliquer le résultat ──────────────────────────────────────────
+      setNodes(result.nodes)
+      setEdges(result.edges)
+      analytics.decomposeCompleted(result.nodes.length)
+
     } catch (e) {
       setActiveTab('input')
-      const errType = classifyError(e)
+
+      // Erreur job store (string) vs erreur réseau (AxiosError)
+      const jobErr = (e as Error & { jobError?: string })?.jobError
+      const errType = jobErr !== undefined
+        ? classifyJobError(jobErr)
+        : classifyError(e)
+
       setError(t.errors[errType])
       analytics.error('decompose', errType)
       console.error(e)
     } finally {
+      setQueueStatus(null)
       setIsDecomposing(false)
     }
   }
@@ -81,6 +135,8 @@ const PromptInput = () => {
       textareaRef.current?.focus()
     }
   }
+
+  const isProcessing = queueStatus?.status === 'processing'
 
   return (
     <div className="prompt-input-panel">
@@ -123,6 +179,17 @@ const PromptInput = () => {
       </div>
 
       {error && <p className="error-msg">{error}</p>}
+
+      {/* Badge de position en queue — visible pendant l'attente */}
+      {isDecomposing && queueStatus && (
+        <div className={`queue-status${isProcessing ? ' queue-status--processing' : ''}`}>
+          <span className="queue-status__dot" />
+          {isProcessing
+            ? t.promptInput.queueProcessing
+            : t.promptInput.queuePosition(queueStatus.position)
+          }
+        </div>
+      )}
 
       <button
         className="btn btn-primary"

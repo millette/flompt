@@ -12,6 +12,11 @@ interface Snapshot {
 
 export type Tab = 'input' | 'canvas' | 'output'
 
+export interface QueueStatus {
+  position: number  // 1 = prochain en file, 0 = en cours de traitement
+  status: 'queued' | 'processing'
+}
+
 interface FlowState {
   nodes: FlomptNode[]
   edges: FlomptEdge[]
@@ -21,6 +26,7 @@ interface FlowState {
   isCompiling: boolean
   lastSaved: number | null  // timestamp ms
   activeTab: Tab
+  queueStatus: QueueStatus | null
 
   // Historique undo/redo
   past: Snapshot[]
@@ -40,6 +46,7 @@ interface FlowState {
   setIsDecomposing: (v: boolean) => void
   setIsCompiling: (v: boolean) => void
   setActiveTab: (tab: Tab) => void
+  setQueueStatus: (status: QueueStatus | null) => void
   reset: () => void
   undo: () => void
   redo: () => void
@@ -63,6 +70,7 @@ export const useFlowStore = create<FlowState>()(
       isCompiling: false,
       lastSaved: null,
       activeTab: 'input' as Tab,
+      queueStatus: null,
       past: [],
       future: [],
 
@@ -128,6 +136,7 @@ export const useFlowStore = create<FlowState>()(
       setIsDecomposing: (v) => set({ isDecomposing: v }),
       setIsCompiling: (v) => set({ isCompiling: v }),
       setActiveTab: (tab) => set({ activeTab: tab }),
+      setQueueStatus: (status) => set({ queueStatus: status }),
 
       reset: () =>
         set({

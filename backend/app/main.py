@@ -4,6 +4,8 @@ load_dotenv()  # MUST be called before any import that reads env vars
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import decompose, compile
+from app.services.ai_service import llm_queue
+from app.services.job_store import job_store
 
 app = FastAPI(
     title="flompt API",
@@ -28,3 +30,33 @@ app.include_router(compile.router, prefix="/api", tags=["compile"])
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok", "service": "flompt-api"}
+
+
+@app.get("/api/queue/status")
+async def queue_status() -> dict:
+    """Monitoring global de la queue LLM."""
+    return {"status": "ok", **llm_queue.status}
+
+
+@app.get("/api/queue/job/{job_id}")
+async def queue_job_status(job_id: str) -> dict:
+    """
+    Statut et résultat d'un job par son ID. Priorité : queue live > job store.
+
+    - status=queued     → en attente, position=N (live depuis la queue)
+    - status=processing → en cours de traitement (live depuis la queue)
+    - status=done       → terminé, result={nodes, edges} disponible
+    - status=error      → erreur, error="..." disponible
+    - status=unknown    → job inconnu (jamais soumis ou expiré)
+    """
+    # Statut live de la LLMQueue (position exacte, processing en cours)
+    live = llm_queue.get_job_status(job_id)
+    if live:
+        return live
+
+    # Résultat/erreur stocké dans le job store (done/error/queued pré-enregistré)
+    stored = job_store.get(job_id)
+    if stored:
+        return {"job_id": job_id, **stored}
+
+    return {"job_id": job_id, "status": "unknown"}

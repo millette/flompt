@@ -27,6 +27,8 @@ export interface Translations {
     errorDecompose: string
     paste: string
     importFromPlatform: string
+    queuePosition: (n: number) => string
+    queueProcessing: string
   }
   promptOutput: {
     title: string
@@ -110,6 +112,8 @@ const en: Translations = {
     errorDecompose: 'Decomposition failed. Please try again.',
     paste: 'Paste from clipboard',
     importFromPlatform: 'Import prompt from page',
+    queuePosition: (n) => `Queue position: ${n}`,
+    queueProcessing: 'Processing…',
   },
   promptOutput: {
     title: 'Result',
@@ -213,6 +217,8 @@ const fr: Translations = {
     errorDecompose: 'La décomposition a échoué. Réessayez.',
     paste: 'Coller depuis le presse-papiers',
     importFromPlatform: 'Importer le prompt depuis la page',
+    queuePosition: (n) => `Position dans la file : ${n}`,
+    queueProcessing: 'Traitement en cours…',
   },
   promptOutput: {
     title: 'Résultat',

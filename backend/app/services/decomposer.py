@@ -11,6 +11,7 @@ from app.models.blocks import (
     BlockData, BlockType, FlomptNode, FlomptEdge,
     DecomposeResponse, Position
 )
+from typing import Optional
 from app.services.ai_service import decompose_with_ai, _get_anthropic_key, _get_openai_key
 
 BLOCK_META = {
@@ -108,12 +109,12 @@ def _heuristic_decompose(raw_prompt: str) -> list[dict]:
     return found
 
 
-async def decompose(raw_prompt: str) -> DecomposeResponse:
+async def decompose(raw_prompt: str, job_id: Optional[str] = None) -> DecomposeResponse:
     """Main entry point — AI if available, else heuristic."""
     ai_available = bool(_get_anthropic_key() or _get_openai_key())
 
     if ai_available:
-        raw_blocks = await decompose_with_ai(raw_prompt)
+        raw_blocks = await decompose_with_ai(raw_prompt, job_id=job_id)
     else:
         raw_blocks = _heuristic_decompose(raw_prompt)
 

@@ -224,6 +224,37 @@ body {
   line-height: 1.5;
 }
 
+.queue-status {
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: var(--radius);
+  color: var(--text-muted, #a1a1aa);
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease;
+}
+.queue-status--processing {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+.queue-status__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn {
   padding: 9px 18px;

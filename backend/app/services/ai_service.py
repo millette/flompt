@@ -1,15 +1,21 @@
 """
 AI Service — Intégration LLM via httpx (pas de SDK requis).
-Supporte Anthropic (claude-3-5-haiku) et OpenAI (gpt-4o-mini).
+Supporte Anthropic et OpenAI.
+
+Inclut une LLMQueue qui sérialise toutes les requêtes, impose
+un intervalle minimum entre deux appels (défaut : 1 req/min),
+et expose le statut de chaque job par son ID pour le feedback client.
 """
 
 import os
 import json
+import uuid
 import httpx
 import asyncio
-from typing import Optional
+import time
+from typing import Optional, Any, Callable
 
-# ─── Config (lazy getters — read at call time, not import time) ──────────────
+# ─── Config ───────────────────────────────────────────────────────────────────
 
 def _get_anthropic_key() -> Optional[str]:
     return os.getenv("ANTHROPIC_API_KEY")
@@ -25,19 +31,22 @@ def _get_model() -> str:
 
 TIMEOUT = 60.0
 MAX_RETRIES = 3
-RETRY_DELAYS = [2, 5, 10]  # seconds — exponential backoff
+RETRY_DELAYS = [2, 5, 10]
+
+# Rate limiting — 1 req/min par défaut, override via LLM_REQUESTS_PER_MINUTE
+_REQUESTS_PER_MINUTE = float(os.getenv("LLM_REQUESTS_PER_MINUTE", "1"))
 
 
 def _strip_markdown_json(text: str) -> str:
     """Strip markdown code fences (```json ... ```) from LLM response."""
     text = text.strip()
     if text.startswith("```"):
-        # Remove opening fence (```json or ```)
         first_newline = text.index("\n")
         text = text[first_newline + 1:]
     if text.endswith("```"):
         text = text[:-3]
     return text.strip()
+
 
 # ─── System Prompts ───────────────────────────────────────────────────────────
 
@@ -76,6 +85,153 @@ Rules:
 - No preamble, no explanation — just the prompt
 
 Return ONLY valid JSON: {"prompt": "<optimized prompt>"}"""
+
+
+# ─── LLM Queue ────────────────────────────────────────────────────────────────
+
+class LLMQueue:
+    """
+    Queue sérialisée pour les appels LLM avec :
+    - Rate limiting (intervalle min entre requêtes)
+    - Job tracking par ID (position en file + statut en cours)
+
+    Chaque requête passe par `call(job_id, func, ...)`.
+    La position et le statut de chaque job sont accessibles via `get_job_status(job_id)`.
+    """
+
+    def __init__(self, requests_per_minute: float = 1.0):
+        self._min_interval: float = 60.0 / requests_per_minute
+        self._last_call_time: float = 0.0
+        self._queue: asyncio.Queue = asyncio.Queue()
+        self._worker_task: Optional[asyncio.Task] = None
+        self._total_processed: int = 0
+
+        # Job tracking
+        # _jobs : job_id → {"status": "queued"|"processing", "position": int}
+        self._jobs: dict[str, dict] = {}
+        # _queue_order : liste FIFO des job_ids en attente (miroir de asyncio.Queue)
+        self._queue_order: list[str] = []
+        self._processing_job_id: Optional[str] = None
+
+    # ── Worker lifecycle ──────────────────────────────────────────────────────
+
+    def _ensure_worker(self) -> None:
+        if self._worker_task is None or self._worker_task.done():
+            try:
+                loop = asyncio.get_running_loop()
+                self._worker_task = loop.create_task(
+                    self._worker(), name="llm-queue-worker"
+                )
+                print(f"[LLM Queue] ✅ Worker démarré (rate limit: {60/self._min_interval:.1f} req/min)")
+            except RuntimeError:
+                pass
+
+    async def _worker(self) -> None:
+        while True:
+            job_id, func, args, kwargs, future = await self._queue.get()
+
+            # ── Retirer de la liste d'attente, passer en "processing" ─────────
+            if job_id in self._queue_order:
+                self._queue_order.remove(job_id)
+            self._processing_job_id = job_id
+            self._jobs.pop(job_id, None)  # plus dans la file d'attente
+            # Recalculer les positions des jobs restants (1-indexed)
+            for i, jid in enumerate(self._queue_order):
+                if jid in self._jobs:
+                    self._jobs[jid]["position"] = i + 1
+
+            # ── Rate limiting ─────────────────────────────────────────────────
+            now = time.monotonic()
+            elapsed = now - self._last_call_time
+            if self._last_call_time > 0 and elapsed < self._min_interval:
+                wait_time = self._min_interval - elapsed
+                print(
+                    f"[LLM Queue] ⏳ Rate limit — attente {wait_time:.1f}s "
+                    f"({len(self._queue_order)} en file)"
+                )
+                await asyncio.sleep(wait_time)
+
+            print(
+                f"[LLM Queue] 🚀 Job {job_id[:8]}… "
+                f"(#{self._total_processed + 1}, {len(self._queue_order)} en file après)"
+            )
+
+            # ── Exécution ─────────────────────────────────────────────────────
+            try:
+                result = await func(*args, **kwargs)
+                if not future.done():
+                    future.set_result(result)
+            except Exception as exc:
+                if not future.done():
+                    future.set_exception(exc)
+            finally:
+                self._processing_job_id = None
+                self._last_call_time = time.monotonic()
+                self._total_processed += 1
+                self._queue.task_done()
+
+    # ── Public interface ──────────────────────────────────────────────────────
+
+    async def call(self, job_id: str, func: Callable, *args: Any, **kwargs: Any) -> Any:
+        """Enfile un job et attend son résultat. Bloquant pour l'appelant."""
+        self._ensure_worker()
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future = loop.create_future()
+
+        # Enregistrer le job avec sa position initiale
+        position = len(self._queue_order) + 1
+        self._jobs[job_id] = {"status": "queued", "position": position}
+        self._queue_order.append(job_id)
+
+        if position > 1:
+            wait_estimate = (position - 1) * self._min_interval
+            print(
+                f"[LLM Queue] 📋 Job {job_id[:8]}… mis en file "
+                f"(pos #{position}, ~{wait_estimate:.0f}s d'attente)"
+            )
+
+        await self._queue.put((job_id, func, args, kwargs, future))
+
+        try:
+            return await future
+        finally:
+            # Cleanup si le job était encore dans la file (ex: annulation)
+            self._jobs.pop(job_id, None)
+            if job_id in self._queue_order:
+                self._queue_order.remove(job_id)
+
+    def get_job_status(self, job_id: str) -> Optional[dict]:
+        """
+        Retourne le statut d'un job.
+        - {"status": "queued", "position": N} — en attente (1 = prochain)
+        - {"status": "processing", "position": 0} — en cours de traitement
+        - None — job inconnu (terminé ou jamais enregistré)
+        """
+        if job_id == self._processing_job_id:
+            return {"job_id": job_id, "status": "processing", "position": 0}
+        if job_id in self._jobs:
+            return {"job_id": job_id, **self._jobs[job_id]}
+        return None
+
+    @property
+    def status(self) -> dict:
+        """État global de la queue (pour monitoring)."""
+        now = time.monotonic()
+        elapsed = now - self._last_call_time if self._last_call_time > 0 else None
+        next_in = max(0.0, self._min_interval - (elapsed or self._min_interval))
+        return {
+            "pending": self._queue.qsize(),
+            "total_processed": self._total_processed,
+            "rate_limit": f"{60 / self._min_interval:.1f} req/min",
+            "min_interval_s": self._min_interval,
+            "next_slot_in_s": round(next_in, 1),
+            "worker_alive": self._worker_task is not None and not self._worker_task.done(),
+            "currently_processing": self._processing_job_id,
+        }
+
+
+# Instance globale
+llm_queue = LLMQueue(requests_per_minute=_REQUESTS_PER_MINUTE)
 
 
 # ─── Anthropic ────────────────────────────────────────────────────────────────
@@ -124,11 +280,13 @@ async def _call_openai(system: str, user: str) -> str:
         return resp.json()["choices"][0]["message"]["content"]
 
 
-# ─── Dispatcher with retry ────────────────────────────────────────────────────
+# ─── Dispatcher avec retry ────────────────────────────────────────────────────
 
 RETRYABLE_STATUS = {429, 500, 502, 503, 529}
 
-async def _call_llm(system: str, user: str) -> str:
+
+async def _call_llm_direct(system: str, user: str) -> str:
+    """Appel LLM brut avec retry — passer par llm_queue.call(), pas directement."""
     if not (_get_anthropic_key() and _get_provider() == "anthropic") and not _get_openai_key():
         raise RuntimeError("No API key configured (ANTHROPIC_API_KEY or OPENAI_API_KEY)")
 
@@ -158,18 +316,24 @@ async def _call_llm(system: str, user: str) -> str:
     raise last_error  # type: ignore
 
 
+async def _call_llm(system: str, user: str, job_id: Optional[str] = None) -> str:
+    """Point d'entrée — route via la queue pour le rate limiting + job tracking."""
+    _job_id = job_id or str(uuid.uuid4())
+    return await llm_queue.call(_job_id, _call_llm_direct, system, user)
+
+
 # ─── Public API ───────────────────────────────────────────────────────────────
 
-async def decompose_with_ai(raw_prompt: str) -> list[dict]:
+async def decompose_with_ai(raw_prompt: str, job_id: Optional[str] = None) -> list[dict]:
     """Décompose un prompt brut en blocs structurés via LLM."""
-    raw = await _call_llm(DECOMPOSE_SYSTEM_PROMPT, raw_prompt)
+    raw = await _call_llm(DECOMPOSE_SYSTEM_PROMPT, raw_prompt, job_id=job_id)
     data = json.loads(_strip_markdown_json(raw))
     return data.get("blocks", [])
 
 
-async def compile_with_ai(blocks: list[dict]) -> str:
+async def compile_with_ai(blocks: list[dict], job_id: Optional[str] = None) -> str:
     """Recompile des blocs en prompt optimisé via LLM."""
     blocks_text = "\n".join(f"[{b['type'].upper()}]\n{b['content']}" for b in blocks if b.get('content'))
-    raw = await _call_llm(COMPILE_SYSTEM_PROMPT, blocks_text)
+    raw = await _call_llm(COMPILE_SYSTEM_PROMPT, blocks_text, job_id=job_id)
     data = json.loads(_strip_markdown_json(raw))
     return data.get("prompt", "")
