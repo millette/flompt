@@ -474,11 +474,12 @@
   function tryInsertInToolbar () {
     if (toggleBtn.isConnected) return true
 
-    // ── ChatGPT : injection en première position dans composer-footer-actions ──
+    // ── ChatGPT : injection en première position dans le premier enfant de composer-footer-actions ──
     if (platform?.name === 'ChatGPT') {
       const footerActions = document.querySelector('[data-testid="composer-footer-actions"]')
-      if (footerActions) {
-        footerActions.insertBefore(toggleBtn, footerActions.firstChild)
+      const firstChild    = footerActions?.firstElementChild
+      if (firstChild) {
+        firstChild.insertBefore(toggleBtn, firstChild.firstChild)
         return true
       }
     }
