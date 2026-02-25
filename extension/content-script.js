@@ -97,12 +97,7 @@
     const header = document.createElement('div')
     header.id = 'flompt-sidebar-header'
     header.innerHTML = `
-      <div class="flompt-logo">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z" fill="#fff"/>
-        </svg>
-        <span>Flompt</span>
-      </div>
+      <img class="flompt-logo" src="${chrome.runtime.getURL('icons/logo.svg')}" alt="Flompt">
       <button id="flompt-close" title="Close">✕</button>
     `
 

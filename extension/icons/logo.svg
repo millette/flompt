@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 32" width="92" height="32">
+  <!-- Background -->
+  <rect width="92" height="32" fill="#0f0f0f" rx="6"/>
+
+  <!-- Lightning bolt — même path que le sidebar, viewBox 20x20, mis à l'échelle 0.9 et positionné à (8, 7) -->
+  <path
+    d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z"
+    transform="translate(8, 7) scale(0.9)"
+    fill="#fff"
+  />
+
+  <!-- Texte "Flompt" — même font-family, font-weight 700, font-size 14, letter-spacing -0.2, couleur #fff -->
+  <text
+    x="30"
+    y="21"
+    font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+    font-weight="700"
+    font-size="14"
+    letter-spacing="-0.2"
+    fill="#fff"
+  >Flompt</text>
+</svg>

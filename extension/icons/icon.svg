@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background carré, même couleur que le header sidebar -->
+  <rect width="100" height="100" fill="#0f0f0f" rx="18"/>
+
+  <!-- Lightning bolt centré — path original dans 20x20, scalé × 3.75, centré dans 100×100 -->
+  <!-- Bbox originale : x [3,17], y [2,18] → centre (10,10) → après scale×3.75 : (37.5,37.5) → translate(12.5,12.5) -->
+  <path
+    d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z"
+    transform="translate(12.5, 12.5) scale(3.75)"
+    fill="#fff"
+  />
+</svg>
