@@ -514,148 +514,6 @@
     </div>
   </section>
 
-  <!-- ── TRANSFORMATION ─────────────────────────────── -->
-  <section class="transform" id="how-it-works">
-    <div class="container">
-      <div class="transform-header">
-        <p class="section-label">How it works</p>
-        <h2 class="section-title">From raw input to structured prompt.</h2>
-        <p class="section-sub">The same prompt, before and after flompt — no hand-crafting needed.</p>
-      </div>
-
-      <div class="demo-flow">
-
-        <!-- Input -->
-        <div class="demo-card">
-          <div class="demo-card-hdr">
-            <span class="hdot" style="background:#444"></span>
-            Your prompt
-          </div>
-          <pre>You are a helpful assistant.
-Write me a blog post about
-AI in healthcare. Make it
-engaging and professional.
-Around 800 words. Include
-statistics. Write in English.</pre>
-        </div>
-
-        <!-- Sep 1 -->
-        <div class="demo-sep">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-
-        <!-- Blocks -->
-        <div class="demo-card">
-          <div class="demo-card-hdr">
-            <span class="hdot" style="background:#ff3570"></span>
-            flompt blocks
-          </div>
-          <div class="demo-blocks">
-            <div class="mb" style="--bc:#c084fc">
-              <span class="mb-t">Role</span>
-              <span class="mb-v">Healthcare tech writer</span>
-            </div>
-            <div class="mb" style="--bc:#fbbf24">
-              <span class="mb-t">Objective</span>
-              <span class="mb-v">Blog post · AI in healthcare · 800w</span>
-            </div>
-            <div class="mb" style="--bc:#fb7185">
-              <span class="mb-t">Constraints</span>
-              <span class="mb-v">Professional · Engaging · Data-backed</span>
-            </div>
-            <div class="mb" style="--bc:#ff7daa">
-              <span class="mb-t">Output&nbsp;Format</span>
-              <span class="mb-v">Intro → 3 sections → Conclusion</span>
-            </div>
-            <div class="mb" style="--bc:#38bdf8">
-              <span class="mb-t">Language</span>
-              <span class="mb-v">English</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sep 2 -->
-        <div class="demo-sep">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-
-        <!-- Optimized output -->
-        <div class="demo-card">
-          <div class="demo-card-hdr">
-            <span class="hdot" style="background:#4ade80"></span>
-            Assembled prompt
-          </div>
-          <pre><span class="kw">&lt;prompt&gt;</span>
-  <span class="kw">&lt;role&gt;</span>
-    Healthcare tech writer
-  <span class="kw">&lt;/role&gt;</span>
-  <span class="kw">&lt;objective&gt;</span>
-    800-word blog post
-    on AI in healthcare
-  <span class="kw">&lt;/objective&gt;</span>
-  <span class="kw">&lt;constraints&gt;</span>
-    Professional, engaging.
-    3+ statistics + sources
-  <span class="kw">&lt;/constraints&gt;</span>
-  <span class="kw">&lt;output_format&gt;</span>
-    Intro → 3 sections → CTA
-  <span class="kw">&lt;/output_format&gt;</span>
-<span class="kw">&lt;/prompt&gt;</span></pre>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ── BLOCK ANATOMY ──────────────────────────────── -->
-  <section class="blocks">
-    <div class="container">
-      <div class="blocks-intro">
-        <p class="section-label">Prompt anatomy</p>
-        <h2 class="section-title">9 blocks for any prompt.</h2>
-        <p class="section-sub">Every prompt is built from the same ingredients. flompt makes each one explicit and editable.</p>
-      </div>
-      <div class="blocks-grid">
-        <div class="block-card" style="--bc:#c084fc">
-          <div class="bc-name">Role</div>
-          <div class="bc-eg">Who is the AI?</div>
-        </div>
-        <div class="block-card" style="--bc:#94a3b8">
-          <div class="bc-name">Context</div>
-          <div class="bc-eg">Background information</div>
-        </div>
-        <div class="block-card" style="--bc:#fbbf24">
-          <div class="bc-name">Objective</div>
-          <div class="bc-eg">What to accomplish</div>
-        </div>
-        <div class="block-card" style="--bc:#4ade80">
-          <div class="bc-name">Input</div>
-          <div class="bc-eg">Source material provided</div>
-        </div>
-        <div class="block-card" style="--bc:#fb7185">
-          <div class="bc-name">Constraints</div>
-          <div class="bc-eg">Limits and rules</div>
-        </div>
-        <div class="block-card" style="--bc:#ff7daa">
-          <div class="bc-name">Output Format</div>
-          <div class="bc-eg">Expected structure</div>
-        </div>
-        <div class="block-card" style="--bc:#c4b5fd">
-          <div class="bc-name">Examples</div>
-          <div class="bc-eg">Few-shot illustrations</div>
-        </div>
-        <div class="block-card" style="--bc:#67e8f9">
-          <div class="bc-name">Chain of Thought</div>
-          <div class="bc-eg">Reasoning instructions</div>
-        </div>
-        <div class="block-card" style="--bc:#38bdf8">
-          <div class="bc-name">Language</div>
-          <div class="bc-eg">Output language</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ── CHROME EXTENSION ──────────────────────────── -->
   <section class="ext-section" id="extension">
     <div class="container">
@@ -815,6 +673,148 @@ statistics. Write in English.</pre>
           </svg>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TRANSFORMATION ─────────────────────────────── -->
+  <section class="transform" id="how-it-works">
+    <div class="container">
+      <div class="transform-header">
+        <p class="section-label">How it works</p>
+        <h2 class="section-title">From raw input to structured prompt.</h2>
+        <p class="section-sub">The same prompt, before and after flompt — no hand-crafting needed.</p>
+      </div>
+
+      <div class="demo-flow">
+
+        <!-- Input -->
+        <div class="demo-card">
+          <div class="demo-card-hdr">
+            <span class="hdot" style="background:#444"></span>
+            Your prompt
+          </div>
+          <pre>You are a helpful assistant.
+Write me a blog post about
+AI in healthcare. Make it
+engaging and professional.
+Around 800 words. Include
+statistics. Write in English.</pre>
+        </div>
+
+        <!-- Sep 1 -->
+        <div class="demo-sep">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+
+        <!-- Blocks -->
+        <div class="demo-card">
+          <div class="demo-card-hdr">
+            <span class="hdot" style="background:#ff3570"></span>
+            flompt blocks
+          </div>
+          <div class="demo-blocks">
+            <div class="mb" style="--bc:#c084fc">
+              <span class="mb-t">Role</span>
+              <span class="mb-v">Healthcare tech writer</span>
+            </div>
+            <div class="mb" style="--bc:#fbbf24">
+              <span class="mb-t">Objective</span>
+              <span class="mb-v">Blog post · AI in healthcare · 800w</span>
+            </div>
+            <div class="mb" style="--bc:#fb7185">
+              <span class="mb-t">Constraints</span>
+              <span class="mb-v">Professional · Engaging · Data-backed</span>
+            </div>
+            <div class="mb" style="--bc:#ff7daa">
+              <span class="mb-t">Output&nbsp;Format</span>
+              <span class="mb-v">Intro → 3 sections → Conclusion</span>
+            </div>
+            <div class="mb" style="--bc:#38bdf8">
+              <span class="mb-t">Language</span>
+              <span class="mb-v">English</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sep 2 -->
+        <div class="demo-sep">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+
+        <!-- Optimized output -->
+        <div class="demo-card">
+          <div class="demo-card-hdr">
+            <span class="hdot" style="background:#4ade80"></span>
+            Assembled prompt
+          </div>
+          <pre><span class="kw">&lt;prompt&gt;</span>
+  <span class="kw">&lt;role&gt;</span>
+    Healthcare tech writer
+  <span class="kw">&lt;/role&gt;</span>
+  <span class="kw">&lt;objective&gt;</span>
+    800-word blog post
+    on AI in healthcare
+  <span class="kw">&lt;/objective&gt;</span>
+  <span class="kw">&lt;constraints&gt;</span>
+    Professional, engaging.
+    3+ statistics + sources
+  <span class="kw">&lt;/constraints&gt;</span>
+  <span class="kw">&lt;output_format&gt;</span>
+    Intro → 3 sections → CTA
+  <span class="kw">&lt;/output_format&gt;</span>
+<span class="kw">&lt;/prompt&gt;</span></pre>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BLOCK ANATOMY ──────────────────────────────── -->
+  <section class="blocks">
+    <div class="container">
+      <div class="blocks-intro">
+        <p class="section-label">Prompt anatomy</p>
+        <h2 class="section-title">9 blocks for any prompt.</h2>
+        <p class="section-sub">Every prompt is built from the same ingredients. flompt makes each one explicit and editable.</p>
+      </div>
+      <div class="blocks-grid">
+        <div class="block-card" style="--bc:#c084fc">
+          <div class="bc-name">Role</div>
+          <div class="bc-eg">Who is the AI?</div>
+        </div>
+        <div class="block-card" style="--bc:#94a3b8">
+          <div class="bc-name">Context</div>
+          <div class="bc-eg">Background information</div>
+        </div>
+        <div class="block-card" style="--bc:#fbbf24">
+          <div class="bc-name">Objective</div>
+          <div class="bc-eg">What to accomplish</div>
+        </div>
+        <div class="block-card" style="--bc:#4ade80">
+          <div class="bc-name">Input</div>
+          <div class="bc-eg">Source material provided</div>
+        </div>
+        <div class="block-card" style="--bc:#fb7185">
+          <div class="bc-name">Constraints</div>
+          <div class="bc-eg">Limits and rules</div>
+        </div>
+        <div class="block-card" style="--bc:#ff7daa">
+          <div class="bc-name">Output Format</div>
+          <div class="bc-eg">Expected structure</div>
+        </div>
+        <div class="block-card" style="--bc:#c4b5fd">
+          <div class="bc-name">Examples</div>
+          <div class="bc-eg">Few-shot illustrations</div>
+        </div>
+        <div class="block-card" style="--bc:#67e8f9">
+          <div class="bc-name">Chain of Thought</div>
+          <div class="bc-eg">Reasoning instructions</div>
+        </div>
+        <div class="block-card" style="--bc:#38bdf8">
+          <div class="bc-name">Language</div>
+          <div class="bc-eg">Output language</div>
+        </div>
       </div>
     </div>
   </section>
