@@ -546,6 +546,8 @@
       const leadingActions = document.querySelector('.leading-actions-wrapper')
       if (leadingActions) {
         leadingActions.insertBefore(toggleBtn, leadingActions.children[1] ?? null)
+        // Gemini : border-radius pill pour matcher le style natif
+        toggleBtn.style.setProperty('border-radius', '50px', 'important')
         return true
       }
     }
