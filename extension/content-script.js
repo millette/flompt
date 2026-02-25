@@ -5,13 +5,19 @@
   if (window.__flomptInjected) return
   window.__flomptInjected = true
 
-  // ── Caveat font — injectée via <link> JS (le @import CSS est bloqué par les CSP des plateformes)
+  // ── Caveat font — bundlée localement (les CSP des plateformes bloquent Google Fonts)
   if (!document.getElementById('flompt-caveat-font')) {
-    const link = document.createElement('link')
-    link.id   = 'flompt-caveat-font'
-    link.rel  = 'stylesheet'
-    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap'
-    document.head.appendChild(link)
+    const style = document.createElement('style')
+    style.id = 'flompt-caveat-font'
+    style.textContent = `@font-face {
+      font-family: 'Caveat';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: url('${chrome.runtime.getURL('fonts/caveat-bold.woff2')}') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }`
+    document.head.appendChild(style)
   }
 
   // ── Config ─────────────────────────────────────────────────────────────────
