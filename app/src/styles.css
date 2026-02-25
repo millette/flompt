@@ -811,51 +811,14 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   z-index: 10;
   background: rgba(28, 28, 30, 0.85);
   backdrop-filter: blur(6px);
   animation: fade-in 200ms ease;
-}
-
-.loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.loading-spinner {
-  color: var(--accent);
-  animation: fade-in 300ms ease;
-}
-
-.loading-text {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.02em;
-}
-
-.loading-blocks {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.loading-block-pill {
-  width: 36px;
-  height: 6px;
-  border-radius: 99px;
-  background: var(--accent);
-  animation: loading-pill 1.6s ease-in-out infinite;
-}
-
-@keyframes loading-pill {
-  0%, 100% { opacity: 0.12; transform: scaleX(0.7); }
-  50%      { opacity: 0.6; transform: scaleX(1); }
 }
 
 /* ── Focus global ─────────────────────────────────────────────────────────── */

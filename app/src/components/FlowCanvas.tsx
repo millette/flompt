@@ -9,7 +9,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { Play, Loader } from 'lucide-react'
+import { Play, Sparkles } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { assemblePrompt } from '@/lib/assemblePrompt'
 import BlockNode from './BlockNode'
@@ -105,19 +105,17 @@ const CanvasInner = () => {
         </div>
       )}
 
-      {/* Loading overlay */}
+      {/* Loading overlay — canvas uniquement */}
       {isDecomposing && (
         <div className="loading-overlay">
-          <div className="loading-content">
-            <div className="loading-spinner">
-              <Loader size={28} className="icon-spin" />
-            </div>
-            <p className="loading-text">{t.promptInput.decomposing}</p>
-            <div className="loading-blocks">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="loading-block-pill" style={{ animationDelay: `${i * 0.15}s` }} />
-              ))}
-            </div>
+          <div className="compile-loading-icon">
+            <Sparkles size={32} className="compile-sparkle" />
+          </div>
+          <p className="compile-loading-text">{t.promptInput.decomposing}</p>
+          <div className="compile-loading-dots">
+            <span className="compile-dot" style={{ animationDelay: '0s' }} />
+            <span className="compile-dot" style={{ animationDelay: '0.2s' }} />
+            <span className="compile-dot" style={{ animationDelay: '0.4s' }} />
           </div>
         </div>
       )}
