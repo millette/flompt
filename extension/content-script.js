@@ -153,17 +153,28 @@
   let inputSyncObserver   = null
   let inputSyncDebounce   = null
   let pageShiftStyle      = null
+  let lastSentText        = null  // évite les envois redondants
+  let syncPoller          = null  // polling fallback
 
   // ── Bidirectional sync: platform input → iframe ────────────────────────────
-  function sendPlatformInputToIframe () {
+  /**
+   * Envoie le texte courant de l'input plateforme vers l'iframe.
+   * @param {boolean} force — bypass le filtre "déjà envoyé" (ex: première sync)
+   */
+  function sendPlatformInputToIframe (force = false) {
     if (!iframeEl?.contentWindow || !iframeReady) return
     const text = getInputText()
+    if (!force && text === lastSentText) return  // rien de nouveau
+    lastSentText = text
     iframeEl.contentWindow.postMessage({
       type: 'FLOMPT_PLATFORM_INPUT',
       text,
       platform: platform?.name || 'Unknown',
     }, FLOMPT_ORIGIN)
   }
+
+  // Événements déclenchant une re-sync (paste, cut, IME, drag…)
+  const SYNC_EVENTS = ['input', 'keyup', 'paste', 'cut', 'drop', 'compositionend']
 
   /** Active l'observation de l'input plateforme pour sync en temps réel */
   function setupInputSync () {
@@ -173,17 +184,17 @@
 
     const debouncedSend = () => {
       clearTimeout(inputSyncDebounce)
-      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 400)
+      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 60)  // 400ms → 60ms
     }
 
-    el.addEventListener('input', debouncedSend)
+    SYNC_EVENTS.forEach(evt => el.addEventListener(evt, debouncedSend))
 
     inputSyncObserver = new MutationObserver(debouncedSend)
-    inputSyncObserver.observe(el, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    })
+    inputSyncObserver.observe(el, { childList: true, subtree: true, characterData: true })
+
+    // Stocker ref pour teardown propre
+    inputSyncObserver._el      = el
+    inputSyncObserver._handler = debouncedSend
   }
 
   // ── Push layout : rétrécit le contenu de la page pour faire place à la sidebar ──
@@ -233,9 +244,28 @@
   function teardownInputSync () {
     if (inputSyncObserver) {
       inputSyncObserver.disconnect()
+      // Nettoyer tous les event listeners ajoutés
+      if (inputSyncObserver._el && inputSyncObserver._handler) {
+        SYNC_EVENTS.forEach(evt =>
+          inputSyncObserver._el.removeEventListener(evt, inputSyncObserver._handler)
+        )
+      }
       inputSyncObserver = null
     }
     clearTimeout(inputSyncDebounce)
+  }
+
+  // ── Polling fallback : re-sync toutes les 800ms si la sidebar est ouverte ──
+  // Attrape les modifications que MutationObserver peut rater (ex: virtual DOM)
+  function startSyncPoller () {
+    if (syncPoller) return
+    syncPoller = setInterval(() => {
+      if (sidebarOpen && iframeReady) sendPlatformInputToIframe()
+    }, 800)
+  }
+
+  function stopSyncPoller () {
+    if (syncPoller) { clearInterval(syncPoller); syncPoller = null }
   }
 
   // ── DOM: Resize handle (bord gauche de la sidebar) ─────────────────────────
@@ -347,8 +377,8 @@
         s.classList.add('flompt-splash-hidden')
         setTimeout(() => s.remove(), 450)
       }
-      // Sync initial après chargement de l'iframe
-      setTimeout(sendPlatformInputToIframe, 300)
+      // Sync immédiate après chargement (forcée — l'iframe vient de s'initialiser)
+      sendPlatformInputToIframe(true)
     })
 
     // Header interne (close button visible à l'intérieur)
@@ -379,13 +409,12 @@
       toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
     }
 
-    // Activer la sync bidirectionnelle
+    // Activer la sync bidirectionnelle + polling fallback
     setupInputSync()
+    startSyncPoller()
 
-    // Envoyer le contenu actuel si l'iframe est déjà prête
-    if (iframeReady) {
-      setTimeout(sendPlatformInputToIframe, 200)
-    }
+    // Sync immédiate si l'iframe est déjà prête (forcée — contexte a pu changer)
+    if (iframeReady) sendPlatformInputToIframe(true)
   }
 
   function closeSidebar () {
@@ -393,6 +422,8 @@
     sidebarEl?.classList.remove('flompt-open')
     removePageShift()
     toggleBtn?.classList.remove('flompt-active')
+
+    stopSyncPoller()
 
     // Restaurer la position du bouton flottant
     if (toggleBtn?.classList.contains('flompt-floating')) {
@@ -621,12 +652,33 @@
   scheduleMount(0)
 
   // Ré-insertion si le bouton disparaît (navigation SPA)
+  // + re-attach de l'observer si l'input plateforme a changé (SPA swap de DOM)
   setInterval(() => {
     if (!toggleBtn.isConnected) {
       mountAttempts = 0
       scheduleMount(200)
     }
-  }, 3000)
+
+    if (sidebarOpen) {
+      const currentEl = platform?.getInput()
+      // Input swappé par le SPA → reset + re-observe
+      if (currentEl && inputSyncObserver?._el && inputSyncObserver._el !== currentEl) {
+        teardownInputSync()
+        setupInputSync()
+        sendPlatformInputToIframe(true)
+      } else if (currentEl && !inputSyncObserver) {
+        // Observer absent (ex: ouverture trop tôt) → le remettre
+        setupInputSync()
+      }
+    }
+  }, 2000)
+
+  // Re-sync quand l'onglet revient au premier plan (tab switch)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && sidebarOpen && iframeReady) {
+      sendPlatformInputToIframe(true)
+    }
+  })
 
   // ── Messages depuis l'iframe Flompt ────────────────────────────────────────
   window.addEventListener('message', (event) => {
@@ -644,9 +696,9 @@
       closeSidebar()
     }
 
-    // L'app demande la valeur actuelle de l'input plateforme
+    // L'app demande la valeur actuelle de l'input plateforme (forcé — elle a besoin de l'état actuel)
     if (type === 'FLOMPT_SYNC_REQUEST') {
-      sendPlatformInputToIframe()
+      sendPlatformInputToIframe(true)
     }
   })
 
