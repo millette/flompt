@@ -1,14 +1,18 @@
-import { useState } from 'react'
-import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader, Share2 } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader, Share2, Send } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { compilePrompt, classifyError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
 
+/** Detect if flompt is running inside the browser extension sidebar */
+const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
+
 const PromptOutput = () => {
   const { nodes, edges, compiledPrompt, setCompiledPrompt, setIsCompiling, isCompiling } = useFlowStore()
   const { t } = useLocale()
   const [copied, setCopied] = useState(false)
+  const [injected, setInjected] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleCompile = async () => {
@@ -60,6 +64,18 @@ const PromptOutput = () => {
     analytics.promptExported('json')
   }
 
+  /** Send compiled prompt to the extension content script via postMessage */
+  const handleInjectToAI = useCallback(() => {
+    if (!compiledPrompt) return
+    window.parent.postMessage(
+      { type: 'FLOMPT_INJECT', prompt: compiledPrompt.raw },
+      '*'
+    )
+    setInjected(true)
+    analytics.promptCopied() // reuse same event
+    setTimeout(() => setInjected(false), 2500)
+  }, [compiledPrompt])
+
   const handleShare = async () => {
     const shareData = {
       title: 'flompt — Visual AI Prompt Builder',
@@ -102,6 +118,19 @@ const PromptOutput = () => {
         <>
           <pre className="compiled-output">{compiledPrompt.raw}</pre>
           <div className="export-actions">
+            {/* Send to AI button — only visible inside the browser extension */}
+            {isExtension && (
+              <button
+                className={`btn btn-primary export-inject${injected ? ' injected' : ''}`}
+                onClick={handleInjectToAI}
+                title="Inject this prompt into the AI chat input"
+              >
+                {injected
+                  ? <><ClipboardCheck size={13} /> Injected!</>
+                  : <><Send size={13} /> Send to AI</>
+                }
+              </button>
+            )}
             <button className="btn btn-secondary export-copy" onClick={handleCopy}>
               {copied
                 ? <><ClipboardCheck size={13} /> {t.promptOutput.copied}</>
