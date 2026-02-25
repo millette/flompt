@@ -32,41 +32,52 @@
 Instead of writing one long block of text, flompt lets you:
 
 1. **Decompose** — Paste any prompt and let AI break it into structured blocks
-2. **Edit visually** — Drag, connect, and edit blocks in a flowchart editor
-3. **Recompile** — Generate an optimized, machine-ready prompt from your flow
+2. **Edit visually** — Drag, connect, and reorder blocks in a flowchart editor
+3. **Recompile** — Generate a Claude-optimized, machine-ready prompt from your flow
 
-> Think of it as **Figma for prompts** — visual, structured, and powerful.
+> Think of it as **Figma for prompts** — visual, structured, and built for Claude.
 
 ## 🧩 Block Types
 
-Each prompt is decomposed into specialized blocks that map to prompt engineering best practices:
+11 specialized blocks that map directly to Claude's prompt engineering best practices:
 
-| Block | Purpose | Shape |
-|-------|---------|-------|
-| **Role** | AI persona & expertise | ⬡ Hexagon |
-| **Context** | Background information | ▱ Parallelogram |
-| **Objective** | What you want to achieve | ▐▌ Bold rectangle |
-| **Input** | Data you're providing | ⌒ Rounded top |
-| **Constraints** | Rules & limitations | ⯃ Octagon |
-| **Output Format** | Expected output structure | ⌓ Rounded bottom |
-| **Examples** | Few-shot demonstrations | ┊┊ Dashed borders |
-| **Chain of Thought** | Reasoning steps | ⬭ Rounded rect |
+| Block | Purpose | Claude XML |
+|-------|---------|-----------|
+| **Role** | AI persona & expertise | `<role>` |
+| **Context** | Background information | `<context>` |
+| **Objective** | What you want to achieve | `<objective>` |
+| **Input** | Data you're providing | `<input>` |
+| **Constraints** | Rules & limitations | `<constraints>` |
+| **Output Format** | Expected output structure | `<output_format>` |
+| **Examples** | Few-shot demonstrations | `<examples><example>` |
+| **Chain of Thought** | Reasoning steps | `<thinking>` |
+| **Document** | External content grounding | `<documents><document>` |
+| **Format Control** | Claude-specific directives (tone, verbosity, markdown) | `<format_instructions>` |
+| **Language** | Response language | `<language>` |
+
+Blocks are automatically ordered following Anthropic's recommended prompt structure.
 
 ## 🚀 Try It Now
 
 **[→ flompt.dev](https://flompt.dev)** — No account needed. Free & open-source.
 
+## 🧩 Chrome Extension
+
+Use flompt directly inside ChatGPT, Claude, and Gemini — without leaving your tab.
+
+- **✦ Enhance** button injected into the AI chat input
+- Bidirectional sync between the sidebar and the chat
+- Works on ChatGPT · Claude · Gemini
+
+[→ Download from GitHub Releases](https://github.com/Nyrok/flompt/releases)
+
 ## 🛠️ Self-Hosting
 
-### With Docker
+### Requirements
 
-```bash
-git clone https://github.com/Nyrok/flompt.git
-cd flompt
-cp backend/.env.example backend/.env
-# Add your API key to backend/.env
-docker compose up
-```
+- Python 3.12+
+- Node.js 18+
+- An Anthropic or OpenAI API key *(optional — heuristic fallback works without one)*
 
 ### Manual Setup
 
@@ -82,13 +93,14 @@ uvicorn app.main:app --reload --port 8000
 **App (Frontend)**
 ```bash
 cd app
+cp .env.example .env  # Optional: add PostHog key for analytics
 npm install
 npm run dev
 ```
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://localhost:3000 |
+| App | http://localhost:5173 |
 | Backend API | http://localhost:8000 |
 | API Docs | http://localhost:8000/docs |
 
@@ -97,9 +109,15 @@ npm run dev
 flompt supports multiple AI providers. Copy `backend/.env.example` to `backend/.env`:
 
 ```env
+# Anthropic (recommended)
 ANTHROPIC_API_KEY=sk-ant-...
-# or
+AI_PROVIDER=anthropic
+AI_MODEL=claude-3-5-haiku-20241022
+
+# or OpenAI
 OPENAI_API_KEY=sk-...
+AI_PROVIDER=openai
+AI_MODEL=gpt-4o-mini
 ```
 
 **No API key?** No problem — flompt falls back to a heuristic decomposer (keyword-based) and structured XML compilation.
@@ -112,14 +130,17 @@ OPENAI_API_KEY=sk-...
 | **Backend** | FastAPI, Python 3.12, Uvicorn |
 | **AI** | Anthropic Claude / OpenAI GPT (pluggable) |
 | **Reverse Proxy** | Caddy (auto-TLS via Let's Encrypt) |
+| **Extension** | Chrome MV3 (content script + sidebar) |
 | **i18n** | English & French |
 
 ## 🌍 Features
 
 - 🎨 **Visual flowchart editor** — Drag-and-drop blocks with React Flow
 - 🤖 **AI-powered decomposition** — Paste a prompt, get structured blocks
-- ⚡ **Instant recompilation** — Blocks → optimized machine-ready prompt
-- 📱 **Mobile-first** — Full touch support, tap-to-connect, responsive design
+- ⚡ **Async job queue** — Non-blocking decomposition with live progress tracking
+- 🦾 **Claude-optimized output** — XML structured following Anthropic best practices
+- 🧩 **Chrome extension** — Enhance button inside ChatGPT, Claude & Gemini
+- 📱 **Responsive** — Full touch support, tap-to-connect
 - 🌙 **Dark theme** — Mermaid-inspired warm dark UI
 - 🌐 **Bilingual** — English & French interface
 - 💾 **Auto-save** — Local persistence with Zustand
