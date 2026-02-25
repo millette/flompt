@@ -154,7 +154,6 @@
   let inputSyncDebounce   = null
   let pageShiftStyle      = null
   let lastSentText        = null  // évite les envois redondants
-  let syncPoller          = null  // polling fallback
 
   // ── Bidirectional sync: platform input → iframe ────────────────────────────
   /**
@@ -176,43 +175,31 @@
   // Événements déclenchant une re-sync (paste, cut, IME, drag…)
   const SYNC_EVENTS = ['input', 'keyup', 'paste', 'cut', 'drop', 'compositionend']
 
-  /** Active l'observation de l'input plateforme pour sync en temps réel.
+  /**
+   * Sync plateforme → app.
    *
-   *  Stratégie robuste :
-   *  - Events écoutés au niveau DOCUMENT en capture (true) → survit aux
-   *    remplacements d'éléments par React/ProseMirror/Angular (re-render)
-   *  - MutationObserver sur document.body → fallback pour les mutations
-   *    non-event (ex: programmatic DOM changes)
-   *  - L'élément cible est récupéré dynamiquement via platform.getInput()
-   *    à chaque callback → toujours le nœud courant, jamais un nœud mort
+   * Stratégie : interval 200ms qui compare le texte courant à lastSentText.
+   * Aucun MutationObserver ni event listener seuls — trop fragiles face aux
+   * remplacements de nœuds React/ProseMirror, shadow DOM Gemini, etc.
+   * Les events document-level restent en supplément pour la réactivité immédiate.
    */
   function setupInputSync () {
     if (inputSyncObserver) return
 
-    const scheduleSend = () => {
+    // Interval 200ms — garantit la sync même si les events ne passent pas
+    const id = setInterval(() => {
+      if (!sidebarOpen || !iframeReady) return
+      sendPlatformInputToIframe()
+    }, 200)
+
+    // Events document-level en capture — réponse sub-200ms pour la frappe
+    const onSyncEvent = () => {
       clearTimeout(inputSyncDebounce)
-      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 60)
+      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 30)
     }
-
-    // Filtre : déclenche seulement si l'event vient de l'input plateforme courant
-    const onSyncEvent = (e) => {
-      const el = platform?.getInput()
-      if (!el || (!el.contains(e.target) && e.target !== el)) return
-      scheduleSend()
-    }
-
-    // Écoute document-level en capture — survit aux remplacements de nœuds
     SYNC_EVENTS.forEach(evt => document.addEventListener(evt, onSyncEvent, true))
 
-    // MutationObserver sur body, filtré sur l'input courant
-    inputSyncObserver = new MutationObserver((mutations) => {
-      const el = platform?.getInput()
-      if (!el) return
-      if (mutations.some(m => el === m.target || el.contains(m.target))) scheduleSend()
-    })
-    inputSyncObserver.observe(document.body, { subtree: true, characterData: true })
-
-    inputSyncObserver._handler = onSyncEvent
+    inputSyncObserver = { _id: id, _handler: onSyncEvent }
   }
 
   // ── Push layout : rétrécit le contenu de la page pour faire place à la sidebar ──
@@ -261,7 +248,7 @@
 
   function teardownInputSync () {
     if (inputSyncObserver) {
-      inputSyncObserver.disconnect()
+      if (inputSyncObserver._id != null) clearInterval(inputSyncObserver._id)
       if (inputSyncObserver._handler) {
         SYNC_EVENTS.forEach(evt =>
           document.removeEventListener(evt, inputSyncObserver._handler, true)
@@ -270,19 +257,6 @@
       inputSyncObserver = null
     }
     clearTimeout(inputSyncDebounce)
-  }
-
-  // ── Polling fallback : re-sync toutes les 800ms si la sidebar est ouverte ──
-  // Attrape les modifications que MutationObserver peut rater (ex: virtual DOM)
-  function startSyncPoller () {
-    if (syncPoller) return
-    syncPoller = setInterval(() => {
-      if (sidebarOpen && iframeReady) sendPlatformInputToIframe()
-    }, 800)
-  }
-
-  function stopSyncPoller () {
-    if (syncPoller) { clearInterval(syncPoller); syncPoller = null }
   }
 
   // ── DOM: Resize handle (bord gauche de la sidebar) ─────────────────────────
@@ -426,9 +400,8 @@
       toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
     }
 
-    // Sync plateforme → app : observer les changements en temps réel
+    // Sync plateforme → app : interval 200ms + events document-level
     setupInputSync()
-    startSyncPoller()
 
     // Envoyer le contenu actuel immédiatement (forcé) — écrase ce qu'il y a
     // déjà dans l'app pour garantir la cohérence à l'ouverture
@@ -441,7 +414,6 @@
     removePageShift()
     toggleBtn?.classList.remove('flompt-active')
 
-    stopSyncPoller()
     teardownInputSync()
 
     // Restaurer la position du bouton flottant
