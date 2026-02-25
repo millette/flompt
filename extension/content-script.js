@@ -483,6 +483,15 @@
       }
     }
 
+    // ── Gemini : injection en dernière position dans .leading-actions-wrapper ──
+    if (platform?.name === 'Gemini') {
+      const leadingActions = document.querySelector('.leading-actions-wrapper')
+      if (leadingActions) {
+        leadingActions.appendChild(toggleBtn)
+        return true
+      }
+    }
+
     // ── Essai 1 : zone outils ─────────────────────────────────────────────
     const firstTool = findFirstToolBtn()
     if (firstTool) {
