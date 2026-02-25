@@ -663,46 +663,45 @@
 
   // ── Live update : app → plateforme (brut, sans toast ni fermeture) ──────────
   //
-  // Appelée sur chaque `FLOMPT_LIVE_UPDATE` depuis l'iframe pendant la frappe.
-  // CRITIQUE : ne jamais appeler el.focus() ici — cela volerait le focus de
-  // l'iframe et interromprait la saisie de l'utilisateur.
+  // execCommand est la seule voie compatible avec React/ProseMirror/Angular —
+  // textContent seul est écrasé par le virtual DOM des frameworks.
   //
-  // Stratégie :
-  //  - Si l'input plateforme a déjà le focus → execCommand (remplace tout)
-  //  - Sinon → mise à jour silencieuse : textContent + events React/Angular
+  // Flow :
+  //  1. focus() + selectAll + execCommand('insertText') → remplace tout le contenu
+  //  2. Fallback beforeinput/textContent/input si execCommand échoue
+  //  3. postMessage FLOMPT_REFOCUS → l'app reprend le focus immédiatement
+  //     (l'user peut continuer à taper sans interruption visible)
   function liveUpdatePlatformInput (text) {
     const el = platform?.getInput()
     if (!el) return
     try {
       lastSentText = text   // coupe le retour d'écho vers l'app
 
-      const isFocused = document.activeElement === el || el.contains(document.activeElement)
+      el.focus()
+      const sel = window.getSelection()
+      const range = document.createRange()
+      range.selectNodeContents(el)
+      sel.removeAllRanges()
+      sel.addRange(range)
 
-      if (isFocused) {
-        // Input déjà focalisé (rare en live sync) — voie native via execCommand
-        const sel = window.getSelection()
-        const range = document.createRange()
-        range.selectNodeContents(el)
-        sel.removeAllRanges()
-        sel.addRange(range)
-        if (!document.execCommand('insertText', false, text)) {
-          el.textContent = text
-        }
-        el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
-      } else {
-        // Mise à jour silencieuse — PAS de focus steal
-        // Déclenche les listeners React/Angular/ProseMirror via les events natifs
-        el.dispatchEvent(new InputEvent('beforeinput', {
+      const ok = document.execCommand('insertText', false, text)
+
+      if (!ok || el.textContent.trim() !== text.trim()) {
+        // Fallback : events natifs (beforeinput → textContent → input)
+        const bEvt = new InputEvent('beforeinput', {
           bubbles: true, cancelable: true,
           inputType: 'insertReplacementText',
           data: text,
-        }))
-        el.textContent = text
-        el.dispatchEvent(new InputEvent('input', {
-          bubbles: true, inputType: 'insertText', data: text,
-        }))
-        el.dispatchEvent(new Event('change', { bubbles: true }))
+        })
+        el.dispatchEvent(bEvt)
+        if (!bEvt.defaultPrevented) el.textContent = text
+        el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
       }
+
+      // Rendre le focus à l'iframe — l'app doit écouter FLOMPT_REFOCUS
+      // et appeler document.activeElement?.focus() pour reprendre la main
+      iframeEl?.contentWindow?.postMessage({ type: 'FLOMPT_REFOCUS' }, FLOMPT_ORIGIN)
+
     } catch (err) {
       console.error('[flompt] Live update error:', err)
     }
