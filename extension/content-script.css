@@ -1,5 +1,5 @@
-/* ── Flompt Extension Styles ────────────────────────────────────────────────
-   Design aligné sur l'app Flompt — dark theme, accent #FF3570
+/* ── flompt Extension Styles ────────────────────────────────────────────────
+   Design aligné sur l'app flompt — dark theme, accent #FF3570
    All selectors are prefixed with #flompt- to avoid conflicts with host pages
    v0.2.3 — Header nav-style (Caveat + accent), tooltip custom centré JS
    ──────────────────────────────────────────────────────────────────────── */
@@ -245,7 +245,7 @@ body.flompt-body-shifted {
   Conçu pour s'intégrer comme un bouton parmi ses frères/sœurs :
   - Taille similaire aux boutons de toolbar (~32px)
   - Couleur neutre (currentColor inherit), fond transparent
-  - Pas de style Flompt-specific pour passer inaperçu dans la toolbar
+  - Pas de style flompt-specific pour passer inaperçu dans la toolbar
 */
 #flompt-toggle {
   display: inline-flex !important;

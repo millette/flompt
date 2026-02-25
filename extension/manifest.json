@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Flompt — Visual Prompt Builder",
+  "name": "flompt — Visual Prompt Builder",
   "version": "0.3.6",
   "description": "Build structured AI prompts visually and inject them into ChatGPT, Claude or Gemini.",
   "icons": {
@@ -36,7 +36,7 @@
       "48":  "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "Flompt — Toggle sidebar"
+    "default_title": "flompt — Toggle sidebar"
   },
   "background": {
     "service_worker": "background.js"

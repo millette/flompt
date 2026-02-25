@@ -439,7 +439,7 @@
   // ── DOM: Toggle button — Sparkles icon, style matching sibling buttons ───────
   const toggleBtn = document.createElement('button')
   toggleBtn.id    = 'flompt-toggle'
-  toggleBtn.setAttribute('aria-label', 'Enhance with Flompt')
+  toggleBtn.setAttribute('aria-label', 'Enhance with flompt')
   // Icône Sparkles (Lucide) inline — pas d'img pour éviter les conflits de style
   toggleBtn.innerHTML = `
     <svg id="flompt-toggle-icon" xmlns="http://www.w3.org/2000/svg"
@@ -494,7 +494,7 @@
   // Stratégie :
   //   1. Trouver le bouton Send pour localiser le toolbar général
   //   2. Identifier les boutons "outils" (tout sauf send/voice/mic)
-  //   3. Insérer Flompt APRÈS le premier bouton outil (zone outils native)
+  //   3. Insérer flompt APRÈS le premier bouton outil (zone outils native)
   //   4. Fallback : juste avant le bouton send
   //   5. Fallback final : bouton flottant
 
@@ -680,7 +680,7 @@
     }
   })
 
-  // ── Messages depuis l'iframe Flompt ────────────────────────────────────────
+  // ── Messages depuis l'iframe flompt ────────────────────────────────────────
   window.addEventListener('message', (event) => {
     if (event.origin !== FLOMPT_ORIGIN) return
 
@@ -735,7 +735,7 @@
         closeSidebar()
         showToast(`Prompt injected into ${platform.name} ✓`)
       } catch (err) {
-        console.error('[Flompt] Injection error:', err)
+        console.error('[flompt] Injection error:', err)
         navigator.clipboard.writeText(text).then(() => {
           showToast('Copied to clipboard — paste manually ✓')
         })
