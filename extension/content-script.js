@@ -332,7 +332,14 @@
         s.classList.add('flompt-splash-hidden')
         setTimeout(() => s.remove(), 450)
       }
-      // Pas d'import automatique — l'user clique sur le bouton dans l'app
+      // Envoie le nom de la plateforme dès le chargement — le bouton affiche
+      // "Import from Claude" immédiatement sans attendre le premier clic
+      if (platform?.name) {
+        iframeEl.contentWindow.postMessage({
+          type: 'FLOMPT_PLATFORM_INFO',
+          platform: platform.name,
+        }, '*')
+      }
     })
 
     // Header interne (close button visible à l'intérieur)

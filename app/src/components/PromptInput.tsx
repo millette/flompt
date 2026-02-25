@@ -24,6 +24,12 @@ const PromptInput = () => {
     if (!isExt) return
 
     const handler = (event: MessageEvent) => {
+      // Nom de la plateforme envoyé au chargement → label du bouton immédiat
+      if (event.data?.type === 'FLOMPT_PLATFORM_INFO') {
+        const platform = event.data.platform as string
+        if (platform && platform !== 'Unknown') setPlatformName(platform)
+        return
+      }
       if (event.data?.type !== 'FLOMPT_PLATFORM_INPUT') return
       const text = event.data.text as string
       const platform = event.data.platform as string
