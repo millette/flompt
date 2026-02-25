@@ -484,11 +484,11 @@
       }
     }
 
-    // ── Gemini : injection en dernière position dans .leading-actions-wrapper ──
+    // ── Gemini : injection en 2ème position dans .leading-actions-wrapper ──
     if (platform?.name === 'Gemini') {
       const leadingActions = document.querySelector('.leading-actions-wrapper')
       if (leadingActions) {
-        leadingActions.appendChild(toggleBtn)
+        leadingActions.insertBefore(toggleBtn, leadingActions.children[1] ?? null)
         return true
       }
     }
