@@ -11,7 +11,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 import { Play, Loader } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
-import { compilePrompt } from '@/services/api'
+import { assemblePrompt } from '@/lib/assemblePrompt'
 import BlockNode from './BlockNode'
 import CustomEdge from './CustomEdge'
 import { BLOCK_META } from '@/types/blocks'
@@ -22,7 +22,7 @@ const nodeTypes = { block: BlockNode }
 const edgeTypes = { custom: CustomEdge }
 
 const CanvasInner = () => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, isCompiling, addNode, activeTab } = useFlowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode, activeTab } = useFlowStore()
   const { t } = useLocale()
   const { fitView, screenToFlowPosition } = useReactFlow()
   const prevNodeCount = useRef(nodes.length)
@@ -122,29 +122,20 @@ const CanvasInner = () => {
         </div>
       )}
 
-      {/* Mobile FAB: compile & navigate to output */}
+      {/* Mobile FAB: assemble & navigate to output */}
       {nodes.length > 0 && (
         <button
           className="canvas-fab"
-          disabled={isCompiling}
-          onClick={async () => {
-            const { nodes: currentNodes, setIsCompiling: setComp, setCompiledPrompt: setResult, setActiveTab: switchTab } = useFlowStore.getState()
+          onClick={() => {
+            const { nodes: currentNodes, edges: currentEdges, setCompiledPrompt: setResult, setActiveTab: switchTab } = useFlowStore.getState()
             if (currentNodes.length === 0) return
-            setComp(true)
+            const result = assemblePrompt(currentNodes, currentEdges)
+            setResult(result)
             switchTab('output')
-            try {
-              const blocks = currentNodes.map((n) => n.data)
-              const result = await compilePrompt(blocks)
-              setResult(result)
-            } catch (e) {
-              console.error(e)
-            } finally {
-              setComp(false)
-            }
           }}
           title={t.promptOutput.compile}
         >
-          {isCompiling ? <Loader size={22} className="icon-spin" /> : <Play size={22} />}
+          <Play size={22} />
         </button>
       )}
     </div>

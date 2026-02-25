@@ -1,38 +1,27 @@
 import { useState, useCallback } from 'react'
-import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader, Share2, Send } from 'lucide-react'
+import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Share2, Send } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
-import { compilePrompt, classifyError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
+import { assemblePrompt } from '@/lib/assemblePrompt'
 
 /** Detect if flompt is running inside the browser extension sidebar */
 const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
 
-const PromptOutput = () => {
-  const { nodes, edges, compiledPrompt, setCompiledPrompt, setIsCompiling, isCompiling } = useFlowStore()
-  const { t } = useLocale()
-  const [copied, setCopied] = useState(false)
-  const [injected, setInjected] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+// ─── Composant ────────────────────────────────────────────────────────────────
 
-  const handleCompile = async () => {
+const PromptOutput = () => {
+  const { nodes, edges, compiledPrompt, setCompiledPrompt } = useFlowStore()
+  const { t } = useLocale()
+  const [copied,   setCopied]   = useState(false)
+  const [injected, setInjected] = useState(false)
+
+  const handleCompile = () => {
     if (nodes.length === 0) return
-    setIsCompiling(true)
-    setError(null)
     analytics.compileClicked()
-    try {
-      const blocks = nodes.map((n) => n.data)
-      const result = await compilePrompt(blocks)
-      setCompiledPrompt(result)
-      analytics.compileCompleted(result.tokenEstimate)
-    } catch (e) {
-      console.error(e)
-      const errType = classifyError(e)
-      setError(t.errors[errType])
-      analytics.error('compile', errType)
-    } finally {
-      setIsCompiling(false)
-    }
+    const result = assemblePrompt(nodes, edges)
+    setCompiledPrompt(result)
+    analytics.compileCompleted(result.tokenEstimate)
   }
 
   const handleCopy = () => {
@@ -47,8 +36,8 @@ const PromptOutput = () => {
   const handleExportTxt = () => {
     if (!compiledPrompt) return
     const blob = new Blob([compiledPrompt.raw], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
     a.href = url; a.download = 'flompt-prompt.txt'; a.click()
     URL.revokeObjectURL(url)
     analytics.promptExported('txt')
@@ -57,30 +46,27 @@ const PromptOutput = () => {
   const handleExportJSON = () => {
     const data = { nodes, edges, compiledPrompt, exportedAt: new Date().toISOString() }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
     a.href = url; a.download = 'flompt-session.json'; a.click()
     URL.revokeObjectURL(url)
     analytics.promptExported('json')
   }
 
-  /** Send compiled prompt to the extension content script via postMessage */
+  /** Envoie le prompt compilé vers le content script de l'extension */
   const handleInjectToAI = useCallback(() => {
     if (!compiledPrompt) return
-    window.parent.postMessage(
-      { type: 'FLOMPT_INJECT', prompt: compiledPrompt.raw },
-      '*'
-    )
+    window.parent.postMessage({ type: 'FLOMPT_INJECT', prompt: compiledPrompt.raw }, '*')
     setInjected(true)
-    analytics.promptCopied() // reuse same event
+    analytics.promptCopied()
     setTimeout(() => setInjected(false), 2500)
   }, [compiledPrompt])
 
   const handleShare = async () => {
     const shareData = {
       title: 'flompt — Visual AI Prompt Builder',
-      text: 'Check out flompt! Turn any AI prompt into a visual flow. Free & open-source.',
-      url: 'https://flompt.dev',
+      text:  'Check out flompt! Turn any AI prompt into a visual flow. Free & open-source.',
+      url:   'https://flompt.dev',
     }
     try {
       if (navigator.share) {
@@ -102,23 +88,11 @@ const PromptOutput = () => {
         )}
       </div>
 
-      {isCompiling ? (
-        <div className="compile-loading">
-          <div className="compile-loading-icon">
-            <Sparkles size={32} className="compile-sparkle" />
-          </div>
-          <p className="compile-loading-text">{t.promptOutput.compiling}</p>
-          <div className="compile-loading-dots">
-            <span className="compile-dot" style={{ animationDelay: '0s' }} />
-            <span className="compile-dot" style={{ animationDelay: '0.2s' }} />
-            <span className="compile-dot" style={{ animationDelay: '0.4s' }} />
-          </div>
-        </div>
-      ) : compiledPrompt ? (
+      {compiledPrompt ? (
         <>
           <pre className="compiled-output">{compiledPrompt.raw}</pre>
           <div className="export-actions">
-            {/* Send to AI button — only visible inside the browser extension */}
+            {/* Send to AI — uniquement dans la sidebar extension */}
             {isExtension && (
               <button
                 className={`btn btn-primary export-inject${injected ? ' injected' : ''}`}
@@ -156,21 +130,15 @@ const PromptOutput = () => {
         </div>
       )}
 
-      {error && <p className="error-msg">{error}</p>}
-
       <button
         className="btn btn-primary"
         onClick={handleCompile}
-        disabled={isCompiling || nodes.length === 0}
+        disabled={nodes.length === 0}
         data-tour="compile-btn"
       >
-        {isCompiling
-          ? <><Loader size={14} className="icon-spin" /> {t.promptOutput.compiling}</>
-          : <><Play size={14} /> {t.promptOutput.compile}</>
-        }
+        <Play size={14} /> {t.promptOutput.compile}
       </button>
 
-      {/* Share CTA */}
       <button className="btn btn-secondary btn-share" onClick={handleShare}>
         <Share2 size={13} /> {t.promptOutput.share}
       </button>
