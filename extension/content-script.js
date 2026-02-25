@@ -176,25 +176,43 @@
   // Événements déclenchant une re-sync (paste, cut, IME, drag…)
   const SYNC_EVENTS = ['input', 'keyup', 'paste', 'cut', 'drop', 'compositionend']
 
-  /** Active l'observation de l'input plateforme pour sync en temps réel */
+  /** Active l'observation de l'input plateforme pour sync en temps réel.
+   *
+   *  Stratégie robuste :
+   *  - Events écoutés au niveau DOCUMENT en capture (true) → survit aux
+   *    remplacements d'éléments par React/ProseMirror/Angular (re-render)
+   *  - MutationObserver sur document.body → fallback pour les mutations
+   *    non-event (ex: programmatic DOM changes)
+   *  - L'élément cible est récupéré dynamiquement via platform.getInput()
+   *    à chaque callback → toujours le nœud courant, jamais un nœud mort
+   */
   function setupInputSync () {
     if (inputSyncObserver) return
-    const el = platform?.getInput()
-    if (!el) return
 
-    const debouncedSend = () => {
+    const scheduleSend = () => {
       clearTimeout(inputSyncDebounce)
-      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 60)  // 400ms → 60ms
+      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 60)
     }
 
-    SYNC_EVENTS.forEach(evt => el.addEventListener(evt, debouncedSend))
+    // Filtre : déclenche seulement si l'event vient de l'input plateforme courant
+    const onSyncEvent = (e) => {
+      const el = platform?.getInput()
+      if (!el || (!el.contains(e.target) && e.target !== el)) return
+      scheduleSend()
+    }
 
-    inputSyncObserver = new MutationObserver(debouncedSend)
-    inputSyncObserver.observe(el, { childList: true, subtree: true, characterData: true })
+    // Écoute document-level en capture — survit aux remplacements de nœuds
+    SYNC_EVENTS.forEach(evt => document.addEventListener(evt, onSyncEvent, true))
 
-    // Stocker ref pour teardown propre
-    inputSyncObserver._el      = el
-    inputSyncObserver._handler = debouncedSend
+    // MutationObserver sur body, filtré sur l'input courant
+    inputSyncObserver = new MutationObserver((mutations) => {
+      const el = platform?.getInput()
+      if (!el) return
+      if (mutations.some(m => el === m.target || el.contains(m.target))) scheduleSend()
+    })
+    inputSyncObserver.observe(document.body, { subtree: true, characterData: true })
+
+    inputSyncObserver._handler = onSyncEvent
   }
 
   // ── Push layout : rétrécit le contenu de la page pour faire place à la sidebar ──
@@ -244,10 +262,9 @@
   function teardownInputSync () {
     if (inputSyncObserver) {
       inputSyncObserver.disconnect()
-      // Nettoyer tous les event listeners ajoutés
-      if (inputSyncObserver._el && inputSyncObserver._handler) {
+      if (inputSyncObserver._handler) {
         SYNC_EVENTS.forEach(evt =>
-          inputSyncObserver._el.removeEventListener(evt, inputSyncObserver._handler)
+          document.removeEventListener(evt, inputSyncObserver._handler, true)
         )
       }
       inputSyncObserver = null
@@ -425,6 +442,7 @@
     toggleBtn?.classList.remove('flompt-active')
 
     stopSyncPoller()
+    teardownInputSync()
 
     // Restaurer la position du bouton flottant
     if (toggleBtn?.classList.contains('flompt-floating')) {
