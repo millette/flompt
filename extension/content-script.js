@@ -699,8 +699,15 @@
   function liveUpdatePlatformInput (text) {
     const el = platform?.getInput()
     if (!el) return
+
+    // Écho : l'app renvoie ce qu'elle vient de recevoir — rien à faire
+    if (getInputText() === text) return
+
     try {
-      lastSentText = text   // coupe le retour d'écho vers l'app
+      lastSentText = text
+
+      // Sauvegarder AVANT el.focus() — détermine si on doit rendre le focus à l'iframe
+      const platformHasFocus = el === document.activeElement || el.contains(document.activeElement)
 
       el.focus()
       const sel = window.getSelection()
@@ -722,10 +729,9 @@
         el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
       }
 
-      // Redonner le focus à l'iframe — iframeEl.focus() est une opération sur
-      // l'élément DOM local (host page), le browser route vers le dernier
-      // élément focalisé dans le browsing context de l'iframe. Synchrone.
-      iframeEl?.focus()
+      // Rendre le focus à l'iframe seulement si l'user y était
+      // Si l'user tapait dans la plateforme → ne pas lui voler le focus
+      if (!platformHasFocus) iframeEl?.focus()
 
     } catch (err) {
       console.error('[flompt] Live update error:', err)
