@@ -336,17 +336,30 @@
     else openSidebar()
   }
 
-  // ── DOM: Toggle button ─────────────────────────────────────────────────────
+  // ── DOM: Toggle button — Sparkles icon, style matching sibling buttons ───────
   const toggleBtn = document.createElement('button')
   toggleBtn.id    = 'flompt-toggle'
   toggleBtn.title = 'Flompt — Visual Prompt Builder'
   toggleBtn.setAttribute('aria-label', 'Open Flompt')
+  // Icône Sparkles (Lucide) inline — pas d'img pour éviter les conflits de style
   toggleBtn.innerHTML = `
-    <img id="flompt-toggle-icon"
-      src="${chrome.runtime.getURL('icons/icon.svg')}"
-      width="28" height="28" alt="" aria-hidden="true">
+    <svg id="flompt-toggle-icon" xmlns="http://www.w3.org/2000/svg"
+      width="16" height="16" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+      <path d="M20 3v4"/><path d="M22 5h-4"/>
+      <path d="M4 17v2"/><path d="M5 18H3"/>
+    </svg>
   `
-  toggleBtn.addEventListener('click', toggleSidebar)
+  // stopPropagation critique : évite de déclencher les handlers parents
+  // (ex: file upload label sur ChatGPT, overlay Gemini, etc.)
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    toggleSidebar()
+  })
 
   // ── Insertion du toggle — extrême gauche de la toolbar ────────────────────
   //
@@ -384,11 +397,20 @@
     if (toggleBtn.isConnected) return true
 
     const sendBtn = platform?.getSendBtn?.() || findSendBtnByTraversal()
-    if (!sendBtn?.parentElement) return false
+    if (!sendBtn) return false
 
-    const container = sendBtn.parentElement
-    // Insérer en PREMIER (extrême gauche) de la barre d'outils
-    container.insertBefore(toggleBtn, container.firstChild)
+    // Remonter depuis sendBtn en évitant les <label> et <a>
+    // (un <label> wrappant un file input déclencherait le file picker au clic)
+    let container = sendBtn.parentElement
+    while (container && (container.tagName === 'LABEL' || container.tagName === 'A')) {
+      container = container.parentElement
+    }
+    if (!container) return false
+
+    // Insérer JUSTE AVANT le sendBtn dans ce container — position sûre,
+    // loin des zones file-upload qui sont généralement à l'opposé
+    const refNode = container.contains(sendBtn) ? sendBtn : container.lastChild
+    container.insertBefore(toggleBtn, refNode)
     return true
   }
 
