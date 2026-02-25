@@ -157,58 +157,21 @@
   let iframeEl            = null
   let iframeReady         = false
   let currentSidebarWidth = SIDEBAR_W_DEFAULT
-  let inputSyncObserver   = null
-  let inputSyncDebounce   = null
   let pageShiftStyle      = null
-  let lastSentText        = null  // évite les envois redondants
 
-  // ── Bidirectional sync: platform input → iframe ────────────────────────────
+  // ── Import manuel: plateforme → iframe (déclenché par bouton dans l'app) ───
   /**
-   * Envoie le texte courant de l'input plateforme vers l'iframe.
-   * @param {boolean} force — bypass le filtre "déjà envoyé" (ex: première sync)
+   * Lit le texte de l'input plateforme et l'envoie une fois à l'iframe.
+   * Appelé uniquement sur demande explicite (FLOMPT_SYNC_REQUEST).
    */
-  function sendPlatformInputToIframe (force = false) {
+  function sendPlatformInputToIframe () {
     if (!iframeEl?.contentWindow || !iframeReady) return
     const text = getInputText()
-    if (!force && text === lastSentText) return  // rien de nouveau
-    lastSentText = text
-    // '*' comme targetOrigin : évite les drops silencieux si l'iframe navigue
     iframeEl.contentWindow.postMessage({
       type: 'FLOMPT_PLATFORM_INPUT',
       text,
       platform: platform?.name || 'Unknown',
     }, '*')
-  }
-
-  // Événements déclenchant une re-sync (paste, cut, IME, drag…)
-  const SYNC_EVENTS = ['input', 'keyup', 'paste', 'cut', 'drop', 'compositionend']
-
-  /**
-   * Sync plateforme → app.
-   *
-   * Stratégie : interval 200ms qui compare le texte courant à lastSentText.
-   * Aucun MutationObserver ni event listener seuls — trop fragiles face aux
-   * remplacements de nœuds React/ProseMirror, shadow DOM Gemini, etc.
-   * Les events document-level restent en supplément pour la réactivité immédiate.
-   */
-  function setupInputSync () {
-    if (inputSyncObserver) return
-
-    // Interval 200ms — force=true : bypass lastSentText, envoie toujours
-    // L'écho est cassé par l'early return dans liveUpdatePlatformInput
-    const id = setInterval(() => {
-      if (!sidebarOpen || !iframeReady) return
-      sendPlatformInputToIframe(true)
-    }, 200)
-
-    // Events document-level en capture — réponse sub-200ms pour la frappe
-    const onSyncEvent = () => {
-      clearTimeout(inputSyncDebounce)
-      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 30)
-    }
-    SYNC_EVENTS.forEach(evt => document.addEventListener(evt, onSyncEvent, true))
-
-    inputSyncObserver = { _id: id, _handler: onSyncEvent }
   }
 
   // ── Push layout : rétrécit le contenu de la page pour faire place à la sidebar ──
@@ -253,19 +216,6 @@
         pageShiftStyle = null
       }, 320)
     }
-  }
-
-  function teardownInputSync () {
-    if (inputSyncObserver) {
-      if (inputSyncObserver._id != null) clearInterval(inputSyncObserver._id)
-      if (inputSyncObserver._handler) {
-        SYNC_EVENTS.forEach(evt =>
-          document.removeEventListener(evt, inputSyncObserver._handler, true)
-        )
-      }
-      inputSyncObserver = null
-    }
-    clearTimeout(inputSyncDebounce)
   }
 
   // ── DOM: Resize handle (bord gauche de la sidebar) ─────────────────────────
@@ -382,8 +332,7 @@
         s.classList.add('flompt-splash-hidden')
         setTimeout(() => s.remove(), 450)
       }
-      // Sync initiale forcée — écrase ce qu'il y a déjà dans l'app
-      if (sidebarOpen) sendPlatformInputToIframe(true)
+      // Pas d'import automatique — l'user clique sur le bouton dans l'app
     })
 
     // Header interne (close button visible à l'intérieur)
@@ -414,12 +363,7 @@
       toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
     }
 
-    // Sync plateforme → app : interval 200ms + events document-level
-    setupInputSync()
-
-    // Envoyer le contenu actuel immédiatement (forcé) — écrase ce qu'il y a
-    // déjà dans l'app pour garantir la cohérence à l'ouverture
-    if (iframeReady) sendPlatformInputToIframe(true)
+    // Pas de sync automatique — l'user déclenche l'import manuellement
   }
 
   function closeSidebar () {
@@ -427,8 +371,6 @@
     sidebarEl?.classList.remove('flompt-open')
     removePageShift()
     toggleBtn?.classList.remove('flompt-active')
-
-    teardownInputSync()
 
     // Restaurer la position du bouton flottant
     if (toggleBtn?.classList.contains('flompt-floating')) {
@@ -664,13 +606,6 @@
     }
   }, 2000)
 
-  // Re-sync quand l'onglet revient au premier plan (tab switch)
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && sidebarOpen && iframeReady) {
-      sendPlatformInputToIframe(true)
-    }
-  })
-
   // ── Live update : app → plateforme (brut, sans toast ni fermeture) ──────────
   //
   // execCommand est la seule voie universelle (React, ProseMirror, Angular) —
@@ -745,9 +680,9 @@
       closeSidebar()
     }
 
-    // L'app demande la valeur actuelle de l'input plateforme (forcé)
+    // L'user clique "Import prompt" dans l'app → on lit et envoie l'input plateforme
     if (type === 'FLOMPT_SYNC_REQUEST') {
-      sendPlatformInputToIframe(true)
+      sendPlatformInputToIframe()
     }
   })
 

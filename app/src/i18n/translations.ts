@@ -27,6 +27,7 @@ export interface Translations {
     decomposing: string
     errorDecompose: string
     paste: string
+    importFromPlatform: string
   }
   promptOutput: {
     title: string
@@ -113,6 +114,7 @@ const en: Translations = {
     decomposing: 'Decomposing…',
     errorDecompose: 'Decomposition failed. Please try again.',
     paste: 'Paste from clipboard',
+    importFromPlatform: 'Import prompt from page',
   },
   promptOutput: {
     title: 'Result',
@@ -219,6 +221,7 @@ const fr: Translations = {
     decomposing: 'Décomposition…',
     errorDecompose: 'La décomposition a échoué. Réessayez.',
     paste: 'Coller depuis le presse-papiers',
+    importFromPlatform: 'Importer le prompt depuis la page',
   },
   promptOutput: {
     title: 'Résultat',

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { Zap, Loader, ClipboardPaste } from 'lucide-react'
+import { Zap, Loader, ClipboardPaste, Download } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, classifyError } from '@/services/api'
 import { assemblePrompt } from '@/lib/assemblePrompt'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
+
+const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
 
 const PromptInput = () => {
   const {
@@ -16,28 +18,30 @@ const PromptInput = () => {
   } = useFlowStore()
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
+  const [platformName, setPlatformName] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // ── Sync bidirectionnelle : plateforme → app (mode extension uniquement) ──
+  // ── Réception de l'import depuis la plateforme (mode extension uniquement) ──
   useEffect(() => {
-    const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
     if (!isExt) return
 
     const handler = (event: MessageEvent) => {
       if (event.data?.type !== 'FLOMPT_PLATFORM_INPUT') return
       const text = event.data.text as string
+      const platform = event.data.platform as string
       if (typeof text !== 'string') return
-      // Toujours mettre à jour depuis la plateforme — elle est source de vérité
       setRawPrompt(text)
+      if (platform && platform !== 'Unknown') setPlatformName(platform)
     }
 
     window.addEventListener('message', handler)
-
-    // Demander la valeur initiale au content script dès le montage
-    window.parent.postMessage({ type: 'FLOMPT_SYNC_REQUEST' }, '*')
-
     return () => window.removeEventListener('message', handler)
   }, [setRawPrompt])
+
+  /** Demande le prompt actuel à la plateforme — déclenché par le bouton */
+  const handleImportFromPlatform = () => {
+    window.parent.postMessage({ type: 'FLOMPT_SYNC_REQUEST' }, '*')
+  }
 
   const handleDecompose = async () => {
     if (!rawPrompt.trim()) return
@@ -75,7 +79,6 @@ const PromptInput = () => {
         textareaRef.current?.focus()
       }
     } catch {
-      // Fallback: focus textarea so user can Ctrl+V
       textareaRef.current?.focus()
     }
   }
@@ -83,6 +86,22 @@ const PromptInput = () => {
   return (
     <div className="prompt-input-panel">
       <h2 className="panel-title">{t.promptInput.title}</h2>
+
+      {/* Bouton import plateforme — visible uniquement dans l'extension */}
+      {isExt && (
+        <button
+          className="btn btn-secondary btn-import-platform"
+          onClick={handleImportFromPlatform}
+          type="button"
+        >
+          <Download size={13} />
+          {platformName
+            ? `Import from ${platformName}`
+            : t.promptInput.importFromPlatform
+          }
+        </button>
+      )}
+
       <div className="textarea-wrap">
         <textarea
           ref={textareaRef}
@@ -103,7 +122,9 @@ const PromptInput = () => {
           </button>
         )}
       </div>
+
       {error && <p className="error-msg">{error}</p>}
+
       <button
         className="btn btn-primary"
         onClick={handleDecompose}

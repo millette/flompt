@@ -1183,6 +1183,14 @@ body {
 .export-row2 .btn { flex: 1; margin-bottom: 0 !important; }
 .export-btn { font-size: 0.76rem !important; }
 
+/* ── Import prompt button — extension mode only ──────────────────────────── */
+.btn-import-platform {
+  width: 100%;
+  margin-bottom: 2px;
+  border-style: dashed !important;
+  font-size: 0.78rem !important;
+}
+
 /* ── Stale banner — blocs changés depuis le dernier compile ──────────────── */
 .stale-banner {
   display: flex;
