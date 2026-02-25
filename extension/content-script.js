@@ -5,6 +5,15 @@
   if (window.__flomptInjected) return
   window.__flomptInjected = true
 
+  // ── Caveat font — injectée via <link> JS (le @import CSS est bloqué par les CSP des plateformes)
+  if (!document.getElementById('flompt-caveat-font')) {
+    const link = document.createElement('link')
+    link.id   = 'flompt-caveat-font'
+    link.rel  = 'stylesheet'
+    link.href = 'https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap'
+    document.head.appendChild(link)
+  }
+
   // ── Config ─────────────────────────────────────────────────────────────────
   const DEV_MODE      = false
   const FLOMPT_URL    = DEV_MODE
