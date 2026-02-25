@@ -1,7 +1,10 @@
 /* ── Flompt Extension Styles ────────────────────────────────────────────────
    Design aligné sur l'app Flompt — dark theme, accent #FF3570
    All selectors are prefixed with #flompt- to avoid conflicts with host pages
+   v0.1.6 — header mobile avec logo.svg (README), splash screen Inter 700
    ──────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 /* ── Sidebar container ────────────────────────────────────────────────────── */
 #flompt-sidebar {
@@ -17,63 +20,117 @@
   flex-direction: column !important;
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  overflow: hidden !important;
 }
 
 #flompt-sidebar.flompt-open {
   right: 0 !important;
 }
 
-/* ── Sidebar header ───────────────────────────────────────────────────────── */
-#flompt-sidebar-header {
+/* ── Header mobile — logo.svg (README) + close ───────────────────────────── */
+#flompt-header {
+  height: 54px !important;
+  min-height: 54px !important;
+  background: #161616 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 16px !important;
-  background: #242424 !important;
-  flex-shrink: 0 !important;
+  padding: 0 16px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  height: 54px !important;
+  flex-shrink: 0 !important;
   box-sizing: border-box !important;
 }
 
-/* Logo image */
-.flompt-logo {
-  display: block !important;
-  height: 22px !important;
+/* Logo SVG du README — éclair rose (#FF3570) + "Flompt" en texte */
+#flompt-logo {
+  height: 28px !important;
   width: auto !important;
+  display: block !important;
+  pointer-events: none !important;
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
-/* Close button */
+/* ── Bouton close — dans le header à droite ──────────────────────────────── */
 #flompt-close {
-  all: unset !important;
-  color: #9a9a9a !important;
-  cursor: pointer !important;
-  font-size: 16px !important;
   width: 30px !important;
   height: 30px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: 8px !important;
+  color: rgba(240, 240, 240, 0.5) !important;
+  cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  background: #2f2f2f !important;
   transition: color 120ms, background 120ms, border-color 120ms !important;
-  line-height: 1 !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 #flompt-close:hover {
   color: #f0f0f0 !important;
-  background: #3a3a3a !important;
+  background: rgba(255, 53, 112, 0.12) !important;
   border-color: #FF3570 !important;
 }
 
-/* ── Iframe ───────────────────────────────────────────────────────────────── */
+/* ── Splash screen — titre dans la zone iframe pendant le chargement ─────── */
+/* Position absolue sur la sidebar (position: fixed = containing block) */
+#flompt-splash {
+  position: absolute !important;
+  top: 54px !important;     /* juste sous le header */
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: #1c1c1e !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 5 !important;
+  opacity: 1 !important;
+  transition: opacity 0.4s ease !important;
+  pointer-events: none !important;
+}
+
+#flompt-splash.flompt-splash-hidden {
+  opacity: 0 !important;
+}
+
+#flompt-splash-inner {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+#flompt-splash-bolt {
+  display: block !important;
+  filter: drop-shadow(0 0 16px rgba(255, 53, 112, 0.45)) !important;
+}
+
+/* Titre de l'app — Inter 700, couleur et taille exactes de l'app mobile */
+#flompt-splash-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 26px !important;
+  color: #f0f0f0 !important;
+  letter-spacing: -0.6px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* ── Iframe — plein hauteur sous le header ──────────────────────────────── */
 #flompt-iframe {
   flex: 1 !important;
   width: 100% !important;
+  height: 100% !important;
   border: none !important;
   display: block !important;
+  min-height: 0 !important;
 }
 
 /* ── Body shift when sidebar is open ─────────────────────────────────────── */
@@ -82,35 +139,43 @@ body.flompt-body-shifted {
   transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* ── Floating toggle button ──────────────────────────────────────────────── */
+/* ── Floating toggle button — icon.svg officiel ──────────────────────────── */
 #flompt-toggle {
   position: fixed !important;
   bottom: 88px !important;
   right: 20px !important;
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 50% !important;
-  background: #FF3570 !important;
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 14px !important;
+  background: transparent !important;
   border: none !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: 0 4px 20px rgba(255, 53, 112, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55) !important;
   z-index: 2147483647 !important;
   transition: transform 0.2s, box-shadow 0.2s, right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   padding: 0 !important;
+  overflow: hidden !important;
+}
+
+#flompt-toggle img {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 14px !important;
+  display: block !important;
+  pointer-events: none !important;
 }
 
 #flompt-toggle:hover {
-  transform: scale(1.1) !important;
-  box-shadow: 0 6px 28px rgba(255, 53, 112, 0.65) !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.7) !important;
 }
 
 #flompt-toggle.flompt-active {
   right: 460px !important;
-  background: #e0245a !important;
-  box-shadow: 0 4px 20px rgba(224, 36, 90, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(255, 53, 112, 0.45) !important;
 }
 
 /* ── Toast notification ──────────────────────────────────────────────────── */

@@ -30,21 +30,15 @@
       name: 'ChatGPT',
       test: () => hostname.includes('chatgpt.com') || hostname.includes('openai.com'),
       getInput () {
+        // #prompt-textarea est désormais un div[contenteditable] (React/ProseMirror-like)
         return (
+          document.querySelector('#prompt-textarea[contenteditable]') ||
           document.querySelector('#prompt-textarea') ||
-          document.querySelector('textarea[data-id]') ||
           document.querySelector('div[contenteditable="true"][data-virtualized="false"]')
         )
       },
       inject (el, text) {
-        el.focus()
-        if (el.tagName === 'TEXTAREA') {
-          const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
-          setter.call(el, text)
-          el.dispatchEvent(new Event('input', { bubbles: true }))
-        } else {
-          setContentEditable(el, text)
-        }
+        setContentEditable(el, text)
       },
     },
     claude: {
@@ -63,9 +57,10 @@
       name: 'Gemini',
       test: () => hostname.includes('gemini.google.com'),
       getInput () {
+        // Gemini utilise un web component <rich-textarea> — pas de Quill.js
         return (
-          document.querySelector('div[contenteditable="true"].ql-editor') ||
           document.querySelector('rich-textarea div[contenteditable]') ||
+          document.querySelector('rich-textarea [contenteditable="true"]') ||
           document.querySelector('div[contenteditable="true"]')
         )
       },
@@ -78,16 +73,38 @@
   // ── Helpers ────────────────────────────────────────────────────────────────
   function setContentEditable (el, text) {
     el.focus()
-    // Clear existing content
-    document.execCommand('selectAll', false, null)
-    document.execCommand('delete', false, null)
-    // Insert new text
-    document.execCommand('insertText', false, text)
-    // Fallback if execCommand didn't work
-    if (!el.textContent.trim()) {
-      el.textContent = text
+
+    // Sélectionner tout le contenu via la Selection API (remplace execCommand('selectAll'))
+    const selection = window.getSelection()
+    const range = document.createRange()
+    range.selectNodeContents(el)
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    // execCommand('insertText') remplace la sélection ET fire beforeinput+input dans Chrome
+    // ProseMirror (Claude) intercepte beforeinput — c'est le chemin recommandé
+    const inserted = document.execCommand('insertText', false, text)
+
+    // Fallback si execCommand a no-opé (certains navigateurs, certaines configs)
+    if (!inserted || el.textContent.trim() !== text.trim()) {
+      // Dispatch beforeinput explicitement pour ProseMirror
+      const beforeInput = new InputEvent('beforeinput', {
+        bubbles: true,
+        cancelable: true,
+        inputType: 'insertReplacementText',
+        data: text,
+      })
+      el.dispatchEvent(beforeInput)
+
+      if (!beforeInput.defaultPrevented) {
+        el.textContent = text
+      }
+
       el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
     }
+
+    // Gemini / Angular / Lit ont besoin d'un event 'change' pour activer le bouton Envoyer
+    setTimeout(() => el.dispatchEvent(new Event('change', { bubbles: true })), 50)
   }
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -100,13 +117,44 @@
     const sidebar = document.createElement('div')
     sidebar.id = 'flompt-sidebar'
 
+    // ── Header mobile ──────────────────────────────────────────────────────────
+    // Logo depuis icons/logo.svg (le logo du README) : éclair rose + "Flompt"
     const header = document.createElement('div')
-    header.id = 'flompt-sidebar-header'
-    header.innerHTML = `
-      <img class="flompt-logo" src="${chrome.runtime.getURL('icons/logo.svg')}" alt="Flompt">
-      <button id="flompt-close" title="Close">✕</button>
+    header.id = 'flompt-header'
+
+    const logoImg = document.createElement('img')
+    logoImg.id  = 'flompt-logo'
+    logoImg.src = chrome.runtime.getURL('icons/logo.svg')
+    logoImg.alt = 'Flompt'
+
+    const closeBtn = document.createElement('button')
+    closeBtn.id = 'flompt-close'
+    closeBtn.title = 'Fermer Flompt'
+    closeBtn.setAttribute('aria-label', 'Fermer')
+    closeBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    `
+    closeBtn.addEventListener('click', closeSidebar)
+
+    header.appendChild(logoImg)
+    header.appendChild(closeBtn)
+
+    // ── Splash screen — titre visible dans la zone iframe pendant le chargement ─
+    // Apparaît immédiatement, disparaît en fondu quand l'iframe est prête
+    const splash = document.createElement('div')
+    splash.id = 'flompt-splash'
+    splash.innerHTML = `
+      <div id="flompt-splash-inner">
+        <svg id="flompt-splash-bolt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="48" height="48" aria-hidden="true">
+          <path d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z" fill="#FF3570"/>
+        </svg>
+        <span id="flompt-splash-title">Flompt</span>
+      </div>
     `
 
+    // ── Iframe — charge l'app Flompt ──────────────────────────────────────────
     const iframe = document.createElement('iframe')
     iframe.id  = 'flompt-iframe'
     iframe.src = FLOMPT_URL
@@ -114,11 +162,19 @@
     // allow-same-origin lets postMessage work with origin check
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads')
 
+    // Fade out + suppression du splash quand l'iframe a chargé
+    iframe.addEventListener('load', () => {
+      const s = document.getElementById('flompt-splash')
+      if (s) {
+        s.classList.add('flompt-splash-hidden')
+        setTimeout(() => s.remove(), 450)
+      }
+    })
+
     sidebar.appendChild(header)
+    sidebar.appendChild(splash)
     sidebar.appendChild(iframe)
     document.body.appendChild(sidebar)
-
-    header.querySelector('#flompt-close').addEventListener('click', closeSidebar)
 
     sidebarEl = sidebar
     iframeEl  = iframe
@@ -149,10 +205,9 @@
   const toggleBtn = document.createElement('button')
   toggleBtn.id = 'flompt-toggle'
   toggleBtn.title = 'Open Flompt — Visual Prompt Builder'
+  // Logo officiel (favicon du README) — dark background, éclair blanc, bords arrondis
   toggleBtn.innerHTML = `
-    <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z" fill="white"/>
-    </svg>
+    <img src="${chrome.runtime.getURL('icons/icon.svg')}" alt="Flompt" width="52" height="52">
   `
   toggleBtn.addEventListener('click', toggleSidebar)
   document.body.appendChild(toggleBtn)

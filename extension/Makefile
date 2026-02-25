@@ -15,6 +15,7 @@ PACK_FILES := manifest.json \
               icons/icon32.png \
               icons/icon48.png \
               icons/icon128.png \
+              icons/icon.svg \
               icons/logo.svg
 
 .PHONY: all icons pack clean help
