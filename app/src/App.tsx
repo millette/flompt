@@ -19,6 +19,8 @@ const TAB_IDS: { id: Tab; Icon: typeof Workflow }[] = [
   { id: 'output', Icon: Sparkles },
 ]
 
+const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
+
 const App = () => {
   const { undo, redo, reset, past, future, nodes, activeTab, setActiveTab, isDecomposing } = useFlowStore()
   const { t, locale, setLocale } = useLocale()
@@ -45,51 +47,53 @@ const App = () => {
 
   return (
     <div className="app">
-      <header className="header">
-        <a href="/" className="header-brand" style={{ textDecoration: 'none' }}>
-          <h1 className="logo">flompt</h1>
-        </a>
-
-        <div className="header-spacer" />
-
-        {/* Node count */}
-        {nodes.length > 0 && (
-          <span className="node-count hide-mobile">{t.nodeCount(nodes.length)}</span>
-        )}
-
-        <div className="header-actions">
-          <button className="btn-icon" onClick={undo} disabled={past.length === 0} title={t.header.undo}>
-            <Undo2 size={14} />
-          </button>
-          <button className="btn-icon" onClick={redo} disabled={future.length === 0} title={t.header.redo}>
-            <Redo2 size={14} />
-          </button>
-          <KeyboardShortcuts />
-          <button
-            className="btn-locale"
-            onClick={toggleLocale}
-            title={locale === 'en' ? 'Passer en français' : 'Switch to English'}
-          >
-            {locale.toUpperCase()}
-          </button>
-          <a
-            className="btn-icon btn-github"
-            href="https://github.com/Nyrok/flompt"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Star on GitHub"
-          >
-            <Github size={14} />
+      {!isExtension && (
+        <header className="header">
+          <a href="/" className="header-brand" style={{ textDecoration: 'none' }}>
+            <h1 className="logo">flompt</h1>
           </a>
-          <button
-            className="btn-icon btn-clear-desktop"
-            onClick={() => { if (confirm(t.header.resetConfirm)) reset() }}
-            title={t.header.reset}
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      </header>
+
+          <div className="header-spacer" />
+
+          {/* Node count */}
+          {nodes.length > 0 && (
+            <span className="node-count hide-mobile">{t.nodeCount(nodes.length)}</span>
+          )}
+
+          <div className="header-actions">
+            <button className="btn-icon" onClick={undo} disabled={past.length === 0} title={t.header.undo}>
+              <Undo2 size={14} />
+            </button>
+            <button className="btn-icon" onClick={redo} disabled={future.length === 0} title={t.header.redo}>
+              <Redo2 size={14} />
+            </button>
+            <KeyboardShortcuts />
+            <button
+              className="btn-locale"
+              onClick={toggleLocale}
+              title={locale === 'en' ? 'Passer en français' : 'Switch to English'}
+            >
+              {locale.toUpperCase()}
+            </button>
+            <a
+              className="btn-icon btn-github"
+              href="https://github.com/Nyrok/flompt"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Star on GitHub"
+            >
+              <Github size={14} />
+            </a>
+            <button
+              className="btn-icon btn-clear-desktop"
+              onClick={() => { if (confirm(t.header.resetConfirm)) reset() }}
+              title={t.header.reset}
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </header>
+      )}
 
       <main className={`main${isDecomposing ? ' is-decomposing' : ''}`}>
         <aside className={`left-panel${activeTab !== 'input' ? ' panel-hidden' : ''}`}>
