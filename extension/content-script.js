@@ -6,8 +6,14 @@
   window.__flomptInjected = true
 
   // ── Config ─────────────────────────────────────────────────────────────────
-  const FLOMPT_URL    = 'https://flompt.dev/?extension=1'
-  const FLOMPT_ORIGIN = 'https://flompt.dev'
+  // DEV_MODE: mettre à false avant de publier sur le Chrome Web Store
+  const DEV_MODE      = true
+  const FLOMPT_URL    = DEV_MODE
+    ? 'http://localhost:5173/app/?extension=1'
+    : 'https://flompt.dev/?extension=1'
+  const FLOMPT_ORIGIN = DEV_MODE
+    ? 'http://localhost:5173'
+    : 'https://flompt.dev'
   const SIDEBAR_W     = 440
 
   // ── Platform detection ─────────────────────────────────────────────────────

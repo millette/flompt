@@ -1,63 +1,74 @@
 /* ── Flompt Extension Styles ────────────────────────────────────────────────
+   Design aligné sur l'app Flompt — dark theme, accent #FF3570
    All selectors are prefixed with #flompt- to avoid conflicts with host pages
    ──────────────────────────────────────────────────────────────────────── */
 
-/* Sidebar container */
+/* ── Sidebar container ────────────────────────────────────────────────────── */
 #flompt-sidebar {
   position: fixed !important;
   top: 0 !important;
   right: -460px !important;
   width: 440px !important;
   height: 100vh !important;
-  background: #fff !important;
-  box-shadow: -4px 0 32px rgba(0, 0, 0, 0.18) !important;
+  background: #1c1c1e !important;
+  box-shadow: -4px 0 40px rgba(0, 0, 0, 0.5) !important;
   z-index: 2147483646 !important;
   display: flex !important;
   flex-direction: column !important;
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 #flompt-sidebar.flompt-open {
   right: 0 !important;
 }
 
-/* Sidebar header */
+/* ── Sidebar header ───────────────────────────────────────────────────────── */
 #flompt-sidebar-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 10px 14px !important;
-  background: #0f0f0f !important;
-  color: #fff !important;
+  padding: 10px 16px !important;
+  background: #242424 !important;
   flex-shrink: 0 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: 54px !important;
+  box-sizing: border-box !important;
 }
 
+/* Logo image */
 .flompt-logo {
   display: block !important;
-  height: 28px !important;
+  height: 22px !important;
   width: auto !important;
 }
 
+/* Close button */
 #flompt-close {
   all: unset !important;
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: #9a9a9a !important;
   cursor: pointer !important;
-  font-size: 15px !important;
-  padding: 4px 8px !important;
-  border-radius: 4px !important;
+  font-size: 16px !important;
+  width: 30px !important;
+  height: 30px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: #2f2f2f !important;
+  transition: color 120ms, background 120ms, border-color 120ms !important;
   line-height: 1 !important;
-  transition: color 0.15s, background 0.15s !important;
 }
 
 #flompt-close:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  color: #f0f0f0 !important;
+  background: #3a3a3a !important;
+  border-color: #FF3570 !important;
 }
 
-/* Iframe */
+/* ── Iframe ───────────────────────────────────────────────────────────────── */
 #flompt-iframe {
   flex: 1 !important;
   width: 100% !important;
@@ -65,13 +76,13 @@
   display: block !important;
 }
 
-/* Body shift when sidebar is open */
+/* ── Body shift when sidebar is open ─────────────────────────────────────── */
 body.flompt-body-shifted {
   margin-right: 440px !important;
   transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* Floating toggle button */
+/* ── Floating toggle button ──────────────────────────────────────────────── */
 #flompt-toggle {
   position: fixed !important;
   bottom: 88px !important;
@@ -79,13 +90,13 @@ body.flompt-body-shifted {
   width: 48px !important;
   height: 48px !important;
   border-radius: 50% !important;
-  background: #0f0f0f !important;
+  background: #FF3570 !important;
   border: none !important;
   cursor: pointer !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(255, 53, 112, 0.45) !important;
   z-index: 2147483647 !important;
   transition: transform 0.2s, box-shadow 0.2s, right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   padding: 0 !important;
@@ -93,22 +104,24 @@ body.flompt-body-shifted {
 
 #flompt-toggle:hover {
   transform: scale(1.1) !important;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 6px 28px rgba(255, 53, 112, 0.65) !important;
 }
 
 #flompt-toggle.flompt-active {
   right: 460px !important;
-  background: #333 !important;
+  background: #e0245a !important;
+  box-shadow: 0 4px 20px rgba(224, 36, 90, 0.45) !important;
 }
 
-/* Toast */
+/* ── Toast notification ──────────────────────────────────────────────────── */
 #flompt-toast {
   position: fixed !important;
   bottom: 28px !important;
   left: 50% !important;
   transform: translateX(-50%) translateY(12px) !important;
-  background: #0f0f0f !important;
-  color: #fff !important;
+  background: #2f2f2f !important;
+  color: #f0f0f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
   padding: 10px 20px !important;
   border-radius: 8px !important;
   font-size: 13px !important;
@@ -117,9 +130,9 @@ body.flompt-body-shifted {
   opacity: 0 !important;
   transition: opacity 0.25s, transform 0.25s !important;
   pointer-events: none !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4) !important;
   white-space: nowrap !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 #flompt-toast.flompt-toast-visible {
@@ -128,5 +141,6 @@ body.flompt-body-shifted {
 }
 
 #flompt-toast.flompt-toast-error {
-  background: #c0392b !important;
+  background: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
 }

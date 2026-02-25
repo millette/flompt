@@ -1,15 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92 32" width="92" height="32">
-  <!-- Background -->
-  <rect width="92" height="32" fill="#0f0f0f" rx="6"/>
+  <!-- Background transparent — le header fournit la couleur de fond (#242424) -->
 
-  <!-- Lightning bolt — même path que le sidebar, viewBox 20x20, mis à l'échelle 0.9 et positionné à (8, 7) -->
+  <!-- Lightning bolt — même path que l'app, viewBox 20×20, scale 0.9, positionné à (8, 7) -->
   <path
     d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z"
     transform="translate(8, 7) scale(0.9)"
-    fill="#fff"
+    fill="#FF3570"
   />
 
-  <!-- Texte "Flompt" — même font-family, font-weight 700, font-size 14, letter-spacing -0.2, couleur #fff -->
+  <!-- Texte "Flompt" — font-weight 700, letter-spacing -0.2, couleur texte primaire -->
   <text
     x="30"
     y="21"
@@ -17,6 +16,6 @@
     font-weight="700"
     font-size="14"
     letter-spacing="-0.2"
-    fill="#fff"
+    fill="#f0f0f0"
   >Flompt</text>
 </svg>
