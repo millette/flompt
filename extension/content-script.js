@@ -474,6 +474,15 @@
   function tryInsertInToolbar () {
     if (toggleBtn.isConnected) return true
 
+    // ── ChatGPT : injection en première position dans composer-footer-actions ──
+    if (platform?.name === 'ChatGPT') {
+      const footerActions = document.querySelector('[data-testid="composer-footer-actions"]')
+      if (footerActions) {
+        footerActions.insertBefore(toggleBtn, footerActions.firstChild)
+        return true
+      }
+    }
+
     // ── Essai 1 : zone outils ─────────────────────────────────────────────
     const firstTool = findFirstToolBtn()
     if (firstTool) {
