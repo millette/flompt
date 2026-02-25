@@ -377,8 +377,7 @@
         s.classList.add('flompt-splash-hidden')
         setTimeout(() => s.remove(), 450)
       }
-      // Sync immédiate après chargement (forcée — l'iframe vient de s'initialiser)
-      sendPlatformInputToIframe(true)
+      // Pas de sync initiale — l'app démarre à vide intentionnellement
     })
 
     // Header interne (close button visible à l'intérieur)
@@ -409,12 +408,8 @@
       toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
     }
 
-    // Activer la sync bidirectionnelle + polling fallback
-    setupInputSync()
-    startSyncPoller()
-
-    // Sync immédiate si l'iframe est déjà prête (forcée — contexte a pu changer)
-    if (iframeReady) sendPlatformInputToIframe(true)
+    // Pas de sync initiale — l'app démarre à vide intentionnellement
+    // (la sync plateforme → app reste disponible via FLOMPT_SYNC_REQUEST)
   }
 
   function closeSidebar () {
@@ -652,24 +647,10 @@
   scheduleMount(0)
 
   // Ré-insertion si le bouton disparaît (navigation SPA)
-  // + re-attach de l'observer si l'input plateforme a changé (SPA swap de DOM)
   setInterval(() => {
     if (!toggleBtn.isConnected) {
       mountAttempts = 0
       scheduleMount(200)
-    }
-
-    if (sidebarOpen) {
-      const currentEl = platform?.getInput()
-      // Input swappé par le SPA → reset + re-observe
-      if (currentEl && inputSyncObserver?._el && inputSyncObserver._el !== currentEl) {
-        teardownInputSync()
-        setupInputSync()
-        sendPlatformInputToIframe(true)
-      } else if (currentEl && !inputSyncObserver) {
-        // Observer absent (ex: ouverture trop tôt) → le remettre
-        setupInputSync()
-      }
     }
   }, 2000)
 
@@ -680,13 +661,34 @@
     }
   })
 
+  // ── Live update : app → plateforme (brut, sans toast ni fermeture) ──────────
+  //
+  // Appelée sur chaque `FLOMPT_LIVE_UPDATE` depuis l'iframe.
+  // Met à jour lastSentText avant injection pour éviter le feedback loop
+  // si l'observer est actif (plateforme → app).
+  function liveUpdatePlatformInput (text) {
+    const el = platform?.getInput()
+    if (!el) return
+    try {
+      lastSentText = text   // coupe le retour d'écho vers l'app
+      platform.inject(el, text)
+    } catch (err) {
+      console.error('[flompt] Live update error:', err)
+    }
+  }
+
   // ── Messages depuis l'iframe flompt ────────────────────────────────────────
   window.addEventListener('message', (event) => {
     if (event.origin !== FLOMPT_ORIGIN) return
 
-    const { type, prompt } = event.data ?? {}
+    const { type, prompt, text } = event.data ?? {}
 
-    // Injection du prompt compilé dans la plateforme
+    // Sync brute app → plateforme en temps réel (sans fermer la sidebar)
+    if (type === 'FLOMPT_LIVE_UPDATE' && typeof text === 'string') {
+      liveUpdatePlatformInput(text)
+    }
+
+    // Injection finale du prompt compilé dans la plateforme (+ fermeture)
     if (type === 'FLOMPT_INJECT' && typeof prompt === 'string') {
       injectPrompt(prompt)
     }
@@ -696,7 +698,7 @@
       closeSidebar()
     }
 
-    // L'app demande la valeur actuelle de l'input plateforme (forcé — elle a besoin de l'état actuel)
+    // L'app demande la valeur actuelle de l'input plateforme (forcé)
     if (type === 'FLOMPT_SYNC_REQUEST') {
       sendPlatformInputToIframe(true)
     }
