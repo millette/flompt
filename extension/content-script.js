@@ -408,8 +408,13 @@
       toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
     }
 
-    // Pas de sync initiale — l'app démarre à vide intentionnellement
-    // (la sync plateforme → app reste disponible via FLOMPT_SYNC_REQUEST)
+    // Marquer le contenu actuel comme "déjà connu" — le premier envoi sera
+    // déclenché par un CHANGEMENT (frappe), pas par l'état initial (start vide)
+    lastSentText = getInputText()
+
+    // Sync plateforme → app : observer les changements en temps réel
+    setupInputSync()
+    startSyncPoller()
   }
 
   function closeSidebar () {
