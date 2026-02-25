@@ -15,11 +15,14 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!KEY || posthog.__loaded) return
     posthog.init(KEY, {
-      api_host:                  HOST,
-      autocapture:               false,
-      capture_pageview:          false, // manual below
-      capture_pageleave:         true,
-      disable_session_recording: true,
+      api_host:          HOST,
+      autocapture:       true,
+      capture_pageview:  false, // manual below
+      capture_pageleave: true,
+      enable_heatmaps:   true,
+      session_recording: {
+        maskAllInputs: false,
+      },
     })
   }, [])
 

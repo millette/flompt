@@ -2,11 +2,11 @@
 /**
  * analytics.ts — PostHog wrapper
  *
- * Design principles for zero-lag:
- * - Init is deferred (called after first render, never blocks)
- * - autocapture OFF → only explicit events, no DOM scanning overhead
- * - All calls are try/caught → PostHog failures never break the app
- * - No tracking in dev (opt_out_capturing)
+ * - Init deferred after first render (non-blocking)
+ * - Session replay ON — textarea content masked (privacy)
+ * - Autocapture ON — clicks, inputs, pageviews
+ * - Heatmaps ON
+ * - No tracking in dev
  */
 
 import posthog from 'posthog-js'
@@ -21,14 +21,23 @@ export const initAnalytics = () => {
   ready = true
 
   posthog.init(KEY, {
-    api_host:                 HOST,
-    capture_pageview:         true,
-    capture_pageleave:        true,
-    autocapture:               false,  // manual only — no DOM polling
-    disable_session_recording: true,  // opt-in later if needed
-    request_batching:          true,  // batch network requests
+    api_host:          HOST,
+    capture_pageview:  true,
+    capture_pageleave: true,
+    autocapture:       true,
+    request_batching:  true,
+
+    // Session replay — mask prompt content (privacy)
+    session_recording: {
+      maskAllInputs:      false,               // keep most inputs visible
+      maskInputOptions:   { textarea: true },  // mask prompt textarea only
+      recordCrossOriginIframes: false,
+    },
+
+    // Heatmaps
+    enable_heatmaps: true,
+
     loaded: (ph) => {
-      // No tracking in local dev
       if ((import.meta.env.DEV as boolean)) ph.opt_out_capturing()
     },
   })
