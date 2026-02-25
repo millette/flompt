@@ -284,6 +284,9 @@
       document.body.style.userSelect = 'none'
       sidebarEl.classList.add('flompt-resizing')
       document.body.classList.add('flompt-resizing')
+      // Désactiver les pointer-events sur l'iframe : sans ça, quand la souris
+      // passe dessus pendant le drag, l'iframe capture les events et le resize se bloque
+      if (iframeEl) iframeEl.style.pointerEvents = 'none'
 
       const onMouseMove = (e) => {
         // Drag vers la gauche = augmenter la largeur
@@ -309,6 +312,8 @@
         document.body.style.userSelect = ''
         sidebarEl.classList.remove('flompt-resizing')
         document.body.classList.remove('flompt-resizing')
+        // Restaurer les pointer-events de l'iframe
+        if (iframeEl) iframeEl.style.pointerEvents = ''
         document.removeEventListener('mousemove', onMouseMove)
         document.removeEventListener('mouseup', onMouseUp)
       }

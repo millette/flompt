@@ -86,14 +86,16 @@ const PromptInput = () => {
           placeholder={t.promptInput.placeholder}
           rows={5}
         />
-        <button
-          className="btn-paste"
-          onClick={handlePaste}
-          title={t.promptInput.paste}
-          type="button"
-        >
-          <ClipboardPaste size={14} />
-        </button>
+        {!rawPrompt && (
+          <button
+            className="btn-paste"
+            onClick={handlePaste}
+            title={t.promptInput.paste}
+            type="button"
+          >
+            <ClipboardPaste size={14} />
+          </button>
+        )}
       </div>
       {error && <p className="error-msg">{error}</p>}
       <button
