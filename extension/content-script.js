@@ -137,6 +137,7 @@
   let currentSidebarWidth = SIDEBAR_W_DEFAULT
   let inputSyncObserver   = null
   let inputSyncDebounce   = null
+  let pageShiftStyle      = null
 
   // ── Bidirectional sync: platform input → iframe ────────────────────────────
   function sendPlatformInputToIframe () {
@@ -168,6 +169,50 @@
       subtree: true,
       characterData: true,
     })
+  }
+
+  // ── Push layout : rétrécit le contenu de la page pour faire place à la sidebar ──
+  //
+  // Stratégie :
+  //  1. `body > :not(flompt-*)` → max-width: calc(100vw - sidebarWidth)
+  //     Cible le container root de la plateforme (ex: #__next de ChatGPT)
+  //  2. `html, body` → overflow-x: hidden (évite le scroll horizontal)
+  //  3. Transition synchronisée avec l'animation de la sidebar (0.3s)
+  //
+  const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)'
+  const EXCL = ':not(#flompt-sidebar):not(#flompt-toast):not(#flompt-toggle-tooltip):not(#flompt-toggle)'
+
+  function applyPageShift (width) {
+    if (!pageShiftStyle) {
+      pageShiftStyle = document.createElement('style')
+      pageShiftStyle.id = 'flompt-page-shift'
+      document.head.appendChild(pageShiftStyle)
+    }
+    pageShiftStyle.textContent = `
+      html, body { overflow-x: hidden !important; }
+      body { margin-right: ${width}px !important; transition: margin-right 0.3s ${EASE} !important; }
+      body > ${EXCL} {
+        max-width: calc(100vw - ${width}px) !important;
+        transition: max-width 0.3s ${EASE} !important;
+      }
+    `
+  }
+
+  function removePageShift () {
+    if (pageShiftStyle) {
+      // Animer le retour avant de supprimer le style
+      pageShiftStyle.textContent = `
+        body { margin-right: 0px !important; transition: margin-right 0.3s ${EASE} !important; }
+        body > ${EXCL} {
+          max-width: 100vw !important;
+          transition: max-width 0.3s ${EASE} !important;
+        }
+      `
+      setTimeout(() => {
+        pageShiftStyle?.remove()
+        pageShiftStyle = null
+      }, 320)
+    }
   }
 
   function teardownInputSync () {
@@ -206,7 +251,7 @@
         sidebarEl.style.setProperty('width', newWidth + 'px', 'important')
 
         if (sidebarOpen) {
-          document.body.style.setProperty('margin-right', newWidth + 'px', 'important')
+          applyPageShift(newWidth)
         }
 
         // Mettre à jour le bouton flottant actif
@@ -311,9 +356,7 @@
     if (!sidebarEl) buildSidebar()
     sidebarOpen = true
     sidebarEl.classList.add('flompt-open')
-    // Appliquer la largeur dynamique au body
-    document.body.style.setProperty('margin-right', currentSidebarWidth + 'px', 'important')
-    document.body.classList.add('flompt-body-shifted')
+    applyPageShift(currentSidebarWidth)
     toggleBtn.classList.add('flompt-active')
 
     // Bouton flottant : déplacer à gauche de la sidebar
@@ -333,8 +376,7 @@
   function closeSidebar () {
     sidebarOpen = false
     sidebarEl?.classList.remove('flompt-open')
-    document.body.classList.remove('flompt-body-shifted')
-    document.body.style.removeProperty('margin-right')
+    removePageShift()
     toggleBtn?.classList.remove('flompt-active')
 
     // Restaurer la position du bouton flottant
