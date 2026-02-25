@@ -663,14 +663,15 @@
 
   // ── Live update : app → plateforme (brut, sans toast ni fermeture) ──────────
   //
-  // execCommand est la seule voie compatible avec React/ProseMirror/Angular —
-  // textContent seul est écrasé par le virtual DOM des frameworks.
+  // execCommand est la seule voie universelle (React, ProseMirror, Angular) —
+  // textContent seul est écrasé par le virtual DOM de ces frameworks.
   //
   // Flow :
-  //  1. focus() + selectAll + execCommand('insertText') → remplace tout le contenu
+  //  1. el.focus() + selectAll + execCommand('insertText') → remplace TOUT le contenu
   //  2. Fallback beforeinput/textContent/input si execCommand échoue
-  //  3. postMessage FLOMPT_REFOCUS → l'app reprend le focus immédiatement
-  //     (l'user peut continuer à taper sans interruption visible)
+  //  3. iframeEl.focus() — opération DOM locale (pas cross-origin), synchrone
+  //     Le browser route le focus vers le dernier élément actif dans l'iframe,
+  //     l'user peut continuer à taper sans interruption perceptible
   function liveUpdatePlatformInput (text) {
     const el = platform?.getInput()
     if (!el) return
@@ -687,7 +688,6 @@
       const ok = document.execCommand('insertText', false, text)
 
       if (!ok || el.textContent.trim() !== text.trim()) {
-        // Fallback : events natifs (beforeinput → textContent → input)
         const bEvt = new InputEvent('beforeinput', {
           bubbles: true, cancelable: true,
           inputType: 'insertReplacementText',
@@ -698,9 +698,10 @@
         el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
       }
 
-      // Rendre le focus à l'iframe — l'app doit écouter FLOMPT_REFOCUS
-      // et appeler document.activeElement?.focus() pour reprendre la main
-      iframeEl?.contentWindow?.postMessage({ type: 'FLOMPT_REFOCUS' }, FLOMPT_ORIGIN)
+      // Redonner le focus à l'iframe — iframeEl.focus() est une opération sur
+      // l'élément DOM local (host page), le browser route vers le dernier
+      // élément focalisé dans le browsing context de l'iframe. Synchrone.
+      iframeEl?.focus()
 
     } catch (err) {
       console.error('[flompt] Live update error:', err)
