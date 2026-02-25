@@ -1,9 +1,13 @@
 import { useState, useCallback } from 'react'
-import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Share2, Send } from 'lucide-react'
+import {
+  Clipboard, ClipboardCheck, FileText, Braces,
+  Sparkles, Play, Share2, Send, RefreshCw, Wand2, Loader,
+} from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
 import { assemblePrompt } from '@/lib/assemblePrompt'
+import { compilePrompt, classifyError } from '@/services/api'
 
 /** Detect if flompt is running inside the browser extension sidebar */
 const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
@@ -11,17 +15,46 @@ const isExtension = new URLSearchParams(window.location.search).get('extension')
 // ─── Composant ────────────────────────────────────────────────────────────────
 
 const PromptOutput = () => {
-  const { nodes, edges, compiledPrompt, setCompiledPrompt } = useFlowStore()
+  const {
+    nodes, edges,
+    compiledPrompt, setCompiledPrompt,
+    compiledStale,
+    isCompiling, setIsCompiling,
+  } = useFlowStore()
   const { t } = useLocale()
-  const [copied,   setCopied]   = useState(false)
-  const [injected, setInjected] = useState(false)
+  const [copied,       setCopied]       = useState(false)
+  const [injected,     setInjected]     = useState(false)
+  const [enhanceError, setEnhanceError] = useState<string | null>(null)
 
+  // ── Compile local (instantané) ───────────────────────────────────────────
   const handleCompile = () => {
     if (nodes.length === 0) return
     analytics.compileClicked()
     const result = assemblePrompt(nodes, edges)
     setCompiledPrompt(result)
     analytics.compileCompleted(result.tokenEstimate)
+    setEnhanceError(null)
+  }
+
+  // ── Enhance with AI (backend /api/compile) ───────────────────────────────
+  const handleEnhance = async () => {
+    if (nodes.length === 0) return
+    setIsCompiling(true)
+    setEnhanceError(null)
+    analytics.compileClicked()
+    try {
+      const blocks = nodes.map(n => n.data)
+      const result = await compilePrompt(blocks)
+      setCompiledPrompt(result)
+      analytics.compileCompleted(result.tokenEstimate)
+    } catch (e) {
+      const errType = classifyError(e)
+      setEnhanceError(t.errors[errType])
+      analytics.error('enhance', errType)
+      console.error(e)
+    } finally {
+      setIsCompiling(false)
+    }
   }
 
   const handleCopy = () => {
@@ -90,7 +123,16 @@ const PromptOutput = () => {
 
       {compiledPrompt ? (
         <>
+          {/* Stale indicator — blocs modifiés depuis le dernier compile */}
+          {compiledStale && (
+            <div className="stale-banner">
+              <RefreshCw size={12} />
+              <span>{t.promptOutput.outdated}</span>
+            </div>
+          )}
+
           <pre className="compiled-output">{compiledPrompt.raw}</pre>
+
           <div className="export-actions">
             {/* Send to AI — uniquement dans la sidebar extension */}
             {isExtension && (
@@ -130,14 +172,34 @@ const PromptOutput = () => {
         </div>
       )}
 
+      {/* Compile local — instantané */}
       <button
-        className="btn btn-primary"
+        className={`btn btn-primary${compiledStale && compiledPrompt ? ' btn-stale' : ''}`}
         onClick={handleCompile}
         disabled={nodes.length === 0}
         data-tour="compile-btn"
       >
-        <Play size={14} /> {t.promptOutput.compile}
+        <Play size={14} />
+        {compiledStale && compiledPrompt
+          ? <><RefreshCw size={13} className="stale-icon" /> {t.promptOutput.compile}</>
+          : t.promptOutput.compile
+        }
       </button>
+
+      {/* Enhance with AI — appel backend Claude */}
+      <button
+        className="btn btn-secondary btn-enhance"
+        onClick={handleEnhance}
+        disabled={nodes.length === 0 || isCompiling}
+        title={t.promptOutput.enhance}
+      >
+        {isCompiling
+          ? <><Loader size={13} className="icon-spin" /> {t.promptOutput.enhancing}</>
+          : <><Wand2 size={13} /> {t.promptOutput.enhance}</>
+        }
+      </button>
+
+      {enhanceError && <p className="error-msg">{enhanceError}</p>}
 
       <button className="btn btn-secondary btn-share" onClick={handleShare}>
         <Share2 size={13} /> {t.promptOutput.share}

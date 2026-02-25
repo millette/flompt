@@ -1183,6 +1183,31 @@ body {
 .export-row2 .btn { flex: 1; margin-bottom: 0 !important; }
 .export-btn { font-size: 0.76rem !important; }
 
+/* ── Stale banner — blocs changés depuis le dernier compile ──────────────── */
+.stale-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--accent);
+  background: rgba(255, 53, 112, 0.08);
+  border: 1px solid rgba(255, 53, 112, 0.2);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  animation: fade-in 200ms ease;
+}
+
+/* Compile button quand le résultat est périmé */
+.btn-stale {
+  border-color: var(--accent) !important;
+}
+
+/* Enhance with AI button */
+.btn-enhance {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
 /* Send-to-AI button — extension only */
 .export-inject {
   width: 100%;

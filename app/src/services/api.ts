@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios'
-import type { FlomptNode, FlomptEdge } from '@/types/blocks'
+import type { FlomptNode, FlomptEdge, BlockData } from '@/types/blocks'
 
 const client = axios.create({
   baseURL: '/api',
@@ -38,4 +38,21 @@ export const decomposePrompt = async (rawPrompt: string): Promise<DecomposeRespo
   return data
 }
 
-// compilePrompt supprimé — l'assemblage est désormais 100% local (voir PromptOutput.tsx)
+// ─── Compile (AI-powered) ────────────────────────────────────────────────────
+// POST /api/compile
+// Input  : list of blocks (BlockData[])
+// Output : optimized prompt string + token estimate
+//
+// Utilise Claude pour réécrire le prompt de manière naturelle et optimisée.
+// Plus lent que l'assemblage local mais produit un meilleur résultat final.
+
+export interface CompileResponse {
+  raw: string
+  tokenEstimate: number
+  blocks: BlockData[]
+}
+
+export const compilePrompt = async (blocks: BlockData[]): Promise<CompileResponse> => {
+  const { data } = await client.post<CompileResponse>('/compile', { blocks })
+  return data
+}

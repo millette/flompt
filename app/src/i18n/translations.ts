@@ -18,6 +18,7 @@ export interface Translations {
     reset: string
     resetConfirm: string
     autosaved: string
+    import: string
   }
   promptInput: {
     title: string
@@ -31,6 +32,9 @@ export interface Translations {
     title: string
     compile: string
     compiling: string
+    enhance: string
+    enhancing: string
+    outdated: string
     copy: string
     copied: string
     placeholder: string
@@ -100,6 +104,7 @@ const en: Translations = {
     reset: 'Reset',
     resetConfirm: 'Reset the canvas?',
     autosaved: 'Auto-saved',
+    import: 'Import session (.json)',
   },
   promptInput: {
     title: 'Raw Prompt',
@@ -113,6 +118,9 @@ const en: Translations = {
     title: 'Result',
     compile: 'Assemble prompt',
     compiling: 'Assembling…',
+    enhance: 'Enhance with AI',
+    enhancing: 'Enhancing…',
+    outdated: 'Blocks changed — recompile',
     copy: 'Copy',
     copied: 'Copied!',
     placeholder: 'Build your flowchart\nthen assemble to generate the prompt.',
@@ -202,6 +210,7 @@ const fr: Translations = {
     reset: 'Réinitialiser',
     resetConfirm: 'Réinitialiser le canvas ?',
     autosaved: 'Sauvegardé',
+    import: 'Importer une session (.json)',
   },
   promptInput: {
     title: 'Prompt brut',
@@ -215,6 +224,9 @@ const fr: Translations = {
     title: 'Résultat',
     compile: 'Assembler le prompt',
     compiling: 'Assemblage…',
+    enhance: 'Améliorer avec IA',
+    enhancing: 'Amélioration…',
+    outdated: 'Blocs modifiés — réassemblez',
     copy: 'Copier',
     copied: 'Copié !',
     placeholder: 'Construis ton flowchart\npuis assemble pour générer le prompt.',

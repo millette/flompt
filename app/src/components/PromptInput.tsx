@@ -2,12 +2,18 @@ import { useState, useRef, useEffect } from 'react'
 import { Zap, Loader, ClipboardPaste } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, classifyError } from '@/services/api'
+import { assemblePrompt } from '@/lib/assemblePrompt'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
 
 const PromptInput = () => {
-  const { rawPrompt, setRawPrompt, setNodes, setEdges, setIsDecomposing, isDecomposing, setActiveTab } =
-    useFlowStore()
+  const {
+    rawPrompt, setRawPrompt,
+    setNodes, setEdges,
+    setIsDecomposing, isDecomposing,
+    setActiveTab,
+    setCompiledPrompt,
+  } = useFlowStore()
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -21,13 +27,8 @@ const PromptInput = () => {
       if (event.data?.type !== 'FLOMPT_PLATFORM_INPUT') return
       const text = event.data.text as string
       if (typeof text !== 'string') return
-
-      // Lire la valeur actuelle directement depuis le store (évite stale closure)
-      // N'écraser que si le textarea est vide (pas d'interruption en cours d'édition)
-      const currentPrompt = useFlowStore.getState().rawPrompt
-      if (!currentPrompt.trim()) {
-        setRawPrompt(text)
-      }
+      // Toujours mettre à jour depuis la plateforme — elle est source de vérité
+      setRawPrompt(text)
     }
 
     window.addEventListener('message', handler)
@@ -50,6 +51,11 @@ const PromptInput = () => {
       setNodes(nodes)
       setEdges(edges)
       analytics.decomposeCompleted(nodes.length)
+
+      // Auto-compile local immédiatement → output prêt dès que l'user switche
+      const compiled = assemblePrompt(nodes, edges)
+      setCompiledPrompt(compiled)
+      analytics.compileCompleted(compiled.tokenEstimate)
     } catch (e) {
       setActiveTab('input')
       const errType = classifyError(e)
