@@ -70,8 +70,11 @@
       getInput () {
         return (
           document.querySelector('[data-testid="composer-text-input"] div[contenteditable]') ||
+          document.querySelector('.ProseMirror[contenteditable]') ||
           document.querySelector('div[contenteditable="true"].ProseMirror') ||
-          document.querySelector('div[contenteditable="true"]')
+          // Fallback : DERNIER contenteditable (l'input est en bas de page, pas les bulles)
+          [...document.querySelectorAll('[contenteditable="true"]')].at(-1) ||
+          [...document.querySelectorAll('[contenteditable]')].at(-1)
         )
       },
       inject (el, text) { setContentEditable(el, text) },
@@ -90,7 +93,8 @@
         return (
           document.querySelector('rich-textarea div[contenteditable]') ||
           document.querySelector('rich-textarea [contenteditable="true"]') ||
-          document.querySelector('div[contenteditable="true"]')
+          // Fallback : DERNIER contenteditable (même logique que Claude)
+          [...document.querySelectorAll('[contenteditable="true"]')].at(-1)
         )
       },
       inject (el, text) { setContentEditable(el, text) },
@@ -141,7 +145,10 @@
   function getInputText () {
     const el = platform?.getInput()
     if (!el) return ''
-    return el.textContent || el.value || ''
+    // innerText > textContent : gère mieux les sauts de ligne et le texte visible
+    const text = el.value ?? el.innerText ?? el.textContent ?? ''
+    if (DEV_MODE) console.log('[flompt] getInputText el:', el.tagName, el.className?.slice(0, 40), '→', JSON.stringify(text?.slice(0, 60)))
+    return text
   }
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -165,11 +172,12 @@
     const text = getInputText()
     if (!force && text === lastSentText) return  // rien de nouveau
     lastSentText = text
+    // '*' comme targetOrigin : évite les drops silencieux si l'iframe navigue
     iframeEl.contentWindow.postMessage({
       type: 'FLOMPT_PLATFORM_INPUT',
       text,
       platform: platform?.name || 'Unknown',
-    }, FLOMPT_ORIGIN)
+    }, '*')
   }
 
   // Événements déclenchant une re-sync (paste, cut, IME, drag…)
