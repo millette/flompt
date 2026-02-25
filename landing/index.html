@@ -238,6 +238,33 @@
     .bc-name { font-size: 0.8rem; font-weight: 600; color: var(--bc, #888); margin-bottom: 4px; }
     .bc-eg { font-size: 0.71rem; color: var(--text-dim); font-family: var(--mono); line-height: 1.5; }
 
+    /* ── EXTENSION ─────────────────────────────────────── */
+    .ext-section { padding: 80px 0; }
+    .ext-inner {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 56px; align-items: center;
+    }
+    .ext-text .section-title { margin-bottom: 12px; }
+    .ext-features { list-style: none; margin: 28px 0 24px; display: flex; flex-direction: column; gap: 14px; }
+    .ext-feature { display: flex; align-items: flex-start; gap: 14px; }
+    .ext-feature-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(255,53,112,0.08); border: 1px solid rgba(255,53,112,0.15);
+      display: flex; align-items: center; justify-content: center; color: var(--accent);
+    }
+    .ext-feature-body strong { display: block; font-size: 0.87rem; color: var(--text); font-weight: 600; margin-bottom: 2px; }
+    .ext-feature-body span { font-size: 0.79rem; color: var(--text-muted); line-height: 1.5; }
+    .ext-platforms { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .ext-platform {
+      padding: 4px 13px; border-radius: 99px; font-size: 0.72rem; font-weight: 500;
+      background: var(--bg-3); border: 1px solid var(--border-m); color: var(--text-muted);
+    }
+    .ext-mockup {
+      border-radius: 14px; border: 1px solid var(--border-m); overflow: hidden;
+      box-shadow: 0 0 80px rgba(255,53,112,0.05), 0 32px 80px rgba(0,0,0,0.55);
+    }
+    .ext-mockup svg { display: block; width: 100%; height: auto; }
+
     /* ── SPECS ─────────────────────────────────────────── */
     .specs {
       padding: 56px 0;
@@ -292,6 +319,7 @@
       .demo-sep svg { transform: rotate(90deg); }
       .blocks-grid { grid-template-columns: 1fr 1fr; }
       .specs-row { gap: 28px; }
+      .ext-inner { grid-template-columns: 1fr; gap: 40px; }
     }
     @media (max-width: 600px) {
       .hero { padding-top: 110px; padding-bottom: 56px; }
@@ -338,6 +366,7 @@
     <div class="nav-inner">
       <a href="/" class="nav-brand"><span>flompt</span></a>
       <div class="nav-links">
+        <a href="#extension">Extension</a>
         <a href="/docs">Docs</a>
         <a href="/blog/en">Blog</a>
         <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
@@ -350,6 +379,7 @@
   </nav>
 
   <div class="nav-mobile-menu" id="mobile-menu">
+    <a href="#extension">Extension</a>
     <a href="/docs">Docs</a>
     <a href="/blog/en">Blog</a>
     <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
@@ -622,6 +652,169 @@ statistics. Write in English.</pre>
           <div class="bc-name">Language</div>
           <div class="bc-eg">Output language</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CHROME EXTENSION ──────────────────────────── -->
+  <section class="ext-section" id="extension">
+    <div class="container">
+      <div class="ext-inner">
+
+        <!-- Text side -->
+        <div class="ext-text">
+          <p class="section-label">Chrome Extension</p>
+          <h2 class="section-title">Build prompts without<br/>leaving the chat.</h2>
+          <p class="section-sub">
+            One install. A <strong style="color:var(--accent)">✦ Enhance</strong> button appears directly in ChatGPT, Claude and Gemini — click it to open a structured prompt builder right beside your conversation.
+          </p>
+
+          <ul class="ext-features">
+            <li class="ext-feature">
+              <span class="ext-feature-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+              </span>
+              <div class="ext-feature-body">
+                <strong>Enhance button in every toolbar</strong>
+                <span>Injected natively alongside the existing tools — it blends in without breaking the UI.</span>
+              </div>
+            </li>
+            <li class="ext-feature">
+              <span class="ext-feature-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+              </span>
+              <div class="ext-feature-body">
+                <strong>Bidirectional sync</strong>
+                <span>Your chat input flows into flompt automatically — edit your blocks and inject the result back instantly.</span>
+              </div>
+            </li>
+            <li class="ext-feature">
+              <span class="ext-feature-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 9 15"/><path d="M12 3H3v18h18v-9"/><path d="m16 3 5 5"/></svg>
+              </span>
+              <div class="ext-feature-body">
+                <strong>Resizable sidebar</strong>
+                <span>Drag the left edge to adjust the panel width. Stays out of your way when you don't need it.</span>
+              </div>
+            </li>
+          </ul>
+
+          <div class="ext-platforms">
+            <span class="ext-platform">ChatGPT</span>
+            <span class="ext-platform">Claude</span>
+            <span class="ext-platform">Gemini</span>
+          </div>
+
+          <a href="https://github.com/Nyrok/flompt/releases/latest" target="_blank" rel="noopener" class="btn-cta">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+            Install extension
+          </a>
+        </div>
+
+        <!-- Mockup side -->
+        <div class="ext-mockup">
+          <svg viewBox="0 0 580 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Browser window showing flompt sidebar open alongside a ChatGPT conversation">
+
+            <!-- Browser frame -->
+            <rect width="580" height="360" rx="12" fill="#111111"/>
+
+            <!-- Chrome bar -->
+            <rect width="580" height="38" fill="#1c1c1e"/>
+            <!-- Traffic lights -->
+            <circle cx="18" cy="19" r="5" fill="#ff5f57"/>
+            <circle cx="34" cy="19" r="5" fill="#ffbd2e"/>
+            <circle cx="50" cy="19" r="5" fill="#28c940"/>
+            <!-- URL bar -->
+            <rect x="74" y="9" width="260" height="20" rx="5" fill="#252525"/>
+            <text x="204" y="23" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="Inter,system-ui,sans-serif" font-size="10">chatgpt.com</text>
+
+            <!-- Chat area background -->
+            <rect x="0" y="38" width="352" height="322" fill="#1e1e1e"/>
+
+            <!-- Fake chat messages -->
+            <!-- User bubble -->
+            <rect x="192" y="58" width="148" height="28" rx="8" fill="#2f2f2f"/>
+            <text x="266" y="77" text-anchor="middle" fill="#d4d4d4" font-size="9.5" font-family="Inter,system-ui,sans-serif">Write a blog post about AI</text>
+
+            <!-- AI response lines -->
+            <rect x="14" y="104" width="232" height="7" rx="3" fill="#2a2a2a"/>
+            <rect x="14" y="118" width="198" height="7" rx="3" fill="#2a2a2a"/>
+            <rect x="14" y="132" width="218" height="7" rx="3" fill="#2a2a2a"/>
+            <rect x="14" y="146" width="176" height="7" rx="3" fill="#2a2a2a"/>
+            <rect x="14" y="160" width="208" height="7" rx="3" fill="#2a2a2a"/>
+            <rect x="14" y="176" width="152" height="7" rx="3" fill="#252525"/>
+
+            <!-- Input area -->
+            <rect x="0" y="298" width="352" height="62" fill="#181818"/>
+            <rect x="0" y="298" width="352" height="1" fill="rgba(255,255,255,0.06)"/>
+            <!-- Input box -->
+            <rect x="12" y="308" width="268" height="32" rx="8" fill="#2f2f2f" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <text x="24" y="328" fill="rgba(255,255,255,0.22)" font-size="9.5" font-family="Inter,system-ui,sans-serif">Message ChatGPT…</text>
+            <!-- ✦ Enhance button — highlighted pink -->
+            <rect x="284" y="308" width="34" height="32" rx="8" fill="rgba(255,53,112,0.13)" stroke="rgba(255,53,112,0.32)" stroke-width="1"/>
+            <text x="301" y="328" text-anchor="middle" fill="#ff3570" font-size="14" font-family="Inter,system-ui,sans-serif">✦</text>
+            <!-- Tooltip -->
+            <rect x="271" y="283" width="60" height="18" rx="5" fill="#ff3570"/>
+            <text x="301" y="295" text-anchor="middle" fill="#fff" font-size="9" font-weight="600" font-family="Inter,system-ui,sans-serif">Enhance</text>
+            <!-- Tooltip tail -->
+            <polygon points="297,301 305,301 301,307" fill="#ff3570"/>
+            <!-- Send button -->
+            <circle cx="332" cy="324" r="12" fill="#ff3570"/>
+            <text x="332" y="329" text-anchor="middle" fill="white" font-size="13" font-family="Inter,system-ui,sans-serif">↑</text>
+
+            <!-- Divider between chat and sidebar -->
+            <rect x="350" y="38" width="1" height="322" fill="rgba(255,255,255,0.06)"/>
+
+            <!-- Flompt Sidebar background -->
+            <rect x="351" y="38" width="229" height="322" fill="#1c1c1e"/>
+
+            <!-- Resize handle glow -->
+            <rect x="349" y="38" width="3" height="322" fill="rgba(255,53,112,0.18)"/>
+            <circle cx="350" cy="183" r="2.5" fill="rgba(255,53,112,0.6)"/>
+            <circle cx="350" cy="196" r="2.5" fill="rgba(255,53,112,0.6)"/>
+            <circle cx="350" cy="209" r="2.5" fill="rgba(255,53,112,0.6)"/>
+
+            <!-- Sidebar header -->
+            <rect x="351" y="38" width="229" height="38" fill="#1c1c1e"/>
+            <rect x="351" y="76" width="229" height="1" fill="rgba(255,255,255,0.08)"/>
+            <!-- Logo -->
+            <rect x="364" y="52" width="14" height="14" rx="3" fill="rgba(255,53,112,0.25)"/>
+            <text x="364" y="62" fill="rgba(255,53,112,0.8)" font-size="8" font-weight="700" font-family="Inter,system-ui,sans-serif">f</text>
+            <text x="382" y="63" fill="rgba(255,255,255,0.45)" font-size="11" font-weight="600" font-family="Inter,system-ui,sans-serif">flompt</text>
+            <!-- Close -->
+            <text x="566" y="63" text-anchor="middle" fill="rgba(255,255,255,0.25)" font-size="14" font-family="Inter,system-ui,sans-serif">×</text>
+
+            <!-- Block: Role -->
+            <rect x="362" y="86" width="207" height="40" rx="7" fill="#212121" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <rect x="362" y="86" width="3" height="40" rx="1.5" fill="#c084fc"/>
+            <text x="375" y="101" fill="#9333ea" font-size="7" font-weight="700" font-family="Inter,system-ui,sans-serif" letter-spacing="0.6">ROLE</text>
+            <text x="375" y="117" fill="#d4d4d4" font-size="10" font-family="Inter,system-ui,sans-serif">AI tech journalist</text>
+
+            <!-- Block: Objective -->
+            <rect x="362" y="134" width="207" height="40" rx="7" fill="#212121" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <rect x="362" y="134" width="3" height="40" rx="1.5" fill="#fbbf24"/>
+            <text x="375" y="149" fill="#d97706" font-size="7" font-weight="700" font-family="Inter,system-ui,sans-serif" letter-spacing="0.6">OBJECTIVE</text>
+            <text x="375" y="165" fill="#d4d4d4" font-size="10" font-family="Inter,system-ui,sans-serif">Blog post · AI trends 2025</text>
+
+            <!-- Block: Constraints -->
+            <rect x="362" y="182" width="207" height="40" rx="7" fill="#212121" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <rect x="362" y="182" width="3" height="40" rx="1.5" fill="#fb7185"/>
+            <text x="375" y="197" fill="#e11d48" font-size="7" font-weight="700" font-family="Inter,system-ui,sans-serif" letter-spacing="0.6">CONSTRAINTS</text>
+            <text x="375" y="213" fill="#d4d4d4" font-size="10" font-family="Inter,system-ui,sans-serif">1 500 words · French</text>
+
+            <!-- Block: Output Format -->
+            <rect x="362" y="230" width="207" height="40" rx="7" fill="#212121" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <rect x="362" y="230" width="3" height="40" rx="1.5" fill="#ff7daa"/>
+            <text x="375" y="245" fill="#e879a0" font-size="7" font-weight="700" font-family="Inter,system-ui,sans-serif" letter-spacing="0.6">OUTPUT FORMAT</text>
+            <text x="375" y="261" fill="#d4d4d4" font-size="10" font-family="Inter,system-ui,sans-serif">Intro → 3 sections → CTA</text>
+
+            <!-- Inject prompt button -->
+            <rect x="362" y="288" width="207" height="28" rx="6" fill="rgba(255,53,112,0.09)" stroke="rgba(255,53,112,0.22)" stroke-width="1"/>
+            <text x="465" y="306" text-anchor="middle" fill="#ff3570" font-size="10.5" font-family="Inter,system-ui,sans-serif" font-weight="500">⚡ Inject into chat</text>
+
+          </svg>
+        </div>
+
       </div>
     </div>
   </section>
