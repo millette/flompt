@@ -24,7 +24,7 @@
    *  - test()        : hostname check
    *  - getInput()    : returns the contenteditable element to inject into
    *  - inject(el, t) : injects text into the element
-   *  - getSendBtn()  : returns the send button element (for inline toggle placement)
+   *  - getSendBtn()  : (optional) platform-specific send button selector
    */
   const PLATFORMS = {
     chatgpt: {
@@ -38,10 +38,12 @@
         )
       },
       inject (el, text) { setContentEditable(el, text) },
+      // Sélecteurs spécifiques ChatGPT (en plus de la traversal générique)
       getSendBtn () {
         return (
           document.querySelector('button[data-testid="send-button"]') ||
-          document.querySelector('button[aria-label="Send prompt"]')
+          document.querySelector('button[aria-label="Send prompt"]') ||
+          document.querySelector('button[aria-label="Send message"]')
         )
       },
     },
@@ -189,35 +191,76 @@
   const toggleBtn = document.createElement('button')
   toggleBtn.id    = 'flompt-toggle'
   toggleBtn.title = 'Flompt — Visual Prompt Builder'
+  toggleBtn.setAttribute('aria-label', 'Open Flompt')
   toggleBtn.innerHTML = `
     <img id="flompt-toggle-icon"
       src="${chrome.runtime.getURL('icons/icon.svg')}"
-      width="28" height="28" alt="Flompt" aria-hidden="true">
+      width="28" height="28" alt="" aria-hidden="true">
   `
   toggleBtn.addEventListener('click', toggleSidebar)
 
-  // ── Injection du toggle button dans la toolbar de la plateforme ────────────
-  // On insère le bouton juste avant le bouton "Send" de chaque plateforme.
-  // Fallback : bouton flottant en bas à droite si le send button est introuvable.
+  // ── Insertion du toggle button — traversal générique depuis l'input ─────────
+  //
+  // Stratégie robuste :
+  //   1. Essayer le sélecteur spécifique à la plateforme (getSendBtn)
+  //   2. Sinon traverser le DOM depuis l'input connu jusqu'à trouver un
+  //      bouton "send-like" (aria-label, data-testid, type=submit contenant "send")
+  //   3. Fallback : bouton flottant bas-droite
 
-  let mountAttempts = 0
+  /**
+   * Remonte depuis l'élément input jusqu'à trouver un bouton "send".
+   * Indépendant des classes CSS et attributs spécifiques à chaque version.
+   */
+  function findSendBtnByTraversal () {
+    const input = platform?.getInput()
+    if (!input) return null
+
+    let ancestor = input.parentElement
+    for (let depth = 0; depth < 12 && ancestor && ancestor !== document.body; depth++) {
+      const buttons = Array.from(ancestor.querySelectorAll('button'))
+      const sendBtn = buttons.find(b => {
+        const label   = (b.getAttribute('aria-label') || b.getAttribute('title') || '').toLowerCase()
+        const testid  = (b.getAttribute('data-testid') || '').toLowerCase()
+        const tooltip = (b.getAttribute('mattooltip') || '').toLowerCase()
+        return (
+          label.includes('send') ||
+          testid.includes('send') ||
+          tooltip.includes('send') ||
+          b.type === 'submit'
+        )
+      })
+      if (sendBtn) return sendBtn
+      ancestor = ancestor.parentElement
+    }
+    return null
+  }
 
   function tryInsertInToolbar () {
     if (toggleBtn.isConnected) return true
-    if (!platform?.getSendBtn) return false
 
-    const sendBtn = platform.getSendBtn()
+    // 1. Sélecteur spécifique à la plateforme
+    // 2. Traversal générique depuis l'input (robuste aux changements de DOM)
+    const sendBtn = platform?.getSendBtn?.() || findSendBtnByTraversal()
     if (!sendBtn?.parentElement) return false
 
     sendBtn.parentElement.insertBefore(toggleBtn, sendBtn)
     return true
   }
 
+  // Retry avec un seul timer actif à la fois (pas de race condition)
+  let mountTimer    = null
+  let mountAttempts = 0
+
+  function scheduleMount (delay = 500) {
+    clearTimeout(mountTimer)
+    mountTimer = setTimeout(mountToggleBtn, delay)
+  }
+
   function mountToggleBtn () {
     if (tryInsertInToolbar()) return
 
     if (++mountAttempts >= 20) {
-      // Fallback définitif : bouton flottant
+      // Fallback définitif : bouton flottant bas-droite
       if (!toggleBtn.isConnected) {
         toggleBtn.classList.add('flompt-floating')
         document.body.appendChild(toggleBtn)
@@ -225,16 +268,17 @@
       return
     }
 
-    setTimeout(mountToggleBtn, 500)
+    scheduleMount(500)
   }
 
-  mountToggleBtn()
+  // Lancement immédiat
+  scheduleMount(0)
 
   // Ré-insertion si le bouton est retiré du DOM (navigation SPA)
   setInterval(() => {
     if (!toggleBtn.isConnected) {
       mountAttempts = 0
-      mountToggleBtn()
+      scheduleMount(200) // petite pause pour laisser le DOM se stabiliser
     }
   }, 3000)
 
