@@ -485,6 +485,7 @@
       if (container) {
         // Insérer juste après le premier bouton outil — intégré dans la zone outils
         container.insertBefore(toggleBtn, firstTool.nextSibling)
+        fixClaudeParentAlign()
         return true
       }
     }
@@ -500,7 +501,15 @@
     if (!container) return false
 
     container.insertBefore(toggleBtn, sendBtn)
+    fixClaudeParentAlign()
     return true
+  }
+
+  /** Sur Claude, le parent direct du bouton doit être inline-flex pour l'alignement vertical */
+  function fixClaudeParentAlign () {
+    if (platform?.name !== 'Claude') return
+    const parent = toggleBtn.parentElement
+    if (parent) parent.classList.add('inline-flex')
   }
 
   // Retry avec timer unique (pas de race condition)
