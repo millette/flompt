@@ -10,7 +10,7 @@
   const DEV_MODE      = false
   const FLOMPT_URL    = DEV_MODE
     ? 'http://localhost:5173/app/?extension=1'
-    : 'https://flompt.dev/?extension=1'
+    : 'https://flompt.dev/app/?extension=1'
   const FLOMPT_ORIGIN = DEV_MODE
     ? 'http://localhost:5173'
     : 'https://flompt.dev'
