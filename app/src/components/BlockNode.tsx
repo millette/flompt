@@ -27,7 +27,9 @@ const LANGUAGES = [
 ]
 
 const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
-  const meta = BLOCK_META[data.type]
+  const meta = BLOCK_META[data.type as keyof typeof BLOCK_META]
+  // Fallback gracieux si le type est inconnu (ne devrait pas arriver, mais défensif)
+  if (!meta) return null
   const Icon = meta.icon
   const { t, locale } = useLocale()
   const tr = t.blocks[data.type]
@@ -170,7 +172,7 @@ const BlockNode = ({ id, data, selected }: NodeProps<BlockData>) => {
             style={{ minHeight: '64px', height: 'auto' }}
           />
           <div className="block-footer">
-            <span className="block-char-count">{data.content.length} {t.block.chars}</span>
+            <span className="block-char-count">{(data.content ?? '').length} {t.block.chars}</span>
           </div>
         </div>
       )}

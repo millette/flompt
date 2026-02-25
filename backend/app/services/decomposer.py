@@ -55,8 +55,8 @@ def _build_nodes_and_edges(raw_blocks: list[dict]) -> DecomposeResponse:
         meta = BLOCK_META[block_type]
         node_id = f"{block_type.value}-{uuid.uuid4().hex[:6]}"
 
-        content = block.get("content", "")
-        summary = block.get("summary", "")
+        content = block.get("content") or ""   # handles None and missing key
+        summary = block.get("summary") or ""   # handles None and missing key
         # Fallback: truncate content as summary if AI didn't provide one
         if not summary and content:
             summary = content[:40].strip()

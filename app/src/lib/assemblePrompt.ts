@@ -21,7 +21,8 @@ const TYPE_PRIORITY: Record<BlockType, number> = {
 // ─── Topological sort (Kahn's algorithm) ────────────────────────────────────
 
 function sortNodes(nodes: FlomptNode[], edges: FlomptEdge[]): FlomptNode[] {
-  if (edges.length === 0) {
+  const safeEdges = edges ?? []
+  if (safeEdges.length === 0) {
     // No edges: sort by TYPE_PRIORITY, then Y position as tiebreaker
     return [...nodes].sort((a, b) => {
       const pa = TYPE_PRIORITY[a.data.type] ?? 99
@@ -34,13 +35,13 @@ function sortNodes(nodes: FlomptNode[], edges: FlomptEdge[]): FlomptNode[] {
   const inDegree = new Map(nodes.map(n => [n.id, 0]))
   const adjList  = new Map(nodes.map(n => [n.id, [] as string[]]))
 
-  for (const edge of edges) {
+  for (const edge of safeEdges) {
     adjList.get(edge.source)?.push(edge.target)
     inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1)
   }
 
   const nodeMap = new Map(nodes.map(n => [n.id, n]))
-  // Start with roots, sorted by TYPE_PRIORITY
+  // Start with roots (nodes with no incoming edges), sorted by TYPE_PRIORITY
   const queue = nodes
     .filter(n => (inDegree.get(n.id) ?? 0) === 0)
     .sort((a, b) => (TYPE_PRIORITY[a.data.type] ?? 99) - (TYPE_PRIORITY[b.data.type] ?? 99))
