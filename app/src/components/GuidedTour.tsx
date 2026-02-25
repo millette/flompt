@@ -24,26 +24,92 @@ const calcTooltipPos = (r: Rect, p: Placement): { top: number; left: number } =>
   }
 }
 
-// ── Hardcoded example — no API call needed ───────────────────────────────────
+// ── Hardcoded example — mirrors real API response format ─────────────────────
 
 const EXAMPLE_NODES_EN: FlomptNode[] = [
-  { id: 'tour-role',    type: 'block', position: { x: 60,  y: 40  }, data: { type: 'role',          label: 'Role',          description: "Defines the AI's persona / role",    content: 'You are a senior Python developer.' } },
-  { id: 'tour-obj',     type: 'block', position: { x: 60,  y: 210 }, data: { type: 'objective',     label: 'Objective',     description: 'What we want to accomplish',          content: 'Review the following code for bugs, performance issues, and style violations.' } },
-  { id: 'tour-cst',     type: 'block', position: { x: 60,  y: 380 }, data: { type: 'constraints',   label: 'Constraints',   description: 'Rules and limits to respect',         content: 'Be concise, prioritize critical issues, and explain each finding in one sentence.' } },
-  { id: 'tour-out',     type: 'block', position: { x: 60,  y: 550 }, data: { type: 'output_format', label: 'Output Format', description: 'Expected format of the response',     content: 'Respond with a numbered list.' } },
+  {
+    id: 'role-2ef496', type: 'block', position: { x: 100, y: 50 },
+    data: { type: 'role', label: 'Role', summary: 'Senior Python developer',
+      description: "Defines the AI's persona / role",
+      content: 'You are a senior Python developer with extensive experience in code review, debugging, performance optimization, and Python best practices. You have expertise in identifying critical issues, security vulnerabilities, and style violations.' },
+  },
+  {
+    id: 'input-92f78b', type: 'block', position: { x: 100, y: 230 },
+    data: { type: 'input', label: 'Input', summary: 'Python code review',
+      description: 'Data provided to the AI',
+      content: 'Python code that needs to be reviewed for bugs, performance issues, and style violations.' },
+  },
+  {
+    id: 'objective-818108', type: 'block', position: { x: 100, y: 410 },
+    data: { type: 'objective', label: 'Objective', summary: 'Code review analysis',
+      description: 'What we want to accomplish',
+      content: 'Review the provided Python code to identify and explain bugs, performance issues, and style violations. Prioritize critical issues that could cause runtime errors, security vulnerabilities, or significant performance degradation.' },
+  },
+  {
+    id: 'constraints-a2557b', type: 'block', position: { x: 100, y: 590 },
+    data: { type: 'constraints', label: 'Constraints', summary: 'Concise critical focus',
+      description: 'Rules and limits to respect',
+      content: 'Be concise in your explanations. Prioritize critical issues over minor style violations. Each finding must be explained in exactly one sentence. Focus on actionable feedback.' },
+  },
+  {
+    id: 'output_format-66edf4', type: 'block', position: { x: 100, y: 770 },
+    data: { type: 'output_format', label: 'Output Format', summary: 'Numbered list format',
+      description: 'Expected format of the response',
+      content: "Respond with a numbered list where each item contains: the issue type (bug/performance/style), the specific problem found, and a one-sentence explanation of why it's problematic and how to fix it." },
+  },
+  {
+    id: 'language-4ac566', type: 'block', position: { x: 100, y: 950 },
+    data: { type: 'language', label: 'Language', summary: 'English response',
+      description: 'Language the AI should respond in',
+      content: 'English' },
+  },
 ]
 
 const EXAMPLE_NODES_FR: FlomptNode[] = [
-  { id: 'tour-role',    type: 'block', position: { x: 60,  y: 40  }, data: { type: 'role',          label: 'Rôle',          description: "Définit la persona / le rôle de l'IA", content: 'Tu es un développeur Python senior.' } },
-  { id: 'tour-obj',     type: 'block', position: { x: 60,  y: 210 }, data: { type: 'objective',     label: 'Objectif',      description: "Ce qu'on veut accomplir",              content: 'Fais une revue du code suivant : identifie les bugs, les problèmes de performance et les violations de style.' } },
-  { id: 'tour-cst',     type: 'block', position: { x: 60,  y: 380 }, data: { type: 'constraints',   label: 'Contraintes',   description: 'Règles et limites à respecter',        content: 'Sois concis, priorise les problèmes critiques, et explique chaque point en une phrase.' } },
-  { id: 'tour-out',     type: 'block', position: { x: 60,  y: 550 }, data: { type: 'output_format', label: 'Sortie',        description: 'Format attendu de la réponse',         content: 'Réponds avec une liste numérotée.' } },
+  {
+    id: 'role-2ef496', type: 'block', position: { x: 100, y: 50 },
+    data: { type: 'role', label: 'Rôle', summary: 'Développeur Python senior',
+      description: "Définit la persona / le rôle de l'IA",
+      content: "Tu es un développeur Python senior avec une vaste expérience en revue de code, débogage, optimisation des performances et bonnes pratiques Python. Tu excelles dans l'identification des problèmes critiques, des failles de sécurité et des violations de style." },
+  },
+  {
+    id: 'input-92f78b', type: 'block', position: { x: 100, y: 230 },
+    data: { type: 'input', label: 'Entrée', summary: 'Code Python à revoir',
+      description: "Données fournies à l'IA",
+      content: 'Code Python à analyser pour détecter bugs, problèmes de performance et violations de style.' },
+  },
+  {
+    id: 'objective-818108', type: 'block', position: { x: 100, y: 410 },
+    data: { type: 'objective', label: 'Objectif', summary: 'Analyse de code',
+      description: "Ce qu'on veut accomplir",
+      content: "Faire une revue du code Python fourni pour identifier et expliquer les bugs, les problèmes de performance et les violations de style. Prioriser les problèmes critiques pouvant causer des erreurs, des failles de sécurité ou une dégradation significative des performances." },
+  },
+  {
+    id: 'constraints-a2557b', type: 'block', position: { x: 100, y: 590 },
+    data: { type: 'constraints', label: 'Contraintes', summary: 'Concis et critique',
+      description: 'Règles et limites à respecter',
+      content: "Sois concis. Priorise les problèmes critiques sur les violations de style mineures. Chaque point doit être expliqué en exactement une phrase. Concentre-toi sur des retours actionnables." },
+  },
+  {
+    id: 'output_format-66edf4', type: 'block', position: { x: 100, y: 770 },
+    data: { type: 'output_format', label: 'Sortie', summary: 'Liste numérotée',
+      description: 'Format attendu de la réponse',
+      content: "Réponds avec une liste numérotée où chaque point contient : le type de problème (bug/performance/style), le problème spécifique trouvé, et une explication en une phrase de pourquoi c'est problématique et comment le corriger." },
+  },
+  {
+    id: 'language-4ac566', type: 'block', position: { x: 100, y: 950 },
+    data: { type: 'language', label: 'Langue', summary: 'Réponse en français',
+      description: "Langue de réponse de l'IA",
+      content: 'Français' },
+  },
 ]
 
 const EXAMPLE_EDGES: FlomptEdge[] = [
-  { id: 'tour-e1', source: 'tour-role', target: 'tour-obj',  animated: true },
-  { id: 'tour-e2', source: 'tour-obj',  target: 'tour-cst',  animated: true },
-  { id: 'tour-e3', source: 'tour-cst',  target: 'tour-out',  animated: true },
+  { id: 'e0-1', source: 'role-2ef496',         target: 'input-92f78b',         animated: true },
+  { id: 'e1-2', source: 'input-92f78b',         target: 'objective-818108',     animated: true },
+  { id: 'e2-3', source: 'objective-818108',     target: 'constraints-a2557b',   animated: true },
+  { id: 'e3-4', source: 'constraints-a2557b',   target: 'output_format-66edf4', animated: true },
+  { id: 'e4-5', source: 'output_format-66edf4', target: 'language-4ac566',      animated: true },
 ]
 
 // ── Component ────────────────────────────────────────────────────────────────
