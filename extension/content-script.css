@@ -97,38 +97,62 @@ body.flompt-resizing {
   background: rgba(255, 53, 112, 0.55) !important;
 }
 
-/* ── Close button — ultra discret, coin haut-gauche de la sidebar ─────────── */
-/* Intégré dans la zone du resize handle, quasi invisible au repos */
-#flompt-close-tab {
-  position: absolute !important;
-  top: 10px !important;
-  left: -18px !important;         /* dépasse légèrement à gauche */
-  width: 18px !important;
-  height: 18px !important;
-  background: rgba(28, 28, 30, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
-  border-right: none !important;
-  border-radius: 4px 0 0 4px !important;
+/* ── Header interne — barre titre + bouton close DANS la sidebar ──────────── */
+#flompt-header {
+  height: 38px !important;
+  background: #1c1c1e !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 10px 0 12px !important;
+  flex-shrink: 0 !important;
+  gap: 8px !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+#flompt-header-logo {
+  display: block !important;
+  border-radius: 4px !important;
+  flex-shrink: 0 !important;
+  opacity: 0.9 !important;
+}
+
+#flompt-header-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  flex: 1 !important;
+  letter-spacing: 0.01em !important;
+}
+
+#flompt-header-close {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border: none !important;
   cursor: pointer !important;
+  color: rgba(255, 255, 255, 0.35) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: rgba(255, 255, 255, 0.2) !important;
-  z-index: 13 !important;         /* au-dessus du resize handle */
   padding: 0 !important;
-  opacity: 0.4 !important;
-  transition: opacity 0.2s, background 0.15s, color 0.15s !important;
+  flex-shrink: 0 !important;
+  transition: background 0.15s, color 0.15s !important;
 }
 
-#flompt-close-tab:hover {
-  opacity: 1 !important;
-  background: rgba(40, 40, 42, 0.95) !important;
-  color: rgba(255, 255, 255, 0.75) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+#flompt-header-close:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
-#flompt-close-tab:active {
-  background: rgba(255, 53, 112, 0.2) !important;
+#flompt-header-close:active {
+  background: rgba(255, 53, 112, 0.15) !important;
   color: #FF3570 !important;
 }
 

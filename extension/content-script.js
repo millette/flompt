@@ -230,22 +230,43 @@
     return handle
   }
 
-  // ── DOM: Close tab (onglet de fermeture sur le bord gauche) ───────────────
-  function buildCloseTab () {
-    const tab = document.createElement('button')
-    tab.id = 'flompt-close-tab'
-    tab.setAttribute('aria-label', 'Close Flompt')
-    tab.title = 'Close Flompt'
-    tab.innerHTML = `
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  // ── DOM: Header interne — barre avec titre + bouton close ────────────────────
+  function buildSidebarHeader () {
+    const header = document.createElement('div')
+    header.id = 'flompt-header'
+
+    // Logo
+    const logo = document.createElement('img')
+    logo.id     = 'flompt-header-logo'
+    logo.src    = chrome.runtime.getURL('icons/icon.svg')
+    logo.width  = 16
+    logo.height = 16
+    logo.setAttribute('aria-hidden', 'true')
+
+    // Titre
+    const title = document.createElement('span')
+    title.id          = 'flompt-header-title'
+    title.textContent = 'Flompt'
+
+    // Bouton close — clairement à l'intérieur de l'extension
+    const closeBtn = document.createElement('button')
+    closeBtn.id = 'flompt-header-close'
+    closeBtn.setAttribute('aria-label', 'Close')
+    closeBtn.title = 'Close'
+    closeBtn.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     `
-    tab.addEventListener('click', closeSidebar)
-    return tab
+    closeBtn.addEventListener('click', closeSidebar)
+
+    header.appendChild(logo)
+    header.appendChild(title)
+    header.appendChild(closeBtn)
+    return header
   }
 
-  // ── DOM: Sidebar — iframe plein hauteur, onglet close + resize ─────────────
+  // ── DOM: Sidebar — header interne + iframe + resize handle ────────────────
   function buildSidebar () {
     const sidebar = document.createElement('div')
     sidebar.id = 'flompt-sidebar'
@@ -280,12 +301,13 @@
       setTimeout(sendPlatformInputToIframe, 300)
     })
 
-    // Composants UI
+    // Header interne (close button visible à l'intérieur)
+    const header      = buildSidebarHeader()
+    // Resize handle (bord gauche)
     const resizeHandle = buildResizeHandle()
-    const closeTab     = buildCloseTab()
 
     sidebar.appendChild(resizeHandle)
-    sidebar.appendChild(closeTab)
+    sidebar.appendChild(header)
     sidebar.appendChild(splash)
     sidebar.appendChild(iframe)
     document.body.appendChild(sidebar)
@@ -339,8 +361,8 @@
   // ── DOM: Toggle button — Sparkles icon, style matching sibling buttons ───────
   const toggleBtn = document.createElement('button')
   toggleBtn.id    = 'flompt-toggle'
-  toggleBtn.title = 'Flompt — Visual Prompt Builder'
-  toggleBtn.setAttribute('aria-label', 'Open Flompt')
+  toggleBtn.title = 'Enhance'
+  toggleBtn.setAttribute('aria-label', 'Enhance with Flompt')
   // Icône Sparkles (Lucide) inline — pas d'img pour éviter les conflits de style
   toggleBtn.innerHTML = `
     <svg id="flompt-toggle-icon" xmlns="http://www.w3.org/2000/svg"
@@ -361,13 +383,14 @@
     toggleSidebar()
   })
 
-  // ── Insertion du toggle — extrême gauche de la toolbar ────────────────────
+  // ── Insertion du toggle — zone outils de la toolbar ─────────────────────
   //
   // Stratégie :
-  //   1. Trouver le bouton "Send" (via sélecteur spécifique ou traversal DOM)
-  //   2. Récupérer son conteneur parent (la toolbar)
-  //   3. Insérer le bouton Flompt en PREMIER dans ce conteneur (extrême gauche)
-  //   4. Fallback : bouton flottant bas-droite
+  //   1. Trouver le bouton Send pour localiser le toolbar général
+  //   2. Identifier les boutons "outils" (tout sauf send/voice/mic)
+  //   3. Insérer Flompt APRÈS le premier bouton outil (zone outils native)
+  //   4. Fallback : juste avant le bouton send
+  //   5. Fallback final : bouton flottant
 
   function findSendBtnByTraversal () {
     const input = platform?.getInput()
@@ -393,24 +416,72 @@
     return null
   }
 
+  /**
+   * Trouve le premier bouton "outil" dans la toolbar (attach, search, tools…).
+   * Exclut send, voice/mic/record — remonte depuis le sendBtn pour trouver
+   * un niveau contenant à la fois des outils ET le bouton send.
+   */
+  function findFirstToolBtn () {
+    const sendBtn = platform?.getSendBtn?.() || findSendBtnByTraversal()
+    if (!sendBtn) return null
+
+    const isSendLike = (b) => {
+      const text = [
+        b.getAttribute('aria-label') || '',
+        b.getAttribute('title')      || '',
+        b.getAttribute('data-testid')|| '',
+        b.getAttribute('mattooltip') || '',
+      ].join(' ').toLowerCase()
+      return (
+        text.includes('send')   || text.includes('voice')  ||
+        text.includes('record') || text.includes('speak')  ||
+        text.includes('mic')    || b.type === 'submit'
+      )
+    }
+
+    let toolbar = sendBtn.parentElement
+    for (let i = 0; i < 10 && toolbar && toolbar !== document.body; i++) {
+      const allBtns  = Array.from(toolbar.querySelectorAll('button'))
+      const toolBtns = allBtns.filter(b => b !== toggleBtn && !isSendLike(b))
+
+      // Bon niveau : contient des outils ET un bouton send-like
+      if (toolBtns.length > 0 && allBtns.some(isSendLike)) {
+        return toolBtns[0]
+      }
+      toolbar = toolbar.parentElement
+    }
+    return null
+  }
+
   function tryInsertInToolbar () {
     if (toggleBtn.isConnected) return true
 
+    // ── Essai 1 : zone outils ─────────────────────────────────────────────
+    const firstTool = findFirstToolBtn()
+    if (firstTool) {
+      let container = firstTool.parentElement
+      // Éviter les <label> (file input) et <a>
+      while (container && (container.tagName === 'LABEL' || container.tagName === 'A')) {
+        container = container.parentElement
+      }
+      if (container) {
+        // Insérer juste après le premier bouton outil — intégré dans la zone outils
+        container.insertBefore(toggleBtn, firstTool.nextSibling)
+        return true
+      }
+    }
+
+    // ── Essai 2 : fallback juste avant le bouton send ─────────────────────
     const sendBtn = platform?.getSendBtn?.() || findSendBtnByTraversal()
     if (!sendBtn) return false
 
-    // Remonter depuis sendBtn en évitant les <label> et <a>
-    // (un <label> wrappant un file input déclencherait le file picker au clic)
     let container = sendBtn.parentElement
     while (container && (container.tagName === 'LABEL' || container.tagName === 'A')) {
       container = container.parentElement
     }
     if (!container) return false
 
-    // Insérer JUSTE AVANT le sendBtn dans ce container — position sûre,
-    // loin des zones file-upload qui sont généralement à l'opposé
-    const refNode = container.contains(sendBtn) ? sendBtn : container.lastChild
-    container.insertBefore(toggleBtn, refNode)
+    container.insertBefore(toggleBtn, sendBtn)
     return true
   }
 
