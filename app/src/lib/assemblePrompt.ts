@@ -43,18 +43,33 @@ function sortNodes(nodes: FlomptNode[], edges: FlomptEdge[]): FlomptNode[] {
   return [...result, ...remaining]
 }
 
+/** Échappe les caractères spéciaux XML */
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
 /**
- * Assemble les blocs en prompt final — 100% local, zéro appel IA.
- * Format : [Label]\nContenu\n\n[Label]\nContenu…
+ * Assemble les blocs en prompt XML structuré — 100% local, zéro appel IA.
+ * Format :
+ *   <prompt>
+ *     <role>…</role>
+ *     <objective>…</objective>
+ *   </prompt>
  */
 export function assemblePrompt(nodes: FlomptNode[], edges: FlomptEdge[]): CompiledPrompt {
   const ordered = sortNodes(nodes, edges)
 
-  const parts = ordered
+  const inner = ordered
     .filter(n => n.data.content.trim())
-    .map(n => `[${n.data.label}]\n${n.data.content.trim()}`)
+    .map(n => `  <${n.data.type}>\n    ${escapeXml(n.data.content.trim())}\n  </${n.data.type}>`)
+    .join('\n')
 
-  const raw           = parts.join('\n\n')
+  const raw           = `<prompt>\n${inner}\n</prompt>`
   const tokenEstimate = Math.max(1, Math.ceil(raw.length / 4))
 
   return { raw, tokenEstimate, blocks: ordered.map(n => n.data) }
