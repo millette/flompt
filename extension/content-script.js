@@ -6,7 +6,6 @@
   window.__flomptInjected = true
 
   // ── Config ─────────────────────────────────────────────────────────────────
-  // DEV_MODE: mettre à true pour pointer sur localhost:5173 en développement
   const DEV_MODE      = false
   const FLOMPT_URL    = DEV_MODE
     ? 'http://localhost:5173/app/?extension=1'
@@ -21,24 +20,29 @@
 
   /**
    * Each platform defines:
-   *  - name: display name
-   *  - getInput(): returns the DOM element to inject into
-   *  - inject(el, text): sets the text on that element and fires change events
+   *  - name          : display name
+   *  - test()        : hostname check
+   *  - getInput()    : returns the contenteditable element to inject into
+   *  - inject(el, t) : injects text into the element
+   *  - getSendBtn()  : returns the send button element (for inline toggle placement)
    */
   const PLATFORMS = {
     chatgpt: {
       name: 'ChatGPT',
       test: () => hostname.includes('chatgpt.com') || hostname.includes('openai.com'),
       getInput () {
-        // #prompt-textarea est désormais un div[contenteditable] (React/ProseMirror-like)
         return (
           document.querySelector('#prompt-textarea[contenteditable]') ||
           document.querySelector('#prompt-textarea') ||
           document.querySelector('div[contenteditable="true"][data-virtualized="false"]')
         )
       },
-      inject (el, text) {
-        setContentEditable(el, text)
+      inject (el, text) { setContentEditable(el, text) },
+      getSendBtn () {
+        return (
+          document.querySelector('button[data-testid="send-button"]') ||
+          document.querySelector('button[aria-label="Send prompt"]')
+        )
       },
     },
     claude: {
@@ -52,12 +56,18 @@
         )
       },
       inject (el, text) { setContentEditable(el, text) },
+      getSendBtn () {
+        return (
+          document.querySelector('button[aria-label="Send Message"]') ||
+          document.querySelector('button[aria-label="Send message"]') ||
+          document.querySelector('[data-testid="send-button"]')
+        )
+      },
     },
     gemini: {
       name: 'Gemini',
       test: () => hostname.includes('gemini.google.com'),
       getInput () {
-        // Gemini utilise un web component <rich-textarea> — pas de Quill.js
         return (
           document.querySelector('rich-textarea div[contenteditable]') ||
           document.querySelector('rich-textarea [contenteditable="true"]') ||
@@ -65,6 +75,13 @@
         )
       },
       inject (el, text) { setContentEditable(el, text) },
+      getSendBtn () {
+        return (
+          document.querySelector('button.send-button') ||
+          document.querySelector('button[aria-label="Send message"]') ||
+          document.querySelector('button[mattooltip="Send message"]')
+        )
+      },
     },
   }
 
@@ -74,20 +91,15 @@
   function setContentEditable (el, text) {
     el.focus()
 
-    // Sélectionner tout le contenu via la Selection API (remplace execCommand('selectAll'))
     const selection = window.getSelection()
     const range = document.createRange()
     range.selectNodeContents(el)
     selection.removeAllRanges()
     selection.addRange(range)
 
-    // execCommand('insertText') remplace la sélection ET fire beforeinput+input dans Chrome
-    // ProseMirror (Claude) intercepte beforeinput — c'est le chemin recommandé
     const inserted = document.execCommand('insertText', false, text)
 
-    // Fallback si execCommand a no-opé (certains navigateurs, certaines configs)
     if (!inserted || el.textContent.trim() !== text.trim()) {
-      // Dispatch beforeinput explicitement pour ProseMirror
       const beforeInput = new InputEvent('beforeinput', {
         bubbles: true,
         cancelable: true,
@@ -103,7 +115,6 @@
       el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
     }
 
-    // Gemini / Angular / Lit ont besoin d'un event 'change' pour activer le bouton Envoyer
     setTimeout(() => el.dispatchEvent(new Event('change', { bubbles: true })), 50)
   }
 
@@ -112,57 +123,31 @@
   let sidebarEl   = null
   let iframeEl    = null
 
-  // ── DOM: Sidebar ───────────────────────────────────────────────────────────
+  // ── DOM: Sidebar — pas de header custom, iframe plein hauteur ──────────────
   function buildSidebar () {
     const sidebar = document.createElement('div')
     sidebar.id = 'flompt-sidebar'
 
-    // ── Header mobile ──────────────────────────────────────────────────────────
-    // Logo depuis icons/logo.svg (le logo du README) : éclair rose + "Flompt"
-    const header = document.createElement('div')
-    header.id = 'flompt-header'
-
-    const logoImg = document.createElement('img')
-    logoImg.id  = 'flompt-logo'
-    logoImg.src = chrome.runtime.getURL('icons/logo.svg')
-    logoImg.alt = 'Flompt'
-
-    const closeBtn = document.createElement('button')
-    closeBtn.id = 'flompt-close'
-    closeBtn.title = 'Fermer Flompt'
-    closeBtn.setAttribute('aria-label', 'Fermer')
-    closeBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
-        <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-    `
-    closeBtn.addEventListener('click', closeSidebar)
-
-    header.appendChild(logoImg)
-    header.appendChild(closeBtn)
-
-    // ── Splash screen — titre visible dans la zone iframe pendant le chargement ─
-    // Apparaît immédiatement, disparaît en fondu quand l'iframe est prête
+    // Splash screen — visible pendant le chargement de l'iframe
     const splash = document.createElement('div')
     splash.id = 'flompt-splash'
     splash.innerHTML = `
       <div id="flompt-splash-inner">
-        <svg id="flompt-splash-bolt" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="48" height="48" aria-hidden="true">
-          <path d="M10 2L3 12h5.5L7 18l10-10h-6L10 2z" fill="#FF3570"/>
-        </svg>
+        <img id="flompt-splash-icon"
+          src="${chrome.runtime.getURL('icons/icon.svg')}"
+          width="72" height="72" alt="" aria-hidden="true">
         <span id="flompt-splash-title">Flompt</span>
       </div>
     `
 
-    // ── Iframe — charge l'app Flompt ──────────────────────────────────────────
+    // Iframe — plein hauteur, l'app affiche son propre header
     const iframe = document.createElement('iframe')
     iframe.id  = 'flompt-iframe'
     iframe.src = FLOMPT_URL
     iframe.allow = 'clipboard-write'
-    // allow-same-origin lets postMessage work with origin check
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads')
 
-    // Fade out + suppression du splash quand l'iframe a chargé
+    // Fade out du splash quand l'iframe est prête
     iframe.addEventListener('load', () => {
       const s = document.getElementById('flompt-splash')
       if (s) {
@@ -171,7 +156,6 @@
       }
     })
 
-    sidebar.appendChild(header)
     sidebar.appendChild(splash)
     sidebar.appendChild(iframe)
     document.body.appendChild(sidebar)
@@ -201,18 +185,60 @@
     else openSidebar()
   }
 
-  // ── DOM: Floating button ───────────────────────────────────────────────────
+  // ── DOM: Toggle button ─────────────────────────────────────────────────────
   const toggleBtn = document.createElement('button')
-  toggleBtn.id = 'flompt-toggle'
-  toggleBtn.title = 'Open Flompt — Visual Prompt Builder'
-  // Logo officiel (favicon du README) — dark background, éclair blanc, bords arrondis
+  toggleBtn.id    = 'flompt-toggle'
+  toggleBtn.title = 'Flompt — Visual Prompt Builder'
   toggleBtn.innerHTML = `
-    <img src="${chrome.runtime.getURL('icons/icon.svg')}" alt="Flompt" width="52" height="52">
+    <img id="flompt-toggle-icon"
+      src="${chrome.runtime.getURL('icons/icon.svg')}"
+      width="28" height="28" alt="Flompt" aria-hidden="true">
   `
   toggleBtn.addEventListener('click', toggleSidebar)
-  document.body.appendChild(toggleBtn)
 
-  // ── Listen for messages from flompt iframe ─────────────────────────────────
+  // ── Injection du toggle button dans la toolbar de la plateforme ────────────
+  // On insère le bouton juste avant le bouton "Send" de chaque plateforme.
+  // Fallback : bouton flottant en bas à droite si le send button est introuvable.
+
+  let mountAttempts = 0
+
+  function tryInsertInToolbar () {
+    if (toggleBtn.isConnected) return true
+    if (!platform?.getSendBtn) return false
+
+    const sendBtn = platform.getSendBtn()
+    if (!sendBtn?.parentElement) return false
+
+    sendBtn.parentElement.insertBefore(toggleBtn, sendBtn)
+    return true
+  }
+
+  function mountToggleBtn () {
+    if (tryInsertInToolbar()) return
+
+    if (++mountAttempts >= 20) {
+      // Fallback définitif : bouton flottant
+      if (!toggleBtn.isConnected) {
+        toggleBtn.classList.add('flompt-floating')
+        document.body.appendChild(toggleBtn)
+      }
+      return
+    }
+
+    setTimeout(mountToggleBtn, 500)
+  }
+
+  mountToggleBtn()
+
+  // Ré-insertion si le bouton est retiré du DOM (navigation SPA)
+  setInterval(() => {
+    if (!toggleBtn.isConnected) {
+      mountAttempts = 0
+      mountToggleBtn()
+    }
+  }, 3000)
+
+  // ── Messages depuis l'iframe Flompt ────────────────────────────────────────
   window.addEventListener('message', (event) => {
     if (event.origin !== FLOMPT_ORIGIN) return
 
@@ -227,19 +253,18 @@
     }
   })
 
-  // ── Listen for toggle from background service worker ──────────────────────
+  // ── Message depuis le service worker (clic icône toolbar) ─────────────────
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === 'FLOMPT_TOGGLE') toggleSidebar()
   })
 
-  // ── Prompt injection ───────────────────────────────────────────────────────
+  // ── Injection du prompt dans l'input de la plateforme ─────────────────────
   function injectPrompt (text) {
     if (!platform) {
       showToast('❌ Platform not detected. Try refreshing.', 'error')
       return
     }
 
-    // Retry up to 3 times if input not found yet (some SPAs render late)
     let attempts = 0
     const tryInject = () => {
       const el = platform.getInput()
@@ -247,7 +272,6 @@
         if (++attempts < 3) {
           setTimeout(tryInject, 500)
         } else {
-          // Fallback: copy to clipboard
           navigator.clipboard.writeText(text).then(() => {
             showToast(`Couldn't find ${platform.name} input — copied to clipboard ✓`)
           }).catch(() => {
