@@ -118,9 +118,10 @@ body.flompt-resizing {
 
 #flompt-header-title {
   font-family: 'Caveat', cursive !important;
-  font-size: 22px !important;
+  font-size: 1.4rem !important;
   font-weight: 700 !important;
   color: #FF3570 !important;
+  text-shadow: 0 0 10px rgba(255, 53, 112, 0.22) !important;
   flex: 1 !important;
   line-height: 1 !important;
   letter-spacing: 0 !important;
