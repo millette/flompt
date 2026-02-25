@@ -1,12 +1,34 @@
-import type { FlomptNode, FlomptEdge, CompiledPrompt } from '@/types/blocks'
+import type { FlomptNode, FlomptEdge, CompiledPrompt, BlockType } from '@/types/blocks'
 
-/**
- * Tri topologique (Kahn) selon les edges.
- * Fallback : tri par position.y (haut → bas) si pas d'edges.
- */
+// ─── Claude-optimized block ordering ────────────────────────────────────────
+// Anthropic best practices: documents first (grounding), then persona → task →
+// data → constraints → examples → reasoning → format → language
+
+const TYPE_PRIORITY: Record<BlockType, number> = {
+  document:        0,   // XML grounding — always first
+  role:            1,   // persona
+  context:         2,   // background
+  objective:       3,   // main task
+  input:           4,   // data/variables
+  constraints:     5,   // rules
+  examples:        6,   // few-shot
+  chain_of_thought: 7,  // reasoning instructions
+  output_format:   8,   // response format
+  format_control:  9,   // style directives
+  language:        10,  // language instruction — always last
+}
+
+// ─── Topological sort (Kahn's algorithm) ────────────────────────────────────
+
 function sortNodes(nodes: FlomptNode[], edges: FlomptEdge[]): FlomptNode[] {
   if (edges.length === 0) {
-    return [...nodes].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x)
+    // No edges: sort by TYPE_PRIORITY, then Y position as tiebreaker
+    return [...nodes].sort((a, b) => {
+      const pa = TYPE_PRIORITY[a.data.type] ?? 99
+      const pb = TYPE_PRIORITY[b.data.type] ?? 99
+      if (pa !== pb) return pa - pb
+      return a.position.y - b.position.y || a.position.x - b.position.x
+    })
   }
 
   const inDegree = new Map(nodes.map(n => [n.id, 0]))
@@ -18,32 +40,39 @@ function sortNodes(nodes: FlomptNode[], edges: FlomptEdge[]): FlomptNode[] {
   }
 
   const nodeMap = new Map(nodes.map(n => [n.id, n]))
-  const queue   = nodes.filter(n => (inDegree.get(n.id) ?? 0) === 0)
+  // Start with roots, sorted by TYPE_PRIORITY
+  const queue = nodes
+    .filter(n => (inDegree.get(n.id) ?? 0) === 0)
+    .sort((a, b) => (TYPE_PRIORITY[a.data.type] ?? 99) - (TYPE_PRIORITY[b.data.type] ?? 99))
   const result: FlomptNode[] = []
 
   while (queue.length > 0) {
     const node = queue.shift()!
     result.push(node)
-    for (const neighborId of (adjList.get(node.id) ?? [])) {
-      const deg = (inDegree.get(neighborId) ?? 1) - 1
-      inDegree.set(neighborId, deg)
-      if (deg === 0) {
-        const neighbor = nodeMap.get(neighborId)
-        if (neighbor) queue.push(neighbor)
-      }
+    const neighbors = (adjList.get(node.id) ?? [])
+      .map(id => nodeMap.get(id)!)
+      .filter(Boolean)
+      .sort((a, b) => (TYPE_PRIORITY[a.data.type] ?? 99) - (TYPE_PRIORITY[b.data.type] ?? 99))
+
+    for (const neighbor of neighbors) {
+      const deg = (inDegree.get(neighbor.id) ?? 1) - 1
+      inDegree.set(neighbor.id, deg)
+      if (deg === 0) queue.push(neighbor)
     }
   }
 
-  // Nœuds restants (cycles éventuels) triés par position.y
+  // Remaining nodes (cycles) — sorted by TYPE_PRIORITY
   const inResult  = new Set(result.map(n => n.id))
   const remaining = nodes
     .filter(n => !inResult.has(n.id))
-    .sort((a, b) => a.position.y - b.position.y)
+    .sort((a, b) => (TYPE_PRIORITY[a.data.type] ?? 99) - (TYPE_PRIORITY[b.data.type] ?? 99))
 
   return [...result, ...remaining]
 }
 
-/** Échappe les caractères spéciaux XML */
+// ─── XML helpers ─────────────────────────────────────────────────────────────
+
+/** Escape special XML characters */
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -53,23 +82,152 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;')
 }
 
+/** Indent every line by `spaces` spaces */
+function indent(str: string, spaces: number): string {
+  const pad = ' '.repeat(spaces)
+  return str.split('\n').map(l => pad + l).join('\n')
+}
+
+// ─── Claude-specific block renderers ─────────────────────────────────────────
+
 /**
- * Assemble les blocs en prompt XML structuré — 100% local, zéro appel IA.
- * Format :
- *   <prompt>
- *     <role>…</role>
- *     <objective>…</objective>
- *   </prompt>
+ * Render <document> blocks as proper Anthropic XML grounding format.
+ * Multiple document blocks are grouped under <documents>.
+ *
+ * Format:
+ *   <documents>
+ *     <document index="1">
+ *       <source>User document</source>
+ *       <document_content>
+ *         {content}
+ *       </document_content>
+ *     </document>
+ *   </documents>
+ */
+function renderDocuments(docNodes: FlomptNode[]): string {
+  const docs = docNodes
+    .filter(n => n.data.content.trim())
+    .map((n, i) => {
+      const content = indent(escapeXml(n.data.content.trim()), 8)
+      const source  = escapeXml(n.data.summary || `Document ${i + 1}`)
+      return [
+        `    <document index="${i + 1}">`,
+        `      <source>${source}</source>`,
+        `      <document_content>`,
+        content,
+        `      </document_content>`,
+        `    </document>`,
+      ].join('\n')
+    })
+    .join('\n')
+
+  return `  <documents>\n${docs}\n  </documents>`
+}
+
+/**
+ * Render <examples> block with structured input/output pairs.
+ * Parses "Input: [...]\nOutput: [...]" format when present,
+ * otherwise wraps the raw content in a single <example>.
+ *
+ * Format:
+ *   <examples>
+ *     <example>
+ *       <user_input>…</user_input>
+ *       <ideal_response>…</ideal_response>
+ *     </example>
+ *   </examples>
+ */
+function renderExamples(content: string): string {
+  const blocks = content.trim().split(/\n{2,}/)
+  const pairs: Array<{ input: string; output: string }> = []
+
+  for (const block of blocks) {
+    const inputMatch  = block.match(/^(?:Input|User|Question|Q)\s*:\s*([\s\S]*?)(?=\n(?:Output|Assistant|Answer|A)\s*:|$)/i)
+    const outputMatch = block.match(/(?:Output|Assistant|Answer|A)\s*:\s*([\s\S]*?)$/i)
+
+    if (inputMatch && outputMatch) {
+      pairs.push({
+        input:  inputMatch[1].trim(),
+        output: outputMatch[1].trim(),
+      })
+    }
+  }
+
+  if (pairs.length === 0) {
+    // No parseable pairs — wrap raw content
+    const escaped = indent(escapeXml(content.trim()), 8)
+    return [
+      `  <examples>`,
+      `    <example>`,
+      escaped,
+      `    </example>`,
+      `  </examples>`,
+    ].join('\n')
+  }
+
+  const xmlPairs = pairs.map(p => [
+    `    <example>`,
+    `      <user_input>${escapeXml(p.input)}</user_input>`,
+    `      <ideal_response>${escapeXml(p.output)}</ideal_response>`,
+    `    </example>`,
+  ].join('\n')).join('\n')
+
+  return `  <examples>\n${xmlPairs}\n  </examples>`
+}
+
+/**
+ * Standard block renderer — wraps content in a simple XML tag.
+ * chain_of_thought → <thinking>, format_control → <format_instructions>
+ */
+function renderStandardBlock(type: BlockType, content: string): string {
+  const tagMap: Partial<Record<BlockType, string>> = {
+    chain_of_thought: 'thinking',
+    format_control:   'format_instructions',
+    output_format:    'output_format',
+  }
+  const tag = tagMap[type] ?? type
+  const escaped = indent(escapeXml(content.trim()), 4)
+  return `  <${tag}>\n${escaped}\n  </${tag}>`
+}
+
+// ─── Main assembler ───────────────────────────────────────────────────────────
+
+/**
+ * Assemble blocks into a Claude-optimized XML prompt — 100% local, no AI call.
+ *
+ * Claude best practices applied:
+ * - Documents always first (XML grounding: <documents><document index="N">)
+ * - TYPE_PRIORITY ordering within topological sort
+ * - Structured <examples> with <user_input>/<ideal_response> pairs
+ * - <thinking> for chain-of-thought instructions
+ * - <format_instructions> for format_control directives
  */
 export function assemblePrompt(nodes: FlomptNode[], edges: FlomptEdge[]): CompiledPrompt {
   const ordered = sortNodes(nodes, edges)
+  const withContent = ordered.filter(n => n.data.content.trim())
 
-  const inner = ordered
-    .filter(n => n.data.content.trim())
-    .map(n => `  <${n.data.type}>\n    ${escapeXml(n.data.content.trim())}\n  </${n.data.type}>`)
-    .join('\n')
+  const parts: string[] = []
 
-  const raw           = `<prompt>\n${inner}\n</prompt>`
+  // ── Document blocks: grouped in <documents> ──────────────────────────────
+  const docNodes = withContent.filter(n => n.data.type === 'document')
+  if (docNodes.length > 0) {
+    parts.push(renderDocuments(docNodes))
+  }
+
+  // ── All other blocks ──────────────────────────────────────────────────────
+  for (const node of withContent) {
+    if (node.data.type === 'document') continue  // already rendered
+
+    if (node.data.type === 'examples') {
+      parts.push(renderExamples(node.data.content))
+    } else {
+      parts.push(renderStandardBlock(node.data.type, node.data.content))
+    }
+  }
+
+  const inner = parts.join('\n')
+  const raw   = `<prompt>\n${inner}\n</prompt>`
+
   const tokenEstimate = Math.max(1, Math.ceil(raw.length / 4))
 
   return { raw, tokenEstimate, blocks: ordered.map(n => n.data) }

@@ -50,39 +50,49 @@ def _strip_markdown_json(text: str) -> str:
 
 # ─── System Prompts ───────────────────────────────────────────────────────────
 
-DECOMPOSE_SYSTEM_PROMPT = """You are a prompt engineering expert. Analyze the user's prompt and BUILD a structured workflow by decomposing it into logical blocks.
+DECOMPOSE_SYSTEM_PROMPT = """You are a prompt engineering expert specializing in Claude AI best practices. Analyze the user's prompt and BUILD a structured workflow by decomposing it into typed blocks.
 
 Block types available:
 - role: The AI persona/role (who the AI should be)
 - context: Background information and situational context
 - objective: The main goal or task to accomplish
-- input: Data or variables provided to the AI
+- input: Data or variables provided to the AI (code, text to analyze, etc.)
+- document: External reference content for XML grounding (articles, code files, datasets) — ONLY use if the prompt explicitly references external documents to inject; content = the document placeholder or excerpt
 - constraints: Rules, restrictions, and limits
-- output_format: Expected response format and structure
-- examples: Few-shot examples (input/output pairs)
-- chain_of_thought: Explicit reasoning steps required
-- language: The language the AI should respond in (auto-detect from the user's prompt language)
+- output_format: Expected response format and structure (JSON, markdown, numbered list, etc.)
+- format_control: Claude-specific formatting directives — tone, verbosity, markdown on/off, response length (e.g. "Be concise. Use markdown headers. No preamble.")
+- examples: Few-shot input/output pairs — format content as "Input: [...]\nOutput: [...]" pairs separated by blank lines
+- chain_of_thought: Explicit reasoning instructions (e.g. "Think step by step before answering. Show your reasoning.")
+- language: The language the AI should respond in (auto-detect from the user's prompt)
 
 Return ONLY valid JSON, no markdown:
 {"blocks": [{"type": "<type>", "content": "<detailed content>", "summary": "<2-5 word label>"}]}
 
 Rules:
-- CONSTRUCT a proper workflow, don't just split text — rewrite each block with clear, actionable content
-- The "summary" field is a very short label (2-5 words max) that summarizes the block at a glance (e.g. "Expert marketing digital", "Bullet points JSON", "Max 200 mots")
+- CONSTRUCT a proper workflow — rewrite each block with clear, actionable content, don't just copy-paste
+- The "summary" field is a very short label (2-5 words max) for at-a-glance reading (e.g. "Senior Python dev", "JSON with metadata", "Max 3 sentences")
 - Write content and summary in the SAME language as the user's prompt
-- Only include blocks that are semantically present or implied
-- ALWAYS include a "language" block — detect the language of the user's prompt and set it as the content (e.g. "English", "French", "Spanish")
-- Minimum 2 blocks, maximum 9 blocks
+- Only include blocks that are semantically present or clearly implied
+- ALWAYS include a "language" block — detect the prompt language and set it as the content (e.g. "English", "French", "Spanish")
+- For "examples": format as "Input: [value]\nOutput: [value]" pairs separated by blank lines
+- For "document": only use when the prompt explicitly mentions injecting external documents
+- For "format_control": use for style/formatting directives that aren't already in output_format
+- Minimum 2 blocks, maximum 11 blocks
 - If unclear, default to objective + language"""
 
-COMPILE_SYSTEM_PROMPT = """You are a prompt optimization expert. Recompile structured blocks into a single optimized prompt.
+COMPILE_SYSTEM_PROMPT = """You are a prompt optimization expert. Recompile structured blocks into a single optimized prompt following Anthropic's Claude best practices.
 
 Rules:
 - Be maximally concise — remove all filler words
-- Use XML-style tags for structure: <role>, <context>, <objective>, etc.
+- Use Claude-optimized XML structure:
+  - Document blocks → <documents><document index="N"><source>title</source><document_content>content</document_content></document></documents>
+  - Examples blocks → <examples><example><user_input>input</user_input><ideal_response>output</ideal_response></example></examples>
+  - Chain-of-thought blocks → <thinking>instructions</thinking>
+  - Format control blocks → <format_instructions>directives</format_instructions>
+  - Other blocks → <role>, <context>, <objective>, <input>, <constraints>, <output_format>, <language>
+- Ordering (Claude best practices): documents first, then role → context → objective → input → constraints → examples → thinking → output_format → format_instructions → language
 - Preserve ALL semantic meaning and constraints
-- Optimize for AI-to-AI consumption
-- No preamble, no explanation — just the prompt
+- No preamble, no explanation — just the optimized prompt
 
 Return ONLY valid JSON: {"prompt": "<optimized prompt>"}"""
 

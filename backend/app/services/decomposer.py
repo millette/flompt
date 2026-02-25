@@ -19,10 +19,12 @@ BLOCK_META = {
     BlockType.context: {"label": "Context", "description": "Fournit le contexte de la tâche"},
     BlockType.objective: {"label": "Objective", "description": "Ce qu'on veut accomplir"},
     BlockType.input: {"label": "Input", "description": "Données fournies à l'IA"},
+    BlockType.document: {"label": "Document", "description": "Contenu externe injecté en XML (<document>)"},
     BlockType.constraints: {"label": "Constraints", "description": "Règles et limites à respecter"},
     BlockType.output_format: {"label": "Output Format", "description": "Format attendu de la réponse"},
-    BlockType.examples: {"label": "Examples", "description": "Few-shot examples"},
-    BlockType.chain_of_thought: {"label": "Chain of Thought", "description": "Étapes de raisonnement"},
+    BlockType.format_control: {"label": "Format Control", "description": "Directives de style Claude (ton, verbosité, markdown)"},
+    BlockType.examples: {"label": "Examples", "description": "Few-shot input/output pairs"},
+    BlockType.chain_of_thought: {"label": "Chain of Thought", "description": "Instructions de raisonnement pas à pas"},
     BlockType.language: {"label": "Language", "description": "Langue de réponse de l'IA"},
 }
 
@@ -32,8 +34,10 @@ HEURISTIC_KEYWORDS: dict[BlockType, list[str]] = {
     BlockType.context: ["context", "background", "given that", "étant donné", "in this scenario"],
     BlockType.objective: ["your goal", "you must", "you should", "ton objectif", "you need to", "task:"],
     BlockType.input: ["input:", "data:", "the following", "voici", "here is"],
+    BlockType.document: ["document:", "file:", "article:", "the document", "le document", "following document", "document suivant"],
     BlockType.constraints: ["do not", "never", "always", "ne pas", "forbidden", "constraint", "rule:"],
     BlockType.output_format: ["output", "format", "return", "respond with", "retourne", "répondre en"],
+    BlockType.format_control: ["be concise", "be brief", "no preamble", "use markdown", "without markdown", "sois concis", "sans préambule"],
     BlockType.examples: ["example", "for instance", "e.g.", "par exemple", "such as"],
     BlockType.chain_of_thought: ["step by step", "think", "reason", "étape", "raisonne", "chain of thought"],
     BlockType.language: ["in english", "in french", "en français", "en anglais", "respond in", "répondre en", "language:", "langue:"],
@@ -90,11 +94,12 @@ def _heuristic_decompose(raw_prompt: str) -> list[dict]:
     lower = raw_prompt.lower()
     found: list[dict] = []
 
-    # Default order
+    # Default order (Claude best practices: documents first, then persona → task → constraints → examples → reasoning → format → language)
     ordered = [
-        BlockType.role, BlockType.context, BlockType.objective,
-        BlockType.input, BlockType.constraints, BlockType.output_format,
-        BlockType.examples, BlockType.chain_of_thought, BlockType.language,
+        BlockType.document, BlockType.role, BlockType.context, BlockType.objective,
+        BlockType.input, BlockType.constraints, BlockType.examples,
+        BlockType.chain_of_thought, BlockType.output_format, BlockType.format_control,
+        BlockType.language,
     ]
 
     for block_type in ordered:

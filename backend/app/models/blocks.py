@@ -13,6 +13,8 @@ class BlockType(str, Enum):
     examples = "examples"
     chain_of_thought = "chain_of_thought"
     language = "language"
+    document = "document"          # Claude: <document index="N"> XML grounding
+    format_control = "format_control"  # Claude: verbosity / markdown / tone
 
 
 class BlockData(BaseModel):

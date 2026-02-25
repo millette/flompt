@@ -8,6 +8,8 @@ import {
   Lightbulb,
   GitBranch,
   Globe,
+  FileText,
+  SlidersHorizontal,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -18,8 +20,10 @@ export type BlockType =
   | 'context'
   | 'objective'
   | 'input'
+  | 'document'
   | 'constraints'
   | 'output_format'
+  | 'format_control'
   | 'examples'
   | 'chain_of_thought'
   | 'language'
@@ -50,6 +54,12 @@ export interface FlomptEdge {
 
 // Palette harmonisée DA Mermaid — tons doux sur fond sombre, accent pink #FF3570
 export const BLOCK_META: Record<BlockType, { label: string; description: string; color: string; icon: LucideIcon }> = {
+  document: {
+    label: 'Document',
+    description: 'Contenu externe injecté via XML <document>',
+    color: '#86efac',   // green-300 — grounding, source
+    icon: FileText,
+  },
   input: {
     label: 'Entrée',
     description: "Données fournies à l'IA",
@@ -82,13 +92,13 @@ export const BLOCK_META: Record<BlockType, { label: string; description: string;
   },
   examples: {
     label: 'Exemples',
-    description: 'Exemples few-shot',
+    description: 'Few-shot input/output pairs',
     color: '#c4b5fd',   // violet-300 — doux, pédagogique
     icon: Lightbulb,
   },
   chain_of_thought: {
     label: 'Raisonnement',
-    description: 'Étapes de raisonnement',
+    description: 'Instructions de raisonnement pas à pas',
     color: '#67e8f9',   // cyan-300 — logique, réflexion
     icon: GitBranch,
   },
@@ -97,6 +107,12 @@ export const BLOCK_META: Record<BlockType, { label: string; description: string;
     description: 'Format attendu de la réponse',
     color: '#ff6b9d',   // accent-light — signal « fin », aligné DA
     icon: LogOut,
+  },
+  format_control: {
+    label: 'Format Control',
+    description: 'Directives Claude : ton, verbosité, markdown',
+    color: '#fdba74',   // orange-300 — style, mise en forme
+    icon: SlidersHorizontal,
   },
   language: {
     label: 'Langue',
