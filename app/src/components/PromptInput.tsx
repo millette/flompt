@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { Zap, Loader, ClipboardPaste, Download } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, classifyError } from '@/services/api'
-import { assemblePrompt } from '@/lib/assemblePrompt'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
 
@@ -14,7 +13,6 @@ const PromptInput = () => {
     setNodes, setEdges,
     setIsDecomposing, isDecomposing,
     setActiveTab,
-    setCompiledPrompt,
   } = useFlowStore()
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
@@ -55,11 +53,6 @@ const PromptInput = () => {
       setNodes(nodes)
       setEdges(edges)
       analytics.decomposeCompleted(nodes.length)
-
-      // Auto-compile local immédiatement → output prêt dès que l'user switche
-      const compiled = assemblePrompt(nodes, edges)
-      setCompiledPrompt(compiled)
-      analytics.compileCompleted(compiled.tokenEstimate)
     } catch (e) {
       setActiveTab('input')
       const errType = classifyError(e)

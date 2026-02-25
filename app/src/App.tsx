@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2, Github, Upload } from 'lucide-react'
+import { useEffect } from 'react'
+import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2, Github } from 'lucide-react'
 import { initAnalytics, analytics } from '@/lib/analytics'
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
@@ -11,7 +11,6 @@ import { useFlowStore } from '@/store/flowStore'
 import type { Tab } from '@/store/flowStore'
 import { useLocale } from '@/i18n/LocaleContext'
 import type { Locale } from '@/i18n/translations'
-import type { FlomptNode, FlomptEdge, CompiledPrompt } from '@/types/blocks'
 import './styles.css'
 
 const TAB_IDS: { id: Tab; Icon: typeof Workflow }[] = [
@@ -23,9 +22,8 @@ const TAB_IDS: { id: Tab; Icon: typeof Workflow }[] = [
 const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
 
 const App = () => {
-  const { undo, redo, reset, past, future, nodes, activeTab, setActiveTab, isDecomposing, loadSession } = useFlowStore()
+  const { undo, redo, reset, past, future, nodes, activeTab, setActiveTab, isDecomposing } = useFlowStore()
   const { t, locale, setLocale } = useLocale()
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Init PostHog after first render — non-blocking
   useEffect(() => { initAnalytics() }, [])
@@ -45,44 +43,6 @@ const App = () => {
     const next = locale === 'en' ? 'fr' : 'en' as Locale
     setLocale(next)
     analytics.localeChanged(next)
-  }
-
-  // ── Import session depuis un fichier .json (export flompt) ────────────────
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target?.result as string) as {
-          nodes?: FlomptNode[]
-          edges?: FlomptEdge[]
-          rawPrompt?: string
-          compiledPrompt?: CompiledPrompt | null
-        }
-
-        if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
-          alert('Invalid session file — expected nodes[] and edges[]')
-          return
-        }
-
-        loadSession({
-          nodes: data.nodes,
-          edges: data.edges,
-          rawPrompt: data.rawPrompt,
-          compiledPrompt: data.compiledPrompt,
-        })
-
-        setActiveTab('canvas')
-        analytics.localeChanged(locale)  // reuse event comme proxy
-      } catch {
-        alert('Failed to parse session file — is it a valid flompt .json export?')
-      }
-    }
-    reader.readAsText(file)
-    // Reset pour permettre de réimporter le même fichier
-    e.target.value = ''
   }
 
   return (
@@ -108,23 +68,6 @@ const App = () => {
               <Redo2 size={14} />
             </button>
             <KeyboardShortcuts />
-
-            {/* Import session JSON */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              style={{ display: 'none' }}
-              onChange={handleImportFile}
-            />
-            <button
-              className="btn-icon"
-              onClick={() => fileInputRef.current?.click()}
-              title={t.header.import}
-            >
-              <Upload size={14} />
-            </button>
-
             <button
               className="btn-locale"
               onClick={toggleLocale}
