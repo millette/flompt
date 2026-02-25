@@ -310,7 +310,61 @@ body {
   margin-bottom: 2px;
 }
 
-.block-list { display: flex; flex-direction: column; gap: 3px; }
+/* Wrapper scrollable avec effets blur haut/bas */
+.block-list-wrapper {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.block-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  max-height: 250px;
+  padding-bottom: 4px;
+  /* scrollbar fine */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+/* ── Effets blur/opacité haut et bas ─────────────────────────────────────── */
+.block-list-blur {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 36px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.block-list-blur--visible {
+  opacity: 1;
+}
+
+.block-list-blur--top {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--bg-2) 0%,
+    rgba(36, 36, 36, 0.7) 50%,
+    transparent 100%
+  );
+}
+
+.block-list-blur--bottom {
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    var(--bg-2) 0%,
+    rgba(36, 36, 36, 0.7) 50%,
+    transparent 100%
+  );
+}
 
 .block-pill {
   padding: 7px 11px;
@@ -1244,7 +1298,13 @@ body {
   .tab-icon  { font-size: 1.1rem; line-height: 1; }
   .tab-label { font-size: 0.61rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 
-  .block-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .block-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    max-height: none; /* plein écran sur mobile */
+    overflow-y: visible;
+  }
 
   .compiled-output { max-height: 45vh; }
   .skeleton-block { width: 140px; height: 90px; }

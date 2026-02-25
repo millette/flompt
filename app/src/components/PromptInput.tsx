@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Zap, Loader, ClipboardPaste } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, classifyError } from '@/services/api'
@@ -11,6 +11,32 @@ const PromptInput = () => {
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // ── Sync bidirectionnelle : plateforme → app (mode extension uniquement) ──
+  useEffect(() => {
+    const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
+    if (!isExt) return
+
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type !== 'FLOMPT_PLATFORM_INPUT') return
+      const text = event.data.text as string
+      if (typeof text !== 'string') return
+
+      // Lire la valeur actuelle directement depuis le store (évite stale closure)
+      // N'écraser que si le textarea est vide (pas d'interruption en cours d'édition)
+      const currentPrompt = useFlowStore.getState().rawPrompt
+      if (!currentPrompt.trim()) {
+        setRawPrompt(text)
+      }
+    }
+
+    window.addEventListener('message', handler)
+
+    // Demander la valeur initiale au content script dès le montage
+    window.parent.postMessage({ type: 'FLOMPT_SYNC_REQUEST' }, '*')
+
+    return () => window.removeEventListener('message', handler)
+  }, [setRawPrompt])
 
   const handleDecompose = async () => {
     if (!rawPrompt.trim()) return

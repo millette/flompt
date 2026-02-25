@@ -1,7 +1,7 @@
 /* ── Flompt Extension Styles ────────────────────────────────────────────────
    Design aligné sur l'app Flompt — dark theme, accent #FF3570
    All selectors are prefixed with #flompt- to avoid conflicts with host pages
-   v0.1.7 — pas de header custom, bouton inline dans toolbar, favicon icon
+   v0.2.0 — resize handle, close tab, sync bidirectionnelle, bouton extrême gauche
    ──────────────────────────────────────────────────────────────────────── */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -10,7 +10,7 @@
 #flompt-sidebar {
   position: fixed !important;
   top: 0 !important;
-  right: -460px !important;
+  right: 0 !important;
   width: 440px !important;
   height: 100vh !important;
   background: #1c1c1e !important;
@@ -18,13 +18,76 @@
   z-index: 2147483646 !important;
   display: flex !important;
   flex-direction: column !important;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  /* Utilise transform pour l'animation ouvrir/fermer — width peut changer librement */
+  transform: translateX(100%) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
-  overflow: hidden !important;
+  /* overflow: visible pour laisser dépasser le close-tab et le resize handle */
+  overflow: visible !important;
 }
 
 #flompt-sidebar.flompt-open {
-  right: 0 !important;
+  transform: translateX(0) !important;
+}
+
+/* Désactive la transition CSS pendant le resize (JS gère) */
+#flompt-sidebar.flompt-resizing {
+  transition: none !important;
+}
+
+body.flompt-resizing {
+  transition: none !important;
+}
+
+/* ── Resize handle — bord gauche, drag horizontal ─────────────────────────── */
+#flompt-resize-handle {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 6px !important;
+  height: 100% !important;
+  cursor: ew-resize !important;
+  background: transparent !important;
+  z-index: 10 !important;
+  transition: background 0.2s !important;
+  flex-shrink: 0 !important;
+}
+
+#flompt-resize-handle:hover,
+#flompt-resize-handle:active {
+  background: rgba(255, 53, 112, 0.25) !important;
+}
+
+/* ── Close tab — onglet visible sur le bord gauche ───────────────────────── */
+#flompt-close-tab {
+  position: absolute !important;
+  top: 50px !important;
+  left: -34px !important;
+  width: 34px !important;
+  height: 56px !important;
+  background: #1c1c1e !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-right: none !important;
+  border-radius: 10px 0 0 10px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  z-index: 9 !important;
+  transition: background 0.15s, color 0.15s !important;
+  box-shadow: -3px 0 12px rgba(0, 0, 0, 0.35) !important;
+  padding: 0 !important;
+}
+
+#flompt-close-tab:hover {
+  background: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+#flompt-close-tab:active {
+  background: rgba(255, 53, 112, 0.15) !important;
+  color: #FF3570 !important;
 }
 
 /* ── Splash screen — plein cadre, disparaît quand l'iframe charge ─────────── */
@@ -39,6 +102,7 @@
   opacity: 1 !important;
   transition: opacity 0.4s ease !important;
   pointer-events: none !important;
+  overflow: hidden !important;
 }
 
 #flompt-splash.flompt-splash-hidden {
@@ -71,7 +135,7 @@
   -webkit-user-select: none !important;
 }
 
-/* ── Iframe — plein hauteur, l'app affiche son propre header ────────────── */
+/* ── Iframe — plein hauteur, overflow caché sur l'iframe elle-même ────────── */
 #flompt-iframe {
   flex: 1 !important;
   width: 100% !important;
@@ -79,16 +143,22 @@
   border: none !important;
   display: block !important;
   min-height: 0 !important;
+  overflow: hidden !important;
+  border-radius: 0 !important;
 }
 
 /* ── Body shift when sidebar is open ─────────────────────────────────────── */
+/* La marge droite est gérée dynamiquement par JS selon la largeur courante */
 body.flompt-body-shifted {
-  margin-right: 440px !important;
   transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
+body.flompt-resizing {
+  margin-right: 0 !important; /* JS override en place, on désactive la transition */
+}
+
 /* ── Toggle button — inline dans la toolbar (mode par défaut) ────────────── */
-/* Inséré juste avant le bouton Send de chaque plateforme */
+/* Positionné à l'extrême gauche de la barre d'outils de la plateforme */
 #flompt-toggle {
   display: inline-flex !important;
   align-items: center !important;
@@ -100,10 +170,11 @@ body.flompt-body-shifted {
   border: none !important;
   cursor: pointer !important;
   padding: 4px !important;
-  margin: 0 4px !important;
+  margin: 0 6px 0 2px !important;
   transition: background 0.15s, transform 0.15s !important;
   flex-shrink: 0 !important;
   vertical-align: middle !important;
+  order: -9999 !important; /* forcer en premier dans un flex container */
 }
 
 #flompt-toggle-icon {
@@ -149,8 +220,8 @@ body.flompt-body-shifted {
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.7) !important;
 }
 
+/* Actif en mode flottant — position gérée dynamiquement par JS */
 #flompt-toggle.flompt-floating.flompt-active {
-  right: 460px !important;
   box-shadow: 0 4px 20px rgba(255, 53, 112, 0.45) !important;
 }
 

@@ -13,7 +13,10 @@
   const FLOMPT_ORIGIN = DEV_MODE
     ? 'http://localhost:5173'
     : 'https://flompt.dev'
-  const SIDEBAR_W     = 440
+
+  const SIDEBAR_W_DEFAULT = 440
+  const SIDEBAR_W_MIN     = 300
+  const SIDEBAR_W_MAX     = 900
 
   // ── Platform detection ─────────────────────────────────────────────────────
   const hostname = location.hostname
@@ -38,7 +41,6 @@
         )
       },
       inject (el, text) { setContentEditable(el, text) },
-      // Sélecteurs spécifiques ChatGPT (en plus de la traversal générique)
       getSendBtn () {
         return (
           document.querySelector('button[data-testid="send-button"]') ||
@@ -120,17 +122,135 @@
     setTimeout(() => el.dispatchEvent(new Event('change', { bubbles: true })), 50)
   }
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  let sidebarOpen = false
-  let sidebarEl   = null
-  let iframeEl    = null
+  /** Lit le texte courant de l'input de la plateforme */
+  function getInputText () {
+    const el = platform?.getInput()
+    if (!el) return ''
+    return el.textContent || el.value || ''
+  }
 
-  // ── DOM: Sidebar — pas de header custom, iframe plein hauteur ──────────────
+  // ── State ──────────────────────────────────────────────────────────────────
+  let sidebarOpen         = false
+  let sidebarEl           = null
+  let iframeEl            = null
+  let iframeReady         = false
+  let currentSidebarWidth = SIDEBAR_W_DEFAULT
+  let inputSyncObserver   = null
+  let inputSyncDebounce   = null
+
+  // ── Bidirectional sync: platform input → iframe ────────────────────────────
+  function sendPlatformInputToIframe () {
+    if (!iframeEl?.contentWindow || !iframeReady) return
+    const text = getInputText()
+    iframeEl.contentWindow.postMessage({
+      type: 'FLOMPT_PLATFORM_INPUT',
+      text,
+      platform: platform?.name || 'Unknown',
+    }, FLOMPT_ORIGIN)
+  }
+
+  /** Active l'observation de l'input plateforme pour sync en temps réel */
+  function setupInputSync () {
+    if (inputSyncObserver) return
+    const el = platform?.getInput()
+    if (!el) return
+
+    const debouncedSend = () => {
+      clearTimeout(inputSyncDebounce)
+      inputSyncDebounce = setTimeout(sendPlatformInputToIframe, 400)
+    }
+
+    el.addEventListener('input', debouncedSend)
+
+    inputSyncObserver = new MutationObserver(debouncedSend)
+    inputSyncObserver.observe(el, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    })
+  }
+
+  function teardownInputSync () {
+    if (inputSyncObserver) {
+      inputSyncObserver.disconnect()
+      inputSyncObserver = null
+    }
+    clearTimeout(inputSyncDebounce)
+  }
+
+  // ── DOM: Resize handle (bord gauche de la sidebar) ─────────────────────────
+  function buildResizeHandle () {
+    const handle = document.createElement('div')
+    handle.id = 'flompt-resize-handle'
+
+    let startX    = 0
+    let startWidth = 0
+
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+      startX     = e.clientX
+      startWidth = sidebarEl.offsetWidth
+
+      document.body.style.userSelect = 'none'
+      sidebarEl.classList.add('flompt-resizing')
+      document.body.classList.add('flompt-resizing')
+
+      const onMouseMove = (e) => {
+        // Drag vers la gauche = augmenter la largeur
+        const dx       = startX - e.clientX
+        const newWidth = Math.max(
+          SIDEBAR_W_MIN,
+          Math.min(SIDEBAR_W_MAX, Math.min(startWidth + dx, window.innerWidth * 0.9))
+        )
+        currentSidebarWidth = newWidth
+        sidebarEl.style.setProperty('width', newWidth + 'px', 'important')
+
+        if (sidebarOpen) {
+          document.body.style.setProperty('margin-right', newWidth + 'px', 'important')
+        }
+
+        // Mettre à jour le bouton flottant actif
+        if (toggleBtn.classList.contains('flompt-floating') && toggleBtn.classList.contains('flompt-active')) {
+          toggleBtn.style.setProperty('right', (newWidth + 20) + 'px', 'important')
+        }
+      }
+
+      const onMouseUp = () => {
+        document.body.style.userSelect = ''
+        sidebarEl.classList.remove('flompt-resizing')
+        document.body.classList.remove('flompt-resizing')
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+      }
+
+      document.addEventListener('mousemove', onMouseMove)
+      document.addEventListener('mouseup', onMouseUp)
+    })
+
+    return handle
+  }
+
+  // ── DOM: Close tab (onglet de fermeture sur le bord gauche) ───────────────
+  function buildCloseTab () {
+    const tab = document.createElement('button')
+    tab.id = 'flompt-close-tab'
+    tab.setAttribute('aria-label', 'Close Flompt')
+    tab.title = 'Close Flompt'
+    tab.innerHTML = `
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    `
+    tab.addEventListener('click', closeSidebar)
+    return tab
+  }
+
+  // ── DOM: Sidebar — iframe plein hauteur, onglet close + resize ─────────────
   function buildSidebar () {
     const sidebar = document.createElement('div')
     sidebar.id = 'flompt-sidebar'
 
-    // Splash screen — visible pendant le chargement de l'iframe
+    // Splash screen — visible pendant le chargement
     const splash = document.createElement('div')
     splash.id = 'flompt-splash'
     splash.innerHTML = `
@@ -142,22 +262,30 @@
       </div>
     `
 
-    // Iframe — plein hauteur, l'app affiche son propre header
+    // Iframe
     const iframe = document.createElement('iframe')
     iframe.id  = 'flompt-iframe'
     iframe.src = FLOMPT_URL
     iframe.allow = 'clipboard-write'
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-downloads')
 
-    // Fade out du splash quand l'iframe est prête
     iframe.addEventListener('load', () => {
+      iframeReady = true
       const s = document.getElementById('flompt-splash')
       if (s) {
         s.classList.add('flompt-splash-hidden')
         setTimeout(() => s.remove(), 450)
       }
+      // Sync initial après chargement de l'iframe
+      setTimeout(sendPlatformInputToIframe, 300)
     })
 
+    // Composants UI
+    const resizeHandle = buildResizeHandle()
+    const closeTab     = buildCloseTab()
+
+    sidebar.appendChild(resizeHandle)
+    sidebar.appendChild(closeTab)
     sidebar.appendChild(splash)
     sidebar.appendChild(iframe)
     document.body.appendChild(sidebar)
@@ -171,15 +299,36 @@
     if (!sidebarEl) buildSidebar()
     sidebarOpen = true
     sidebarEl.classList.add('flompt-open')
+    // Appliquer la largeur dynamique au body
+    document.body.style.setProperty('margin-right', currentSidebarWidth + 'px', 'important')
     document.body.classList.add('flompt-body-shifted')
     toggleBtn.classList.add('flompt-active')
+
+    // Bouton flottant : déplacer à gauche de la sidebar
+    if (toggleBtn.classList.contains('flompt-floating')) {
+      toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
+    }
+
+    // Activer la sync bidirectionnelle
+    setupInputSync()
+
+    // Envoyer le contenu actuel si l'iframe est déjà prête
+    if (iframeReady) {
+      setTimeout(sendPlatformInputToIframe, 200)
+    }
   }
 
   function closeSidebar () {
     sidebarOpen = false
     sidebarEl?.classList.remove('flompt-open')
     document.body.classList.remove('flompt-body-shifted')
+    document.body.style.removeProperty('margin-right')
     toggleBtn?.classList.remove('flompt-active')
+
+    // Restaurer la position du bouton flottant
+    if (toggleBtn?.classList.contains('flompt-floating')) {
+      toggleBtn.style.removeProperty('right')
+    }
   }
 
   function toggleSidebar () {
@@ -199,18 +348,14 @@
   `
   toggleBtn.addEventListener('click', toggleSidebar)
 
-  // ── Insertion du toggle button — traversal générique depuis l'input ─────────
+  // ── Insertion du toggle — extrême gauche de la toolbar ────────────────────
   //
-  // Stratégie robuste :
-  //   1. Essayer le sélecteur spécifique à la plateforme (getSendBtn)
-  //   2. Sinon traverser le DOM depuis l'input connu jusqu'à trouver un
-  //      bouton "send-like" (aria-label, data-testid, type=submit contenant "send")
-  //   3. Fallback : bouton flottant bas-droite
+  // Stratégie :
+  //   1. Trouver le bouton "Send" (via sélecteur spécifique ou traversal DOM)
+  //   2. Récupérer son conteneur parent (la toolbar)
+  //   3. Insérer le bouton Flompt en PREMIER dans ce conteneur (extrême gauche)
+  //   4. Fallback : bouton flottant bas-droite
 
-  /**
-   * Remonte depuis l'élément input jusqu'à trouver un bouton "send".
-   * Indépendant des classes CSS et attributs spécifiques à chaque version.
-   */
   function findSendBtnByTraversal () {
     const input = platform?.getInput()
     if (!input) return null
@@ -238,16 +383,16 @@
   function tryInsertInToolbar () {
     if (toggleBtn.isConnected) return true
 
-    // 1. Sélecteur spécifique à la plateforme
-    // 2. Traversal générique depuis l'input (robuste aux changements de DOM)
     const sendBtn = platform?.getSendBtn?.() || findSendBtnByTraversal()
     if (!sendBtn?.parentElement) return false
 
-    sendBtn.parentElement.insertBefore(toggleBtn, sendBtn)
+    const container = sendBtn.parentElement
+    // Insérer en PREMIER (extrême gauche) de la barre d'outils
+    container.insertBefore(toggleBtn, container.firstChild)
     return true
   }
 
-  // Retry avec un seul timer actif à la fois (pas de race condition)
+  // Retry avec timer unique (pas de race condition)
   let mountTimer    = null
   let mountAttempts = 0
 
@@ -274,11 +419,11 @@
   // Lancement immédiat
   scheduleMount(0)
 
-  // Ré-insertion si le bouton est retiré du DOM (navigation SPA)
+  // Ré-insertion si le bouton disparaît (navigation SPA)
   setInterval(() => {
     if (!toggleBtn.isConnected) {
       mountAttempts = 0
-      scheduleMount(200) // petite pause pour laisser le DOM se stabiliser
+      scheduleMount(200)
     }
   }, 3000)
 
@@ -288,12 +433,19 @@
 
     const { type, prompt } = event.data ?? {}
 
+    // Injection du prompt compilé dans la plateforme
     if (type === 'FLOMPT_INJECT' && typeof prompt === 'string') {
       injectPrompt(prompt)
     }
 
+    // Fermeture de la sidebar depuis l'app
     if (type === 'FLOMPT_CLOSE') {
       closeSidebar()
+    }
+
+    // L'app demande la valeur actuelle de l'input plateforme
+    if (type === 'FLOMPT_SYNC_REQUEST') {
+      sendPlatformInputToIframe()
     }
   })
 
