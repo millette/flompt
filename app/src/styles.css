@@ -896,109 +896,131 @@ body {
 }
 .canvas-empty-hint strong { color: var(--text-muted); }
 
-/* ── Onboarding ───────────────────────────────────────────────────────────── */
-.onboarding-wrap {
-  position: absolute;
+/* ── Guided Tour ──────────────────────────────────────────────────────────── */
+
+/* Blocks all pointer events on the page */
+.tour-backdrop {
+  position: fixed;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  pointer-events: none;
-  animation: fade-in 350ms ease;
-}
-.onboarding-card {
+  z-index: 9990;
   pointer-events: all;
-  width: 380px;
+}
+
+/* Spotlight — box-shadow trick creates overlay with a transparent "hole" */
+.tour-spotlight {
+  position: fixed;
+  z-index: 9991;
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62);
+  outline: 2px solid rgba(255, 53, 112, 0.55);
+  outline-offset: 2px;
+  pointer-events: none;
+  transition:
+    top    320ms cubic-bezier(0.4, 0, 0.2, 1),
+    left   320ms cubic-bezier(0.4, 0, 0.2, 1),
+    width  320ms cubic-bezier(0.4, 0, 0.2, 1),
+    height 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Tooltip card */
+.tour-tooltip {
+  position: fixed;
+  z-index: 9999;
+  width: 280px;
   background: var(--bg-3);
   border: 1px solid var(--border-strong);
-  border-radius: 16px;
-  padding: 28px 28px 22px;
+  border-radius: 12px;
+  padding: 18px 20px 16px;
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.025),
-    0 28px 80px rgba(0,0,0,0.75),
-    0 0 60px rgba(255,53,112,0.05);
-  animation: scale-in 300ms ease;
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 24px 64px rgba(0, 0, 0, 0.85);
+  animation: scale-in 200ms ease;
+  transition:
+    top  320ms cubic-bezier(0.4, 0, 0.2, 1),
+    left 320ms cubic-bezier(0.4, 0, 0.2, 1);
 }
-.onboarding-header { margin-bottom: 22px; }
-.onboarding-logo {
-  font-family: 'Caveat', cursive;
-  font-size: 1.25rem;
+
+/* Progress dots */
+.tour-progress {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.tour-dot {
+  height: 3px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--border-strong);
+  transition: background 250ms;
+}
+.tour-dot.active { background: var(--accent); }
+.tour-dot.done   { background: rgba(255, 53, 112, 0.35); }
+
+/* Step label "1 / 4" */
+.tour-step-num {
+  font-size: 0.62rem;
   font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--accent);
-  display: block;
+  margin-bottom: 5px;
+}
+
+.tour-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
   margin-bottom: 6px;
 }
-.onboarding-heading {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.02em;
-  margin-bottom: 3px;
+
+.tour-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 14px;
 }
-.onboarding-tagline { font-size: 0.76rem; color: var(--text-muted); }
-.onboarding-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 22px;
-}
-.onboarding-step { display: flex; align-items: flex-start; gap: 13px; }
-.onboarding-step-num {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  border: 1px solid;
+
+.tour-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  margin-top: 1px;
-}
-.onboarding-step-title {
-  font-size: 0.83rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 2px;
-}
-.onboarding-step-desc { font-size: 0.74rem; color: var(--text-muted); line-height: 1.55; }
-.onboarding-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: stretch;
+  gap: 10px;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
-  padding-top: 18px;
 }
-.onboarding-cta {
-  padding: 11px 20px;
-  border-radius: 9px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 0.86rem;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background 200ms, box-shadow 200ms;
-  text-align: center;
-}
-.onboarding-cta:hover {
-  background: var(--accent-light);
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-.onboarding-skip {
+
+.tour-skip {
+  flex: 1;
+  font-size: 0.7rem;
+  color: var(--text-dim);
   background: none;
   border: none;
-  color: var(--text-dim);
-  font-size: 0.74rem;
   cursor: pointer;
+  font-family: var(--font);
+  padding: 0;
+  text-align: left;
   transition: color 150ms;
-  padding: 4px 0;
-  text-align: center;
 }
-.onboarding-skip:hover { color: var(--text-muted); }
+.tour-skip:hover { color: var(--text-muted); }
+
+.tour-next {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: background 150ms, opacity 150ms;
+}
+.tour-next:hover    { background: var(--accent-light); }
+.tour-next:disabled { opacity: 0.5; cursor: default; }
 
 /* ── Canvas FAB (mobile only — navigate to compile) ──────────────────────── */
 .canvas-fab {

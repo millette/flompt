@@ -1,10 +1,12 @@
 import { useEffect } from 'react'
 import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2, Github } from 'lucide-react'
+import { initAnalytics, analytics } from '@/lib/analytics'
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
 import PromptOutput from '@/components/PromptOutput'
 import KeyboardShortcuts from '@/components/KeyboardShortcuts'
+import GuidedTour from '@/components/GuidedTour'
 import { useFlowStore } from '@/store/flowStore'
 import type { Tab } from '@/store/flowStore'
 import { useLocale } from '@/i18n/LocaleContext'
@@ -21,6 +23,9 @@ const App = () => {
   const { undo, redo, reset, past, future, nodes, activeTab, setActiveTab, isDecomposing } = useFlowStore()
   const { t, locale, setLocale } = useLocale()
 
+  // Init PostHog after first render — non-blocking
+  useEffect(() => { initAnalytics() }, [])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey
@@ -32,7 +37,11 @@ const App = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, redo])
 
-  const toggleLocale = () => setLocale(locale === 'en' ? 'fr' : 'en' as Locale)
+  const toggleLocale = () => {
+    const next = locale === 'en' ? 'fr' : 'en' as Locale
+    setLocale(next)
+    analytics.localeChanged(next)
+  }
 
   return (
     <div className="app">
@@ -97,6 +106,9 @@ const App = () => {
           <PromptOutput />
         </aside>
       </main>
+
+      {/* Guided tour — desktop only, first visit only */}
+      <GuidedTour />
 
       <nav className="tab-bar">
         {TAB_IDS.map(({ id, Icon }) => (

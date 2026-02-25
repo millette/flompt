@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Caveat } from "next/font/google";
+import { Suspense } from "react";
+import { PostHogProvider } from "@/components/PostHogProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -61,7 +63,9 @@ export default async function RootLayout({
   return (
     <html lang={locale || "fr"} suppressHydrationWarning>
       <body className={`${inter.variable} ${caveat.variable} font-sans antialiased`}>
-        {children}
+        <Suspense>
+          <PostHogProvider>{children}</PostHogProvider>
+        </Suspense>
       </body>
     </html>
   );

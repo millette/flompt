@@ -3,6 +3,7 @@ import { Zap, Loader, ClipboardPaste } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, classifyError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
+import { analytics } from '@/lib/analytics'
 
 const PromptInput = () => {
   const { rawPrompt, setRawPrompt, setNodes, setEdges, setIsDecomposing, isDecomposing, setActiveTab } =
@@ -16,18 +17,18 @@ const PromptInput = () => {
     const prompt = rawPrompt
     setError(null)
     setIsDecomposing(true)
-    // Switch to canvas tab AFTER setting decomposing flag
-    // Use setTimeout to ensure state is committed before tab switch
+    analytics.decomposeClicked()
     setTimeout(() => setActiveTab('canvas'), 0)
     try {
       const { nodes, edges } = await decomposePrompt(prompt)
       setNodes(nodes)
       setEdges(edges)
+      analytics.decomposeCompleted(nodes.length)
     } catch (e) {
-      // Switch back to input tab to show the error
       setActiveTab('input')
       const errType = classifyError(e)
       setError(t.errors[errType])
+      analytics.error('decompose', errType)
       console.error(e)
     } finally {
       setIsDecomposing(false)
@@ -73,6 +74,7 @@ const PromptInput = () => {
         className="btn btn-primary"
         onClick={handleDecompose}
         disabled={isDecomposing || !rawPrompt.trim()}
+        data-tour="decompose-btn"
       >
         {isDecomposing
           ? <><Loader size={14} className="icon-spin" /> {t.promptInput.decomposing}</>

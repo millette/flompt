@@ -3,6 +3,7 @@ import { Clipboard, ClipboardCheck, FileText, Braces, Sparkles, Play, Loader, Sh
 import { useFlowStore } from '@/store/flowStore'
 import { compilePrompt, classifyError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
+import { analytics } from '@/lib/analytics'
 
 const PromptOutput = () => {
   const { nodes, edges, compiledPrompt, setCompiledPrompt, setIsCompiling, isCompiling } = useFlowStore()
@@ -14,14 +15,17 @@ const PromptOutput = () => {
     if (nodes.length === 0) return
     setIsCompiling(true)
     setError(null)
+    analytics.compileClicked()
     try {
       const blocks = nodes.map((n) => n.data)
       const result = await compilePrompt(blocks)
       setCompiledPrompt(result)
+      analytics.compileCompleted(result.tokenEstimate)
     } catch (e) {
       console.error(e)
       const errType = classifyError(e)
       setError(t.errors[errType])
+      analytics.error('compile', errType)
     } finally {
       setIsCompiling(false)
     }
@@ -31,6 +35,7 @@ const PromptOutput = () => {
     if (!compiledPrompt) return
     navigator.clipboard.writeText(compiledPrompt.raw).then(() => {
       setCopied(true)
+      analytics.promptCopied()
       setTimeout(() => setCopied(false), 2000)
     })
   }
@@ -42,6 +47,7 @@ const PromptOutput = () => {
     const a = document.createElement('a')
     a.href = url; a.download = 'flompt-prompt.txt'; a.click()
     URL.revokeObjectURL(url)
+    analytics.promptExported('txt')
   }
 
   const handleExportJSON = () => {
@@ -51,6 +57,7 @@ const PromptOutput = () => {
     const a = document.createElement('a')
     a.href = url; a.download = 'flompt-session.json'; a.click()
     URL.revokeObjectURL(url)
+    analytics.promptExported('json')
   }
 
   const handleShare = async () => {
@@ -126,6 +133,7 @@ const PromptOutput = () => {
         className="btn btn-primary"
         onClick={handleCompile}
         disabled={isCompiling || nodes.length === 0}
+        data-tour="compile-btn"
       >
         {isCompiling
           ? <><Loader size={14} className="icon-spin" /> {t.promptOutput.compiling}</>

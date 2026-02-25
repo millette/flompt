@@ -67,17 +67,23 @@ export interface Translations {
     close: string
     list: { keys: string[]; label: string }[]
   }
-  onboarding: {
-    heading: string
-    tagline: string
+  tour: {
     step1title: string
     step1desc: string
+    stepBlocksTitle: string
+    stepBlocksDesc: string
     step2title: string
     step2desc: string
+    step2action: string
     step3title: string
     step3desc: string
-    tryExample: string
+    step4title: string
+    step4desc: string
+    stepOf: string
+    next: string
+    finish: string
     skip: string
+    acting: string
     samplePrompt: string
   }
   blocks: Record<BlockType, BlockTranslation>
@@ -153,17 +159,23 @@ const en: Translations = {
       { keys: ['?'], label: 'Show shortcuts' },
     ],
   },
-  onboarding: {
-    heading: 'How flompt works',
-    tagline: 'Build your first prompt in 3 steps.',
-    step1title: 'Paste your prompt',
-    step1desc: 'Drop any raw text in the left panel — no special format needed.',
-    step2title: 'AI decomposes it',
-    step2desc: 'Click Decompose. Blocks appear on this canvas: Role, Objective, Constraints and more.',
-    step3title: 'Edit, connect, compile',
-    step3desc: 'Drag blocks around, edit their content, then compile into an optimized prompt.',
-    tryExample: 'Try with an example →',
-    skip: 'Start from scratch',
+  tour: {
+    step1title: 'Your raw prompt',
+    step1desc: "Type or paste any text here — vague or detailed, it doesn't matter. flompt will structure it for you.",
+    stepBlocksTitle: 'The building blocks',
+    stepBlocksDesc: 'Each block type targets one part of your prompt: Role, Objective, Constraints, Output Format… Click to add one, or drag it onto the canvas.',
+    step2title: 'Decompose into blocks',
+    step2desc: 'flompt sends your prompt to the AI, which breaks it into typed blocks: Role, Objective, Constraints and more.',
+    step2action: 'Decompose for me',
+    step3title: 'Edit your blocks',
+    step3desc: 'Each block is one aspect of your prompt. Edit the content, reorder by dragging, and add blocks from the left sidebar.',
+    step4title: 'Compile',
+    step4desc: 'Hit Compile to generate your final prompt — structured, optimized, ready to paste into any LLM.',
+    stepOf: '{n} / {total}',
+    next: 'Next',
+    finish: 'Got it',
+    skip: 'Skip',
+    acting: 'Decomposing…',
     samplePrompt: 'You are a senior Python developer. Review the following code for bugs, performance issues, and style violations. Be concise, prioritize critical issues, and explain each finding in one sentence. Respond with a numbered list.',
   },
   blocks: {
@@ -260,18 +272,24 @@ const fr: Translations = {
     output_format:   { label: 'Sortie',          description: 'Format attendu de la réponse' },
     language:        { label: 'Langue',          description: 'Langue de réponse de l\'IA' },
   },
-  onboarding: {
-    heading: 'Comment fonctionne flompt',
-    tagline: 'Construis ton premier prompt en 3 étapes.',
-    step1title: 'Colle ton prompt',
-    step1desc: 'Dépose n\'importe quel texte dans le panneau gauche — aucun format requis.',
-    step2title: 'L\'IA le décompose',
-    step2desc: 'Clique sur Décomposer. Les blocs apparaissent sur ce canvas : Rôle, Objectif, Contraintes et plus.',
-    step3title: 'Édite, connecte, compile',
-    step3desc: 'Déplace les blocs, affine leur contenu, puis compile en prompt optimisé.',
-    tryExample: 'Essayer avec un exemple →',
-    skip: 'Commencer from zéro',
-    samplePrompt: 'Tu es un expert en rédaction de contenu. Écris une bio professionnelle pour un développeur fullstack avec 5 ans d\'expérience en React et Python. Sois concis, accrocheur et professionnel. Maximum 150 mots. Inclus ses technologies principales et un trait de personnalité.',
+  tour: {
+    step1title: 'Ton prompt brut',
+    step1desc: "Tape ou colle n'importe quel texte ici — vague ou détaillé, peu importe. flompt se charge de le structurer.",
+    stepBlocksTitle: 'Les blocs disponibles',
+    stepBlocksDesc: "Chaque type de bloc cible un aspect de ton prompt : Rôle, Objectif, Contraintes, Format de sortie… Clique pour en ajouter un, ou glisse-le sur le canvas.",
+    step2title: 'Décomposer en blocs',
+    step2desc: "flompt envoie ton prompt à l'IA, qui le découpe en blocs typés : Rôle, Objectif, Contraintes…",
+    step2action: 'Décomposer pour moi',
+    step3title: 'Tes blocs sur le canvas',
+    step3desc: "Chaque bloc représente un aspect de ton prompt. Édite le contenu, réorganise par glisser-déposer, ajoute des blocs depuis la sidebar.",
+    step4title: 'Compiler',
+    step4desc: "Clique sur Compiler pour générer ton prompt final — structuré, optimisé, prêt à coller dans n'importe quel LLM.",
+    stepOf: '{n} / {total}',
+    next: 'Suivant',
+    finish: 'Compris',
+    skip: 'Passer',
+    acting: 'Décomposition…',
+    samplePrompt: 'Tu es un développeur Python senior. Fais une revue du code suivant : identifie les bugs, les problèmes de performance et les violations de style. Sois concis, priorise les problèmes critiques, et explique chaque point en une phrase. Réponds avec une liste numérotée.',
   },
 }
 
