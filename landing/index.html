@@ -437,7 +437,7 @@
 
         <!-- ── APP CANVAS MOCKUP ── -->
         <div class="hero-mockup">
-          <svg viewBox="0 0 520 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="flompt canvas showing four connected prompt blocks: Role, Objective, Constraints, Output Format">
+          <svg viewBox="0 0 520 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="flompt canvas showing five connected prompt blocks: Role, Objective, Constraints, Output Format, Language">
             <defs>
               <pattern id="dotgrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
                 <circle cx="10" cy="10" r="0.7" fill="#252525"/>
@@ -454,10 +454,13 @@
               <marker id="ah-a" markerWidth="6" markerHeight="5" refX="5.5" refY="2.5" orient="auto">
                 <path d="M0,0 L6,2.5 L0,5 Z" fill="rgba(251,191,36,0.65)"/>
               </marker>
+              <marker id="ah-s" markerWidth="6" markerHeight="5" refX="5.5" refY="2.5" orient="auto">
+                <path d="M0,0 L6,2.5 L0,5 Z" fill="rgba(56,189,248,0.65)"/>
+              </marker>
             </defs>
 
             <!-- Window -->
-            <rect width="520" height="340" rx="12" fill="#111111"/>
+            <rect width="520" height="380" rx="12" fill="#111111"/>
             <!-- Chrome bar -->
             <rect width="520" height="36" fill="#1a1a1a"/>
             <rect y="24" width="520" height="12" fill="#1a1a1a"/>
@@ -470,7 +473,7 @@
             <text x="190" y="22" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-family="Inter,system-ui,sans-serif" font-size="10.5">flompt.dev/app</text>
 
             <!-- Canvas -->
-            <rect x="0" y="36" width="520" height="304" fill="url(#dotgrid)"/>
+            <rect x="0" y="36" width="520" height="344" fill="url(#dotgrid)"/>
 
             <!-- ── BLOCK: Role ── -->
             <rect x="28" y="62" width="172" height="80" rx="8" fill="#181818" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
@@ -496,16 +499,17 @@
             <circle cx="395" cy="132" r="4.5" fill="#111" stroke="#fbbf24" stroke-width="1.5"/>
 
             <!-- ── BLOCK: Constraints ── -->
-            <rect x="28" y="196" width="172" height="80" rx="8" fill="#181818" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
-            <rect x="28" y="196" width="3" height="80" rx="1.5" fill="#fb7185"/>
-            <text x="42" y="216" font-family="Inter,system-ui,sans-serif" font-size="8" font-weight="700" fill="#e11d48" letter-spacing="0.8">CONSTRAINTS</text>
-            <text x="42" y="235" font-family="Inter,system-ui,sans-serif" font-size="11" fill="#d4d4d4">Language: French</text>
-            <text x="42" y="252" font-family="Inter,system-ui,sans-serif" font-size="11" fill="#d4d4d4">No bullet points</text>
-            <text x="42" y="269" font-family="Inter,system-ui,sans-serif" font-size="9.5" fill="#4a4a4a">Active voice only</text>
+            <rect x="28" y="196" width="172" height="60" rx="8" fill="#181818" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <rect x="28" y="196" width="3" height="60" rx="1.5" fill="#fb7185"/>
+            <text x="42" y="212" font-family="Inter,system-ui,sans-serif" font-size="8" font-weight="700" fill="#e11d48" letter-spacing="0.8">CONSTRAINTS</text>
+            <text x="42" y="229" font-family="Inter,system-ui,sans-serif" font-size="11" fill="#d4d4d4">No bullet points</text>
+            <text x="42" y="244" font-family="Inter,system-ui,sans-serif" font-size="9.5" fill="#4a4a4a">Active voice only</text>
             <!-- right handle -->
-            <circle cx="200" cy="236" r="4.5" fill="#111" stroke="#fb7185" stroke-width="1.5"/>
+            <circle cx="200" cy="226" r="4.5" fill="#111" stroke="#fb7185" stroke-width="1.5"/>
             <!-- top handle -->
             <circle cx="114" cy="196" r="4.5" fill="#111" stroke="#fb7185" stroke-width="1.5"/>
+            <!-- bottom handle -->
+            <circle cx="114" cy="256" r="4.5" fill="#111" stroke="#fb7185" stroke-width="1.5"/>
 
             <!-- ── BLOCK: Output Format ── -->
             <rect x="302" y="188" width="186" height="80" rx="8" fill="#181818" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
@@ -519,6 +523,14 @@
             <!-- top handle -->
             <circle cx="395" cy="188" r="4.5" fill="#111" stroke="#ff7daa" stroke-width="1.5"/>
 
+            <!-- ── BLOCK: Language ── -->
+            <rect x="28" y="278" width="172" height="46" rx="8" fill="#181818" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+            <rect x="28" y="278" width="3" height="46" rx="1.5" fill="#38bdf8"/>
+            <text x="42" y="295" font-family="Inter,system-ui,sans-serif" font-size="8" font-weight="700" fill="#0ea5e9" letter-spacing="0.8">LANGUAGE</text>
+            <text x="42" y="313" font-family="Inter,system-ui,sans-serif" font-size="11" fill="#d4d4d4">French</text>
+            <!-- top handle -->
+            <circle cx="114" cy="278" r="4.5" fill="#111" stroke="#38bdf8" stroke-width="1.5"/>
+
             <!-- ── CONNECTIONS ── -->
             <!-- Role → Objective -->
             <path d="M204.5,102 C248,102 264,92 297.5,92" stroke="rgba(192,132,252,0.5)" stroke-width="1.5" fill="none" marker-end="url(#ah-p)"/>
@@ -527,11 +539,13 @@
             <!-- Objective → Output Format -->
             <path d="M395,136.5 L395,183.5" stroke="rgba(255,125,170,0.5)" stroke-width="1.5" fill="none" marker-end="url(#ah-k)"/>
             <!-- Constraints → Output Format -->
-            <path d="M204.5,236 C248,236 264,228 297.5,228" stroke="rgba(251,113,133,0.5)" stroke-width="1.5" fill="none" marker-end="url(#ah-r)"/>
+            <path d="M204.5,226 C248,226 264,228 297.5,228" stroke="rgba(251,113,133,0.5)" stroke-width="1.5" fill="none" marker-end="url(#ah-r)"/>
+            <!-- Constraints → Language -->
+            <path d="M114,260.5 L114,273.5" stroke="rgba(56,189,248,0.5)" stroke-width="1.5" fill="none" marker-end="url(#ah-s)"/>
 
             <!-- ── ASSEMBLE BUTTON ── -->
-            <rect x="185" y="296" width="150" height="28" rx="6" fill="rgba(255,53,112,0.09)" stroke="rgba(255,53,112,0.22)" stroke-width="1"/>
-            <text x="260" y="315" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="11" fill="#ff3570" font-weight="500">⚡ Assemble prompt</text>
+            <rect x="185" y="336" width="150" height="28" rx="6" fill="rgba(255,53,112,0.09)" stroke="rgba(255,53,112,0.22)" stroke-width="1"/>
+            <text x="260" y="355" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="11" fill="#ff3570" font-weight="500">⚡ Assemble prompt</text>
           </svg>
         </div>
 
