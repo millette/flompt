@@ -43,14 +43,24 @@ flompt.dev {
 		file_server
 	}
 
-	# ── Security headers (toutes routes sauf /docs*) ─────────────
-	@notdocs not path /docs*
+	# ── Security headers (toutes routes sauf /docs* et /app*) ───────
+	# /app* est géré séparément pour autoriser le framing par l'extension
+	@notdocs not path /docs* /app*
 	header @notdocs {
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		X-XSS-Protection "1; mode=block"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://flompt.dev;"
+	}
+
+	# ── Security headers pour /app* — framing autorisé depuis les extensions ──
+	@app path /app*
+	header @app {
+		X-Content-Type-Options nosniff
+		X-XSS-Protection "1; mode=block"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://flompt.dev; frame-ancestors chrome-extension: moz-extension:;"
 	}
 
 	# ── HSTS global (toutes routes) ───────────────────────────────
