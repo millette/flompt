@@ -586,6 +586,9 @@
     if (platform?.name !== 'Claude') return
     const parent = toggleBtn.parentElement
     if (parent) parent.classList.add('inline-flex')
+    // Claude : taille réduite à 32x32 pour mieux s'intégrer à la toolbar native
+    toggleBtn.style.setProperty('width',  '32px', 'important')
+    toggleBtn.style.setProperty('height', '32px', 'important')
   }
 
   // Retry avec timer unique (pas de race condition)
