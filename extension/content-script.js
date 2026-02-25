@@ -230,29 +230,20 @@
     return handle
   }
 
-  // ── DOM: Header interne — barre avec titre + bouton close ────────────────────
+  // ── DOM: Header interne — style nav flompt.dev (Caveat + accent) ─────────────
   function buildSidebarHeader () {
     const header = document.createElement('div')
     header.id = 'flompt-header'
 
-    // Logo
-    const logo = document.createElement('img')
-    logo.id     = 'flompt-header-logo'
-    logo.src    = chrome.runtime.getURL('icons/icon.svg')
-    logo.width  = 16
-    logo.height = 16
-    logo.setAttribute('aria-hidden', 'true')
-
-    // Titre
+    // Brand "flompt" en Caveat — identique au nav du vrai site
     const title = document.createElement('span')
     title.id          = 'flompt-header-title'
-    title.textContent = 'Flompt'
+    title.textContent = 'flompt'
 
     // Bouton close — clairement à l'intérieur de l'extension
     const closeBtn = document.createElement('button')
     closeBtn.id = 'flompt-header-close'
     closeBtn.setAttribute('aria-label', 'Close')
-    closeBtn.title = 'Close'
     closeBtn.innerHTML = `
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -260,7 +251,6 @@
     `
     closeBtn.addEventListener('click', closeSidebar)
 
-    header.appendChild(logo)
     header.appendChild(title)
     header.appendChild(closeBtn)
     return header
@@ -279,7 +269,7 @@
         <img id="flompt-splash-icon"
           src="${chrome.runtime.getURL('icons/icon.svg')}"
           width="72" height="72" alt="" aria-hidden="true">
-        <span id="flompt-splash-title">Flompt</span>
+        <span id="flompt-splash-title">flompt</span>
       </div>
     `
 
@@ -361,7 +351,6 @@
   // ── DOM: Toggle button — Sparkles icon, style matching sibling buttons ───────
   const toggleBtn = document.createElement('button')
   toggleBtn.id    = 'flompt-toggle'
-  toggleBtn.title = 'Enhance'
   toggleBtn.setAttribute('aria-label', 'Enhance with Flompt')
   // Icône Sparkles (Lucide) inline — pas d'img pour éviter les conflits de style
   toggleBtn.innerHTML = `
@@ -382,6 +371,35 @@
     e.preventDefault()
     toggleSidebar()
   })
+
+  // ── Tooltip custom centré — remplace le title natif (mal positionné sur Claude) ──
+  toggleBtn.addEventListener('mouseenter', () => {
+    if (document.getElementById('flompt-toggle-tooltip')) return
+    const rect = toggleBtn.getBoundingClientRect()
+    const tip  = document.createElement('div')
+    tip.id = 'flompt-toggle-tooltip'
+    tip.textContent = 'Enhance'
+    document.body.appendChild(tip)
+    // Centrer horizontalement après insertion (pour connaître la largeur réelle)
+    requestAnimationFrame(() => {
+      const tw = tip.offsetWidth
+      const th = tip.offsetHeight
+      tip.style.setProperty('left', (rect.left + rect.width / 2 - tw / 2) + 'px', 'important')
+      tip.style.setProperty('top',  (rect.top - th - 8) + 'px', 'important')
+      tip.classList.add('flompt-tooltip-visible')
+    })
+  })
+  toggleBtn.addEventListener('mouseleave', () => {
+    const tip = document.getElementById('flompt-toggle-tooltip')
+    if (!tip) return
+    tip.classList.remove('flompt-tooltip-visible')
+    setTimeout(() => tip.remove(), 180)
+  })
+  toggleBtn.addEventListener('click', () => {
+    // Cacher le tooltip au clic (la sidebar s'ouvre)
+    const tip = document.getElementById('flompt-toggle-tooltip')
+    if (tip) tip.remove()
+  }, true)
 
   // ── Insertion du toggle — zone outils de la toolbar ─────────────────────
   //
