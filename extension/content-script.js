@@ -663,15 +663,46 @@
 
   // ── Live update : app → plateforme (brut, sans toast ni fermeture) ──────────
   //
-  // Appelée sur chaque `FLOMPT_LIVE_UPDATE` depuis l'iframe.
-  // Met à jour lastSentText avant injection pour éviter le feedback loop
-  // si l'observer est actif (plateforme → app).
+  // Appelée sur chaque `FLOMPT_LIVE_UPDATE` depuis l'iframe pendant la frappe.
+  // CRITIQUE : ne jamais appeler el.focus() ici — cela volerait le focus de
+  // l'iframe et interromprait la saisie de l'utilisateur.
+  //
+  // Stratégie :
+  //  - Si l'input plateforme a déjà le focus → execCommand (remplace tout)
+  //  - Sinon → mise à jour silencieuse : textContent + events React/Angular
   function liveUpdatePlatformInput (text) {
     const el = platform?.getInput()
     if (!el) return
     try {
       lastSentText = text   // coupe le retour d'écho vers l'app
-      platform.inject(el, text)
+
+      const isFocused = document.activeElement === el || el.contains(document.activeElement)
+
+      if (isFocused) {
+        // Input déjà focalisé (rare en live sync) — voie native via execCommand
+        const sel = window.getSelection()
+        const range = document.createRange()
+        range.selectNodeContents(el)
+        sel.removeAllRanges()
+        sel.addRange(range)
+        if (!document.execCommand('insertText', false, text)) {
+          el.textContent = text
+        }
+        el.dispatchEvent(new InputEvent('input', { bubbles: true, data: text }))
+      } else {
+        // Mise à jour silencieuse — PAS de focus steal
+        // Déclenche les listeners React/Angular/ProseMirror via les events natifs
+        el.dispatchEvent(new InputEvent('beforeinput', {
+          bubbles: true, cancelable: true,
+          inputType: 'insertReplacementText',
+          data: text,
+        }))
+        el.textContent = text
+        el.dispatchEvent(new InputEvent('input', {
+          bubbles: true, inputType: 'insertText', data: text,
+        }))
+        el.dispatchEvent(new Event('change', { bubbles: true }))
+      }
     } catch (err) {
       console.error('[flompt] Live update error:', err)
     }
