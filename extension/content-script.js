@@ -186,10 +186,11 @@
   function setupInputSync () {
     if (inputSyncObserver) return
 
-    // Interval 200ms — garantit la sync même si les events ne passent pas
+    // Interval 200ms — force=true : bypass lastSentText, envoie toujours
+    // L'écho est cassé par l'early return dans liveUpdatePlatformInput
     const id = setInterval(() => {
       if (!sidebarOpen || !iframeReady) return
-      sendPlatformInputToIframe()
+      sendPlatformInputToIframe(true)
     }, 200)
 
     // Events document-level en capture — réponse sub-200ms pour la frappe
