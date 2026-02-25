@@ -377,7 +377,8 @@
         s.classList.add('flompt-splash-hidden')
         setTimeout(() => s.remove(), 450)
       }
-      // Pas de sync initiale — l'app démarre à vide intentionnellement
+      // Sync initiale forcée — écrase ce qu'il y a déjà dans l'app
+      if (sidebarOpen) sendPlatformInputToIframe(true)
     })
 
     // Header interne (close button visible à l'intérieur)
@@ -408,13 +409,13 @@
       toggleBtn.style.setProperty('right', (currentSidebarWidth + 20) + 'px', 'important')
     }
 
-    // Marquer le contenu actuel comme "déjà connu" — le premier envoi sera
-    // déclenché par un CHANGEMENT (frappe), pas par l'état initial (start vide)
-    lastSentText = getInputText()
-
     // Sync plateforme → app : observer les changements en temps réel
     setupInputSync()
     startSyncPoller()
+
+    // Envoyer le contenu actuel immédiatement (forcé) — écrase ce qu'il y a
+    // déjà dans l'app pour garantir la cohérence à l'ouverture
+    if (iframeReady) sendPlatformInputToIframe(true)
   }
 
   function closeSidebar () {
