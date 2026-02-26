@@ -25,17 +25,28 @@ flompt intègre désormais un serveur MCP hébergé sur `https://flompt.dev/mcp/
 
 Pas d'installation. Pas de clé API. Pas de compte. Le serveur est hébergé et prêt à l'emploi.
 
-## Setup : un seul changement de config
+## Setup : une seule commande
 
-Lancez cette commande une seule fois dans votre terminal :
+**Via CLI :**
 
 ```bash
-claude mcp add --transport http flompt https://flompt.dev/mcp/
+claude mcp add --transport http --scope user flompt https://flompt.dev/mcp/
 ```
 
-C'est tout — flompt est disponible dans chaque session Claude Code à partir de là.
+**Ou via `.mcp.json` à la racine de votre projet :**
 
-C'est tout. Dès la session suivante, `decompose_prompt`, `compile_prompt` et `list_block_types` sont disponibles.
+```json
+{
+  "mcpServers": {
+    "flompt": {
+      "type": "http",
+      "url": "https://flompt.dev/mcp/"
+    }
+  }
+}
+```
+
+C'est tout — dès la session suivante, `decompose_prompt`, `compile_prompt` et `list_block_types` sont disponibles.
 
 ## Ce que ça donne en pratique
 

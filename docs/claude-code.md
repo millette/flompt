@@ -6,7 +6,13 @@ flompt exposes a native **MCP server** (Model Context Protocol) hosted on `flomp
 
 ## Setup
 
-Add the following to your project's `.mcp.json` (or your global `~/.claude.json`):
+**Option 1 — CLI (recommandé) :**
+
+```bash
+claude mcp add --transport http --scope user flompt https://flompt.dev/mcp/
+```
+
+**Option 2 — `.mcp.json` dans la racine de votre projet :**
 
 ```json
 {
@@ -17,12 +23,6 @@ Add the following to your project's `.mcp.json` (or your global `~/.claude.json`
     }
   }
 }
-```
-
-Or run the one-liner directly in your terminal:
-
-```bash
-claude mcp add --transport http flompt https://flompt.dev/mcp/
 ```
 
 ---
