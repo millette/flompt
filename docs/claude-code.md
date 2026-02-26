@@ -12,7 +12,7 @@ flompt exposes a native **MCP server** (Model Context Protocol) hosted on `flomp
 claude mcp add --transport http --scope user flompt https://flompt.dev/mcp/
 ```
 
-**Option 2 — `.mcp.json` dans la racine de votre projet :**
+**Option 2 — `~/.claude.json` :**
 
 ```json
 {

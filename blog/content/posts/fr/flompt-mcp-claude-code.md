@@ -33,7 +33,7 @@ Pas d'installation. Pas de clé API. Pas de compte. Le serveur est hébergé et 
 claude mcp add --transport http --scope user flompt https://flompt.dev/mcp/
 ```
 
-**Ou via `.mcp.json` à la racine de votre projet :**
+**Ou via `~/.claude.json` :**
 
 ```json
 {

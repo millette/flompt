@@ -33,7 +33,7 @@ No install. No API key. No account. The server is hosted and ready.
 claude mcp add --transport http --scope user flompt https://flompt.dev/mcp/
 ```
 
-**Or via `.mcp.json` in your project root:**
+**Or via `~/.claude.json`:**
 
 ```json
 {
