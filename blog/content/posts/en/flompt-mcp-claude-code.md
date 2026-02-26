@@ -27,20 +27,13 @@ No install. No API key. No account. The server is hosted and ready.
 
 ## Setup: One Config Change
 
-Add the following to `.mcp.json` in your project root:
+Run this once in your terminal:
 
-```json
-{
-  "mcpServers": {
-    "flompt": {
-      "type": "http",
-      "url": "https://flompt.dev/mcp/"
-    }
-  }
-}
+```bash
+claude mcp add --transport http flompt https://flompt.dev/mcp/
 ```
 
-Or type `/mcp add` directly in Claude Code and enter the URL.
+That's it — flompt is available in every Claude Code session from that point on.
 
 That's it. On the next session, `decompose_prompt`, `compile_prompt` and `list_block_types` are available.
 

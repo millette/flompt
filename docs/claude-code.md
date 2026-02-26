@@ -19,13 +19,11 @@ Add the following to your project's `.mcp.json` (or your global `~/.claude.json`
 }
 ```
 
-Or use the interactive command inside Claude Code:
+Or run the one-liner directly in your terminal:
 
+```bash
+claude mcp add --transport http flompt https://flompt.dev/mcp/
 ```
-/mcp add
-```
-
-Then enter `https://flompt.dev/mcp/` as the URL.
 
 ---
 
