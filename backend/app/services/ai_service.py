@@ -257,7 +257,7 @@ async def _call_anthropic(system: str, user: str) -> str:
             },
             json={
                 "model": _get_model(),
-                "max_tokens": 1024,
+                "max_tokens": 4096,
                 "system": system,
                 "messages": [{"role": "user", "content": user}],
             }
@@ -278,7 +278,7 @@ async def _call_openai(system: str, user: str) -> str:
             },
             json={
                 "model": _get_model(),
-                "max_tokens": 1024,
+                "max_tokens": 4096,
                 "messages": [
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
