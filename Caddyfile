@@ -39,7 +39,7 @@ flompt.dev {
 	# ── Landing page (catch-all) ─────────────────────────────────
 	handle {
 		root * /projects/flompt/landing
-		try_files {path} /index.html
+		try_files {path} {path}.html {path}/index.html /index.html
 		file_server
 	}
 
@@ -82,6 +82,6 @@ flompt.dev {
 	header @meta Cache-Control "public, max-age=86400"
 
 	# ── Cache: HTML → no-cache (always revalidate) ───────────────
-	@html path /index.html /
+	@html path /index.html / /privacy /privacy.html /terms /terms.html
 	header @html Cache-Control "no-cache, must-revalidate"
 }

@@ -4,7 +4,7 @@ import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, getJobStatus, classifyError, classifyJobError } from '@/services/api'
 import type { DecomposeResponse } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
-import { analytics } from '@/lib/analytics'
+import { analytics, setSource } from '@/lib/analytics'
 
 const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
 
@@ -60,7 +60,10 @@ const PromptInput = () => {
     const handler = (event: MessageEvent) => {
       if (event.data?.type === 'FLOMPT_PLATFORM_INFO') {
         const platform = event.data.platform as string
-        if (platform && platform !== 'Unknown') setPlatformName(platform)
+        if (platform && platform !== 'Unknown') {
+          setPlatformName(platform)
+          setSource('extension', platform)
+        }
         return
       }
       if (event.data?.type !== 'FLOMPT_PLATFORM_INPUT') return
@@ -68,7 +71,10 @@ const PromptInput = () => {
       const platform = event.data.platform as string
       if (typeof text !== 'string') return
       setRawPrompt(text)
-      if (platform && platform !== 'Unknown') setPlatformName(platform)
+      if (platform && platform !== 'Unknown') {
+        setPlatformName(platform)
+        setSource('extension', platform)
+      }
     }
 
     window.addEventListener('message', handler)

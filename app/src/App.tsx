@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Undo2, Redo2, Workflow, PenLine, Network, Sparkles, Trash2, Github } from 'lucide-react'
-import { initAnalytics, analytics } from '@/lib/analytics'
+import { initAnalytics, setSource, analytics } from '@/lib/analytics'
 import FlowCanvas from '@/components/FlowCanvas'
 import Sidebar from '@/components/Sidebar'
 import PromptInput from '@/components/PromptInput'
@@ -26,7 +26,10 @@ const App = () => {
   const { t, locale, setLocale } = useLocale()
 
   // Init PostHog after first render — non-blocking
-  useEffect(() => { initAnalytics() }, [])
+  useEffect(() => {
+    initAnalytics()
+    setSource(isExtension ? 'extension' : 'web')
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Terms of Service — flompt</title>
+  <meta name="description" content="flompt terms of service. Free, open-source, and provided as-is. Your prompts are yours. MIT licensed." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://flompt.dev/terms" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://flompt.dev/terms" />
+  <meta property="og:title" content="Terms of Service — flompt" />
+  <meta property="og:description" content="flompt terms of service. Free, open-source, MIT licensed. Use it responsibly." />
+  <meta property="og:site_name" content="flompt" />
+
+  <link rel="icon" type="image/svg+xml" href="/app/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/app/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/app/apple-touch-icon.png" />
+  <meta name="theme-color" content="#ff3570" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:            #111111;
+      --bg-2:          #191919;
+      --bg-3:          #212121;
+      --border:        rgba(255,255,255,0.07);
+      --border-m:      rgba(255,255,255,0.11);
+      --text:          #ececec;
+      --text-muted:    #838383;
+      --text-dim:      #444;
+      --accent:        #ff3570;
+      --accent-h:      #ff6090;
+      --accent-glow:   rgba(255,53,112,0.28);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 60px;
+      background: rgba(17,17,17,0.88);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      height: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { text-decoration: none; }
+    .nav-brand span {
+      font-family: 'Caveat', cursive; font-size: 1.5rem;
+      font-weight: 700; color: var(--accent);
+    }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a {
+      font-size: 0.875rem; color: var(--text-muted);
+      transition: color 150ms; text-decoration: none;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--text-muted); border-radius: 2px; transition: all 200ms;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile-menu {
+      display: none; position: fixed; top: 60px; left: 0; right: 0;
+      background: rgba(17,17,17,0.97); backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px 20px; flex-direction: column; gap: 4px; z-index: 99;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a {
+      font-size: 1rem; color: var(--text-muted); padding: 12px 0;
+      border-bottom: 1px solid var(--border); transition: color 150ms; text-decoration: none;
+    }
+    .nav-mobile-menu a:last-child { border-bottom: none; padding-top: 16px; }
+    .nav-mobile-menu a:hover { color: var(--text); }
+    .btn-cta, .nav-links a.btn-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 20px; border-radius: 99px;
+      background: var(--accent); color: #fff;
+      font-size: 0.875rem; font-weight: 600;
+      transition: all 200ms; border: none; cursor: pointer;
+    }
+    .btn-cta:hover { background: var(--accent-h); box-shadow: 0 0 28px var(--accent-glow); text-decoration: none; }
+
+    /* LEGAL PAGE */
+    .legal-page {
+      padding: 110px 0 80px;
+      min-height: 100vh;
+    }
+    .legal-header {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .legal-label {
+      font-size: 0.71rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--accent); margin-bottom: 12px;
+      display: block;
+    }
+    .legal-header h1 {
+      font-size: 2.2rem; font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .legal-updated {
+      font-size: 0.82rem; color: var(--text-dim);
+    }
+
+    /* TL;DR BOX */
+    .tldr {
+      background: var(--bg-2);
+      border: 1px solid var(--border-m);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+    }
+    .tldr-label {
+      font-size: 0.71rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent); margin-bottom: 8px;
+    }
+    .tldr p {
+      font-size: 0.92rem; color: var(--text-muted); line-height: 1.7;
+    }
+
+    /* SECTIONS */
+    .legal-section {
+      margin-bottom: 44px;
+    }
+    .legal-section h2 {
+      font-size: 1.15rem; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 14px;
+      color: var(--text);
+    }
+    .legal-section h3 {
+      font-size: 0.92rem; font-weight: 600;
+      color: var(--text); margin: 20px 0 8px;
+    }
+    .legal-section p {
+      font-size: 0.92rem; color: var(--text-muted);
+      line-height: 1.8; margin-bottom: 12px;
+    }
+    .legal-section ul, .legal-section ol {
+      margin: 10px 0 14px 20px;
+    }
+    .legal-section li {
+      font-size: 0.92rem; color: var(--text-muted);
+      line-height: 1.8; margin-bottom: 4px;
+    }
+    .legal-section .note {
+      font-size: 0.82rem; color: var(--text-dim);
+      font-style: italic; margin-top: -6px;
+    }
+
+    /* DO / DON'T GRID */
+    .dos-donts {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px; margin: 16px 0;
+    }
+    .dos, .donts {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .dos { border-top: 2px solid rgba(80, 200, 100, 0.4); }
+    .donts { border-top: 2px solid rgba(255, 53, 112, 0.4); }
+    .dos-label, .donts-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 12px; display: block;
+    }
+    .dos-label { color: rgba(80, 200, 100, 0.85); }
+    .donts-label { color: var(--accent); }
+    .dos ul, .donts ul { margin: 0; list-style: none; padding: 0; }
+    .dos li, .donts li {
+      font-size: 0.83rem; color: var(--text-muted);
+      padding: 5px 0; border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .dos li:last-child, .donts li:last-child { border-bottom: none; }
+    .dos li::before { content: "✓ "; color: rgba(80,200,100,0.7); font-weight: 600; }
+    .donts li::before { content: "✕ "; color: var(--accent); font-weight: 600; }
+
+    /* DISCLAIMER BOX */
+    .disclaimer-box {
+      background: var(--bg-2);
+      border: 1px solid var(--border-m);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 14px 0;
+    }
+    .disclaimer-box p {
+      font-size: 0.87rem; color: var(--text-muted);
+      line-height: 1.7; margin-bottom: 0;
+    }
+
+    /* FOOTER */
+    footer { padding: 44px 0; border-top: 1px solid var(--border); }
+    .footer-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-brand span {
+      font-family: 'Caveat', cursive; font-size: 1.3rem; font-weight: 700; color: var(--accent);
+    }
+    .footer-links { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .footer-links a {
+      font-size: 0.8rem; color: var(--text-dim);
+      transition: color 150ms; text-decoration: none;
+    }
+    .footer-links a:hover { color: var(--text-muted); }
+    .footer-credit { font-size: 0.75rem; color: var(--text-dim); }
+    .footer-credit a { color: var(--text-muted); }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .legal-header h1 { font-size: 1.7rem; }
+      .dos-donts { grid-template-columns: 1fr; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand"><span>flompt</span></a>
+      <div class="nav-links">
+        <a href="/#extension">Extension</a>
+        <a href="/docs">Docs</a>
+        <a href="/blog/en">Blog</a>
+        <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+        <a href="/app" class="btn-cta">Open App</a>
+      </div>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile-menu" id="mobile-menu">
+    <a href="/#extension">Extension</a>
+    <a href="/docs">Docs</a>
+    <a href="/blog/en">Blog</a>
+    <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+    <a href="/app" class="btn-cta">Open App &rarr;</a>
+  </div>
+
+  <!-- MAIN -->
+  <main class="legal-page">
+    <div class="container">
+
+      <div class="legal-header">
+        <span class="legal-label">Legal</span>
+        <h1>Terms of Service</h1>
+        <p class="legal-updated">Last updated: February 25, 2026</p>
+      </div>
+
+      <div class="tldr">
+        <p class="tldr-label">tl;dr</p>
+        <p>
+          flompt is free, open-source, and provided as-is. No account needed.
+          Your prompts belong to you. Use it responsibly and in line with the AI
+          providers you connect to. We may change or shut down the service — we'll
+          try to give notice when we do.
+        </p>
+      </div>
+
+      <!-- 1. What flompt is -->
+      <div class="legal-section">
+        <h2>1. What flompt is</h2>
+        <p>
+          flompt is an open-source visual prompt engineering tool available at
+          <a href="https://flompt.dev">flompt.dev</a> and as a browser extension.
+          It's developed and maintained by Nyrok, an independent developer.
+          The source code is publicly available at
+          <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">github.com/Nyrok/flompt</a>
+          under the MIT license.
+        </p>
+        <p>
+          By using flompt.dev or the browser extension, you agree to these terms.
+          If you don't agree, please don't use the service.
+        </p>
+      </div>
+
+      <!-- 2. Who can use flompt -->
+      <div class="legal-section">
+        <h2>2. Who can use flompt</h2>
+        <p>
+          Anyone can use flompt — no account required. If you're under 13 years old
+          (or under 16 in countries where that threshold applies under GDPR), please
+          get a parent or guardian's approval before using the AI-powered features,
+          as those involve third-party AI providers with their own age requirements.
+        </p>
+      </div>
+
+      <!-- 3. Acceptable use -->
+      <div class="legal-section">
+        <h2>3. What you can and can't do</h2>
+
+        <div class="dos-donts">
+          <div class="dos">
+            <span class="dos-label">You can</span>
+            <ul>
+              <li>Use flompt for personal or commercial work</li>
+              <li>Use it for research or education</li>
+              <li>Self-host your own instance (MIT license)</li>
+              <li>Fork the repo and modify it</li>
+              <li>Contribute to the project on GitHub</li>
+            </ul>
+          </div>
+          <div class="donts">
+            <span class="donts-label">Please don't</span>
+            <ul>
+              <li>Submit content that violates AI providers' terms</li>
+              <li>Send automated requests that abuse the API</li>
+              <li>Use flompt for illegal or harmful activities</li>
+              <li>Try to extract or scrape our infrastructure</li>
+              <li>Impersonate flompt or claim affiliation</li>
+            </ul>
+          </div>
+        </div>
+
+        <p>
+          We reserve the right to block access to the hosted service if we
+          detect patterns of abuse, without prior notice.
+        </p>
+      </div>
+
+      <!-- 4. Your content -->
+      <div class="legal-section">
+        <h2>4. Your content</h2>
+        <p>
+          The prompts you write in flompt are yours. We don't claim any ownership
+          over them. When you use the AI decomposition feature, your content is
+          forwarded to Anthropic or OpenAI — at that point, their respective terms
+          of service and usage policies also apply.
+        </p>
+        <p>
+          By submitting a prompt for decomposition, you represent that you have
+          the right to share that content with a third-party AI provider.
+        </p>
+      </div>
+
+      <!-- 5. Open source -->
+      <div class="legal-section">
+        <h2>5. Open source and self-hosting</h2>
+        <p>
+          flompt is MIT licensed. You're free to clone it, modify it, and run
+          your own instance. If you do, these terms of service don't apply to
+          your self-hosted version — you're on your own for that.
+        </p>
+        <p>
+          Contributions to the main repository are welcome. By submitting a pull
+          request, you agree that your contribution will be released under the
+          same MIT license.
+        </p>
+      </div>
+
+      <!-- 6. Service availability -->
+      <div class="legal-section">
+        <h2>6. Service availability</h2>
+        <p>
+          We run flompt.dev on a best-effort basis. There's no uptime guarantee
+          or SLA. The service may be temporarily unavailable, slow, or change
+          at any time — that's the nature of an indie project.
+        </p>
+        <p>
+          If we ever decide to shut down the hosted service, we'll do our best
+          to give reasonable notice via the GitHub repository. Since the code is
+          open-source, you can always self-host if the hosted version goes away.
+        </p>
+      </div>
+
+      <!-- 7. Disclaimer -->
+      <div class="legal-section">
+        <h2>7. No warranties, limited liability</h2>
+        <p>
+          flompt is provided "as is," without any warranty, express or implied.
+          We don't guarantee that the AI-generated output will be accurate,
+          complete, or suitable for any particular purpose. Always review
+          AI-generated content before using it in production.
+        </p>
+        <div class="disclaimer-box">
+          <p>
+            To the fullest extent permitted by applicable law, flompt and its
+            contributors shall not be liable for any indirect, incidental, or
+            consequential damages arising from your use of the service, including
+            but not limited to data loss, errors in AI output, or service
+            interruptions.
+          </p>
+        </div>
+      </div>
+
+      <!-- 8. Third-party AI providers -->
+      <div class="legal-section">
+        <h2>8. Third-party AI providers</h2>
+        <p>
+          The AI decomposition feature relies on Anthropic (Claude) and/or OpenAI (GPT).
+          These are independent services with their own terms, pricing, and limitations.
+          flompt is not affiliated with either company. If their APIs change or become
+          unavailable, the decomposition feature may be affected.
+        </p>
+        <p>
+          The heuristic decomposer (available when no API key is configured) works
+          entirely locally without any external API calls.
+        </p>
+      </div>
+
+      <!-- 9. Changes -->
+      <div class="legal-section">
+        <h2>9. Changes to these terms</h2>
+        <p>
+          We may update these terms from time to time. When we do, the
+          "last updated" date at the top of this page will change. For material
+          changes, we'll try to flag it in the GitHub repository.
+          Continued use of the service after an update means you accept the new terms.
+        </p>
+      </div>
+
+      <!-- 10. Governing law -->
+      <div class="legal-section">
+        <h2>10. Governing law</h2>
+        <p>
+          These terms are governed by French law. Any disputes that can't be resolved
+          informally will be subject to the jurisdiction of French courts.
+        </p>
+        <p>
+          If you're a consumer in the EU, you also benefit from the mandatory
+          consumer protection provisions of your country of residence.
+        </p>
+      </div>
+
+      <!-- 11. Contact -->
+      <div class="legal-section">
+        <h2>11. Contact</h2>
+        <p>
+          Questions about these terms: <a href="mailto:contact@flompt.dev">contact@flompt.dev</a><br>
+          Or open an issue at <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">github.com/Nyrok/flompt</a>.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand"><span>flompt</span></div>
+      <div class="footer-links">
+        <a href="/app">App</a>
+        <a href="/docs">Docs</a>
+        <a href="/blog/en">Blog</a>
+        <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+        <a href="/privacy" style="color:var(--text-muted)">Privacy</a>
+        <a href="/terms" style="color:var(--text-muted)">Terms</a>
+      </div>
+      <p class="footer-credit">Made by <a href="https://github.com/Nyrok" target="_blank" rel="noopener">Nyrok</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('hamburger');
+    const menu = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    });
+  </script>
+
+</body>
+</html>

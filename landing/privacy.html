@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Privacy Policy — flompt</title>
+  <meta name="description" content="flompt collects minimal analytics and never stores your prompts. No account, no tracking profile, no selling data. Full GDPR-compliant privacy policy." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://flompt.dev/privacy" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://flompt.dev/privacy" />
+  <meta property="og:title" content="Privacy Policy — flompt" />
+  <meta property="og:description" content="flompt's privacy policy. Minimal data collection, EU-hosted analytics, no user accounts." />
+  <meta property="og:site_name" content="flompt" />
+
+  <link rel="icon" type="image/svg+xml" href="/app/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/app/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/app/apple-touch-icon.png" />
+  <meta name="theme-color" content="#ff3570" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:            #111111;
+      --bg-2:          #191919;
+      --bg-3:          #212121;
+      --border:        rgba(255,255,255,0.07);
+      --border-m:      rgba(255,255,255,0.11);
+      --text:          #ececec;
+      --text-muted:    #838383;
+      --text-dim:      #444;
+      --accent:        #ff3570;
+      --accent-h:      #ff6090;
+      --accent-glow:   rgba(255,53,112,0.28);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 60px;
+      background: rgba(17,17,17,0.88);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      height: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { text-decoration: none; }
+    .nav-brand span {
+      font-family: 'Caveat', cursive; font-size: 1.5rem;
+      font-weight: 700; color: var(--accent);
+    }
+    .nav-links { display: flex; align-items: center; gap: 28px; }
+    .nav-links a {
+      font-size: 0.875rem; color: var(--text-muted);
+      transition: color 150ms; text-decoration: none;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      width: 36px; height: 36px; background: none; border: none; cursor: pointer; padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--text-muted); border-radius: 2px; transition: all 200ms;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile-menu {
+      display: none; position: fixed; top: 60px; left: 0; right: 0;
+      background: rgba(17,17,17,0.97); backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px 20px; flex-direction: column; gap: 4px; z-index: 99;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu a {
+      font-size: 1rem; color: var(--text-muted); padding: 12px 0;
+      border-bottom: 1px solid var(--border); transition: color 150ms; text-decoration: none;
+    }
+    .nav-mobile-menu a:last-child { border-bottom: none; padding-top: 16px; }
+    .nav-mobile-menu a:hover { color: var(--text); }
+    .btn-cta, .nav-links a.btn-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 20px; border-radius: 99px;
+      background: var(--accent); color: #fff;
+      font-size: 0.875rem; font-weight: 600;
+      transition: all 200ms; border: none; cursor: pointer;
+    }
+    .btn-cta:hover { background: var(--accent-h); box-shadow: 0 0 28px var(--accent-glow); text-decoration: none; }
+
+    /* LEGAL PAGE */
+    .legal-page {
+      padding: 110px 0 80px;
+      min-height: 100vh;
+    }
+    .legal-header {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .legal-label {
+      font-size: 0.71rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--accent); margin-bottom: 12px;
+      display: block;
+    }
+    .legal-header h1 {
+      font-size: 2.2rem; font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .legal-updated {
+      font-size: 0.82rem; color: var(--text-dim);
+    }
+
+    /* TL;DR BOX */
+    .tldr {
+      background: var(--bg-2);
+      border: 1px solid var(--border-m);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+    }
+    .tldr-label {
+      font-size: 0.71rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--accent); margin-bottom: 8px;
+    }
+    .tldr p {
+      font-size: 0.92rem; color: var(--text-muted); line-height: 1.7;
+    }
+
+    /* SECTIONS */
+    .legal-section {
+      margin-bottom: 44px;
+    }
+    .legal-section h2 {
+      font-size: 1.15rem; font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 14px;
+      color: var(--text);
+    }
+    .legal-section h3 {
+      font-size: 0.92rem; font-weight: 600;
+      color: var(--text); margin: 20px 0 8px;
+    }
+    .legal-section p {
+      font-size: 0.92rem; color: var(--text-muted);
+      line-height: 1.8; margin-bottom: 12px;
+    }
+    .legal-section ul, .legal-section ol {
+      margin: 10px 0 14px 20px;
+    }
+    .legal-section li {
+      font-size: 0.92rem; color: var(--text-muted);
+      line-height: 1.8; margin-bottom: 4px;
+    }
+    .legal-section .note {
+      font-size: 0.82rem; color: var(--text-dim);
+      font-style: italic; margin-top: -6px;
+    }
+
+    /* DATA TABLE */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0 20px; font-size: 0.85rem;
+    }
+    .data-table th {
+      text-align: left; padding: 10px 14px;
+      background: var(--bg-3); color: var(--text-muted);
+      font-weight: 600; font-size: 0.77rem; text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border-m);
+    }
+    .data-table th:first-child { border-radius: 6px 0 0 0; }
+    .data-table th:last-child { border-radius: 0 6px 0 0; }
+    .data-table td {
+      padding: 10px 14px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td a { color: var(--accent); font-size: 0.82rem; }
+
+    /* RIGHTS GRID */
+    .rights-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin: 14px 0;
+    }
+    .right-item {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .right-item strong {
+      display: block; font-size: 0.85rem;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .right-item span {
+      font-size: 0.8rem; color: var(--text-muted);
+    }
+
+    /* FOOTER */
+    footer { padding: 44px 0; border-top: 1px solid var(--border); }
+    .footer-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-brand span {
+      font-family: 'Caveat', cursive; font-size: 1.3rem; font-weight: 700; color: var(--accent);
+    }
+    .footer-links { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .footer-links a {
+      font-size: 0.8rem; color: var(--text-dim);
+      transition: color 150ms; text-decoration: none;
+    }
+    .footer-links a:hover { color: var(--text-muted); }
+    .footer-credit { font-size: 0.75rem; color: var(--text-dim); }
+    .footer-credit a { color: var(--text-muted); }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .legal-header h1 { font-size: 1.7rem; }
+      .rights-grid { grid-template-columns: 1fr; }
+      .data-table { font-size: 0.78rem; }
+      .data-table th, .data-table td { padding: 8px 10px; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-brand"><span>flompt</span></a>
+      <div class="nav-links">
+        <a href="/#extension">Extension</a>
+        <a href="/docs">Docs</a>
+        <a href="/blog/en">Blog</a>
+        <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+        <a href="/app" class="btn-cta">Open App</a>
+      </div>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="nav-mobile-menu" id="mobile-menu">
+    <a href="/#extension">Extension</a>
+    <a href="/docs">Docs</a>
+    <a href="/blog/en">Blog</a>
+    <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+    <a href="/app" class="btn-cta">Open App &rarr;</a>
+  </div>
+
+  <!-- MAIN -->
+  <main class="legal-page">
+    <div class="container">
+
+      <div class="legal-header">
+        <span class="legal-label">Legal</span>
+        <h1>Privacy Policy</h1>
+        <p class="legal-updated">Last updated: February 25, 2026</p>
+      </div>
+
+      <div class="tldr">
+        <p class="tldr-label">tl;dr</p>
+        <p>
+          flompt collects minimal, anonymized analytics to understand how the tool is used.
+          Your prompts are processed to generate structured output but are never stored after the job completes.
+          No account required. No tracking profile. No selling your data.
+        </p>
+      </div>
+
+      <!-- 1. Who we are -->
+      <div class="legal-section">
+        <h2>1. Who we are</h2>
+        <p>
+          flompt (available at <a href="https://flompt.dev">flompt.dev</a>) is an open-source visual prompt engineering tool
+          developed and maintained by Nyrok, an independent developer. This policy applies to the flompt.dev website
+          and the flompt browser extension.
+        </p>
+        <p>
+          For any questions or data-related requests, contact us at
+          <a href="mailto:contact@flompt.dev">contact@flompt.dev</a> or open an issue on
+          <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>.
+        </p>
+      </div>
+
+      <!-- 2. What we collect -->
+      <div class="legal-section">
+        <h2>2. What we collect and why</h2>
+
+        <h3>Usage analytics</h3>
+        <p>
+          We use PostHog (EU region, hosted on <code style="font-size:0.82rem;color:var(--text);background:var(--bg-3);padding:2px 6px;border-radius:4px;">eu.i.posthog.com</code>)
+          to collect anonymized usage data — pages visited, features used, and session duration.
+          This helps us understand what's working and prioritize improvements. No personal
+          identifiers are intentionally captured.
+        </p>
+        <p class="note">Legal basis: Legitimate interest in improving the product.</p>
+
+        <h3>Prompt decomposition requests</h3>
+        <p>
+          When you use the AI-powered decomposition feature, your prompt is sent to our backend API,
+          which forwards it to an AI provider (Anthropic or OpenAI) to process and return a structured result.
+          We do not store your prompt content once the job is complete. The result is held temporarily
+          in memory to deliver the response, then discarded.
+        </p>
+        <p class="note">Legal basis: Performance of the service you're explicitly requesting.</p>
+
+        <h3>What we don't collect</h3>
+        <p>
+          No email address. No name. No user account. No payment information. No browsing history
+          beyond anonymized analytics on flompt.dev. We don't build a profile on you, and we
+          don't serve ads.
+        </p>
+      </div>
+
+      <!-- 3. Third parties -->
+      <div class="legal-section">
+        <h2>3. Third-party services</h2>
+        <p>
+          We work with a small number of services to operate flompt. Here's what each of them does:
+        </p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Purpose</th>
+              <th>Location</th>
+              <th>Privacy policy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PostHog</td>
+              <td>Usage analytics</td>
+              <td>EU (Frankfurt)</td>
+              <td><a href="https://posthog.com/privacy" target="_blank" rel="noopener">posthog.com/privacy</a></td>
+            </tr>
+            <tr>
+              <td>Anthropic</td>
+              <td>AI decomposition</td>
+              <td>United States</td>
+              <td><a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener">anthropic.com/privacy</a></td>
+            </tr>
+            <tr>
+              <td>OpenAI</td>
+              <td>AI decomposition (fallback)</td>
+              <td>United States</td>
+              <td><a href="https://openai.com/privacy" target="_blank" rel="noopener">openai.com/privacy</a></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          When you trigger AI decomposition, your prompt is forwarded to the relevant provider.
+          Anthropic and OpenAI are based outside the EEA; transfers rely on standard contractual
+          clauses (SCCs) as a safeguard under GDPR Article 46.
+        </p>
+      </div>
+
+      <!-- 4. Browser extension -->
+      <div class="legal-section">
+        <h2>4. The browser extension</h2>
+        <p>
+          The flompt extension injects a sidebar panel on ChatGPT, Claude, and Gemini. It does not
+          read your conversations, message history, or any personal information on those platforms.
+          It interacts exclusively with the chat input field, and only when you explicitly click
+          "Send to AI."
+        </p>
+        <p>
+          The extension uses Chrome's <code style="font-size:0.82rem;color:var(--text);background:var(--bg-3);padding:2px 6px;border-radius:4px;">storage.local</code>
+          API to save your sidebar preferences (open or closed state) between sessions. This data
+          stays on your device and is never transmitted to our servers.
+        </p>
+      </div>
+
+      <!-- 5. Cookies -->
+      <div class="legal-section">
+        <h2>5. Cookies</h2>
+        <p>
+          We don't use advertising or third-party tracking cookies. PostHog may set a session cookie
+          to maintain continuity for analytics purposes. You can clear or block these at any time
+          through your browser settings without affecting the core functionality of flompt.
+        </p>
+        <p>
+          If your browser has Do Not Track (DNT) enabled, PostHog respects it. You can also use
+          a content blocker (uBlock Origin, etc.) to block the PostHog script entirely.
+        </p>
+      </div>
+
+      <!-- 6. Retention -->
+      <div class="legal-section">
+        <h2>6. Data retention</h2>
+        <ul>
+          <li><strong>Analytics data</strong> — retained by PostHog according to their default policy (currently 1 year). You can request deletion by contacting us.</li>
+          <li><strong>Prompt content</strong> — not retained after the API job completes, typically within a few seconds.</li>
+          <li><strong>Extension preferences</strong> — stored locally on your device. Deleted when you uninstall the extension or clear browser data.</li>
+        </ul>
+      </div>
+
+      <!-- 7. Your rights -->
+      <div class="legal-section">
+        <h2>7. Your rights under GDPR</h2>
+        <p>
+          If you're located in the EU or EEA, you have the following rights regarding your personal data:
+        </p>
+        <div class="rights-grid">
+          <div class="right-item">
+            <strong>Access</strong>
+            <span>Request a copy of any personal data we hold about you</span>
+          </div>
+          <div class="right-item">
+            <strong>Rectification</strong>
+            <span>Ask us to correct inaccurate or incomplete data</span>
+          </div>
+          <div class="right-item">
+            <strong>Erasure</strong>
+            <span>Request deletion of your data ("right to be forgotten")</span>
+          </div>
+          <div class="right-item">
+            <strong>Restriction</strong>
+            <span>Limit how we process your data in certain circumstances</span>
+          </div>
+          <div class="right-item">
+            <strong>Portability</strong>
+            <span>Receive your data in a machine-readable format</span>
+          </div>
+          <div class="right-item">
+            <strong>Object</strong>
+            <span>Opt out of processing based on legitimate interest</span>
+          </div>
+        </div>
+        <p>
+          Given that we collect very little identifiable data, exercising most of these rights means
+          requesting deletion of PostHog analytics data. Reach out to
+          <a href="mailto:contact@flompt.dev">contact@flompt.dev</a> and we'll take care of it promptly.
+        </p>
+        <p>
+          You also have the right to lodge a complaint with your national data protection authority.
+          In France, that's the <a href="https://www.cnil.fr" target="_blank" rel="noopener">CNIL</a>.
+        </p>
+      </div>
+
+      <!-- 8. Security -->
+      <div class="legal-section">
+        <h2>8. Security</h2>
+        <p>
+          All traffic to flompt.dev is served over HTTPS with HSTS enabled. The API runs behind a
+          reverse proxy with standard security headers (CSP, X-Frame-Options, etc.). We keep things
+          simple, which also means fewer attack surfaces.
+        </p>
+        <p>
+          No system is completely immune to incidents. If you discover a security vulnerability,
+          please report it responsibly via
+          <a href="https://github.com/Nyrok/flompt/issues" target="_blank" rel="noopener">GitHub Issues</a>
+          rather than exploiting it.
+        </p>
+      </div>
+
+      <!-- 9. Changes -->
+      <div class="legal-section">
+        <h2>9. Changes to this policy</h2>
+        <p>
+          If we make meaningful changes to this policy, the "last updated" date at the top will change.
+          For significant changes, we'll note them in the
+          <a href="https://github.com/Nyrok/flompt/commits/main" target="_blank" rel="noopener">GitHub changelog</a>.
+          Continuing to use flompt after changes are published means you accept the updated policy.
+        </p>
+      </div>
+
+      <!-- 10. Contact -->
+      <div class="legal-section">
+        <h2>10. Contact</h2>
+        <p>
+          Questions, data requests, or anything else: <a href="mailto:contact@flompt.dev">contact@flompt.dev</a><br>
+          Or open an issue at <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">github.com/Nyrok/flompt</a>.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand"><span>flompt</span></div>
+      <div class="footer-links">
+        <a href="/app">App</a>
+        <a href="/docs">Docs</a>
+        <a href="/blog/en">Blog</a>
+        <a href="https://github.com/Nyrok/flompt" target="_blank" rel="noopener">GitHub</a>
+        <a href="/privacy" style="color:var(--text-muted)">Privacy</a>
+        <a href="/terms" style="color:var(--text-muted)">Terms</a>
+      </div>
+      <p class="footer-credit">Made by <a href="https://github.com/Nyrok" target="_blank" rel="noopener">Nyrok</a></p>
+    </div>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('hamburger');
+    const menu = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => {
+      const open = menu.classList.toggle('open');
+      btn.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', open);
+    });
+  </script>
+
+</body>
+</html>

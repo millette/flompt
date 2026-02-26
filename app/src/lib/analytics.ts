@@ -48,6 +48,19 @@ export const track = (event: string, props?: Record<string, unknown>) => {
   try { posthog.capture(event, props) } catch { /* silent */ }
 }
 
+/**
+ * Register super properties — attached to every subsequent PostHog event.
+ * - source     : 'web' | 'extension'
+ * - ai_platform: 'ChatGPT' | 'Claude' | 'Gemini' (extension only, set once known)
+ */
+export const setSource = (source: 'web' | 'extension', aiPlatform?: string) => {
+  try {
+    const props: Record<string, string> = { source }
+    if (aiPlatform) props.ai_platform = aiPlatform
+    posthog.register(props)
+  } catch { /* silent */ }
+}
+
 // ── Typed event helpers ───────────────────────────────────────────────────────
 
 export const analytics = {
