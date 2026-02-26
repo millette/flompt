@@ -10,7 +10,7 @@ Usage:
     python train.py
 
     # Better quality (flan-t5-large, needs 4GB+ RAM, GPU recommended)
-    python train.py --model google/flan-t5-large
+    python train.py --model google/flan-t5-base
 
     # Resume from checkpoint
     python train.py --resume checkpoints/flan-t5-flompt/checkpoint-200
@@ -51,8 +51,8 @@ INSTRUCTION = (
     "Always include a language block.\n\nPrompt: {prompt}"
 )
 
-MAX_INPUT_LENGTH = 512    # T5 encoder max tokens
-MAX_TARGET_LENGTH = 512   # T5 decoder max tokens (JSON output)
+MAX_INPUT_LENGTH = 256    # Reduced to fit in 4GB RAM on CPU
+MAX_TARGET_LENGTH = 256   # JSON output usually < 256 tokens
 
 
 def format_input(prompt: str) -> str:
@@ -124,13 +124,13 @@ def tokenize_dataset(records: list[dict], tokenizer, is_train: bool = True):
     )
 
     # Tokenize targets (labels)
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(
-            targets,
-            max_length=MAX_TARGET_LENGTH,
-            truncation=True,
-            padding="max_length",
-        )
+    # Note: as_target_tokenizer() was removed in transformers 5.x
+    labels = tokenizer(
+        text_target=targets,
+        max_length=MAX_TARGET_LENGTH,
+        truncation=True,
+        padding="max_length",
+    )
 
     # Replace padding token id with -100 (ignored in loss computation)
     label_ids = [
@@ -145,7 +145,7 @@ def tokenize_dataset(records: list[dict], tokenizer, is_train: bool = True):
 # ─── Training ─────────────────────────────────────────────────────────────────
 
 def train(
-    model_name: str = "google/flan-t5-base",
+    model_name: str = "google/flan-t5-small",
     output_dir: Optional[str] = None,
     resume_from: Optional[str] = None,
     smoke_test: bool = False,
@@ -204,13 +204,17 @@ def train(
         num_train_epochs=num_epochs,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
+        # Adafactor: native T5 optimizer, ~3× less RAM than AdamW
+        # Critical for CPU training on limited RAM (4GB server)
+        optim="adafactor",
         learning_rate=learning_rate,
         warmup_steps=warmup_steps,
-        weight_decay=0.01,
+        weight_decay=0.0,           # Adafactor handles its own regularization
+        gradient_accumulation_steps=8,  # effective batch = batch_size × 8
         predict_with_generate=True,
         generation_max_length=MAX_TARGET_LENGTH,
-        # Evaluation
-        evaluation_strategy="steps" if val_dataset else "no",
+        # Evaluation (transformers 5.x: evaluation_strategy → eval_strategy)
+        eval_strategy="steps" if val_dataset else "no",
         eval_steps=eval_steps,
         load_best_model_at_end=bool(val_dataset),
         metric_for_best_model="eval_loss",
@@ -220,12 +224,12 @@ def train(
         save_steps=save_steps,
         save_total_limit=3,
         # Logging
-        logging_dir=f"{output_dir}/logs",
         logging_steps=logging_steps,
-        report_to="none",   # no wandb/tensorboard by default
+        report_to="none",
         # Performance
-        fp16=torch.cuda.is_available(),
-        dataloader_num_workers=0,   # safe on all platforms
+        fp16=False,                 # CPU only — no fp16
+        bf16=False,
+        dataloader_num_workers=0,
         # Misc
         resume_from_checkpoint=resume_from,
     )
@@ -246,7 +250,7 @@ def train(
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,   # transformers 5.x: tokenizer → processing_class
         data_collator=data_collator,
         callbacks=callbacks,
     )
@@ -283,8 +287,8 @@ def train(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fine-tune FLAN-T5 for prompt decomposition")
-    parser.add_argument("--model", default="google/flan-t5-base",
-                        help="Base model (google/flan-t5-base or google/flan-t5-large)")
+    parser.add_argument("--model", default="google/flan-t5-small",
+                        help="Base model (default: flan-t5-small for CPU; flan-t5-base needs GPU)")
     parser.add_argument("--output-dir", default=None, help="Output directory for checkpoints")
     parser.add_argument("--resume", default=None, help="Resume from checkpoint path")
     parser.add_argument("--smoke-test", action="store_true", help="Quick test with 5 examples")
