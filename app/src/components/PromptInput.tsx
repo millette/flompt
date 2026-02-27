@@ -16,6 +16,7 @@ const PromptInput = () => {
     setIsDecomposing, isDecomposing,
     setActiveTab,
     setQueueStatus,
+    setCompiledPrompt,
   } = useFlowStore()
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
@@ -62,6 +63,7 @@ const PromptInput = () => {
 
     setError(null)
     setQueueStatus(null)
+    setCompiledPrompt(null)
     setIsDecomposing(true)
     analytics.decomposeClicked()
     setTimeout(() => setActiveTab('canvas'), 0)
