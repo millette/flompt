@@ -884,11 +884,10 @@ body {
 }
 .output-placeholder-icon { font-size: 2rem; opacity: 0.2; }
 
-/* ── Decomposing: panels greyed out ──────────────────────────────────────── */
+/* ── Decomposing: disable interactions on panels ─────────────────────────── */
 .main.is-decomposing .left-panel,
 .main.is-decomposing .right-panel {
   pointer-events: none;
-  opacity: 0.4;
 }
 
 /* ── Loading Overlay ─────────────────────────────────────────────────────── */
