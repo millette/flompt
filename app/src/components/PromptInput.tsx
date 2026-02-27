@@ -1,42 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { Zap, ClipboardPaste, Download } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
-import { decomposePrompt, getJobStatus, classifyError, classifyJobError } from '@/services/api'
-import type { DecomposeResponse } from '@/services/api'
+import { decomposePrompt, watchJobStatus, classifyError, classifyJobError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics, setSource } from '@/lib/analytics'
 
 const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
-
-/** Poll toutes les secondes jusqu'à ce que le job soit terminé (done/error). */
-async function pollJobResult(
-  jobId: string,
-  onStatus: (pos: number, status: 'queued' | 'processing') => void,
-): Promise<DecomposeResponse> {
-  while (true) {
-    await new Promise<void>(resolve => setTimeout(resolve, 1000))
-
-    const job = await getJobStatus(jobId)
-
-    if (job.status === 'done' && job.result) {
-      return job.result
-    }
-
-    if (job.status === 'error') {
-      const err = new Error(job.error ?? 'Job failed')
-      ;(err as Error & { jobError?: string }).jobError = job.error ?? ''
-      throw err
-    }
-
-    // Mettre à jour l'affichage de la position / traitement
-    if (job.status === 'queued') {
-      onStatus(job.position ?? 1, 'queued')
-    } else if (job.status === 'processing') {
-      onStatus(0, 'processing')
-    }
-    // 'unknown' : job pas encore enregistré côté queue (race condition rarissime), on attend
-  }
-}
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 
@@ -102,8 +71,8 @@ const PromptInput = () => {
       const { position } = await decomposePrompt(prompt, jobId)
       setQueueStatus({ position, status: 'queued' })
 
-      // ── 2. Attendre le résultat par polling ───────────────────────────────
-      const result = await pollJobResult(jobId, (pos, status) => {
+      // ── 2. Attendre le résultat via WebSocket ─────────────────────────────
+      const result = await watchJobStatus(jobId, (pos, status) => {
         setQueueStatus({ position: pos, status })
       })
 

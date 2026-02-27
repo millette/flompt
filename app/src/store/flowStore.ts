@@ -93,19 +93,28 @@ export const useFlowStore = create<FlowState>()(
         })),
 
       onNodesChange: (changes) =>
-        set((state) => ({
-          nodes: applyNodeChanges(changes, state.nodes) as FlomptNode[],
-        })),
+        set((state) => {
+          const isStructural = changes.some((c) => c.type === 'remove' || c.type === 'add')
+          return {
+            nodes: applyNodeChanges(changes, state.nodes) as FlomptNode[],
+            ...(isStructural ? { compiledPrompt: null } : {}),
+          }
+        }),
 
       onEdgesChange: (changes) =>
-        set((state) => ({
-          edges: applyEdgeChanges(changes, state.edges) as FlomptEdge[],
-        })),
+        set((state) => {
+          const isStructural = changes.some((c) => c.type === 'remove' || c.type === 'add')
+          return {
+            edges: applyEdgeChanges(changes, state.edges) as FlomptEdge[],
+            ...(isStructural ? { compiledPrompt: null } : {}),
+          }
+        }),
 
       onConnect: (connection) =>
         set((state) => ({
           edges: addEdge({ ...connection, type: 'custom' }, state.edges) as FlomptEdge[],
           lastSaved: Date.now(),
+          compiledPrompt: null,
         })),
 
       updateNodeContent: (id, content) =>
@@ -113,6 +122,7 @@ export const useFlowStore = create<FlowState>()(
           nodes: state.nodes.map((n) =>
             n.id === id ? { ...n, data: { ...n.data, content } } : n
           ),
+          compiledPrompt: null,
         })),
 
       addNode: (node) =>
@@ -121,6 +131,7 @@ export const useFlowStore = create<FlowState>()(
           future: [],
           nodes: [...state.nodes, node],
           lastSaved: Date.now(),
+          compiledPrompt: null,
         })),
 
       removeNode: (id) =>
@@ -130,6 +141,7 @@ export const useFlowStore = create<FlowState>()(
           nodes: state.nodes.filter((n) => n.id !== id),
           edges: state.edges.filter((e) => e.source !== id && e.target !== id),
           lastSaved: Date.now(),
+          compiledPrompt: null,
         })),
 
       setCompiledPrompt: (prompt) => set({ compiledPrompt: prompt }),

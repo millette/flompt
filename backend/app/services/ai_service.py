@@ -1,6 +1,6 @@
 """
 AI Service — Intégration LLM via httpx (pas de SDK requis).
-Supporte Anthropic et OpenAI.
+Supporte Anthropic, OpenAI et Groq.
 
 Inclut une LLMQueue qui sérialise toutes les requêtes, impose
 un intervalle minimum entre deux appels (défaut : 1 req/min),
@@ -23,18 +23,21 @@ def _get_anthropic_key() -> Optional[str]:
 def _get_openai_key() -> Optional[str]:
     return os.getenv("OPENAI_API_KEY")
 
+def _get_groq_key() -> Optional[str]:
+    return os.getenv("GROQ_API_KEY")
+
 def _get_provider() -> str:
-    return os.getenv("AI_PROVIDER", "anthropic")
+    return os.getenv("AI_PROVIDER", "groq")
 
 def _get_model() -> str:
-    return os.getenv("AI_MODEL", "claude-sonnet-4-20250514")
+    return os.getenv("AI_MODEL", "llama-3.3-70b-versatile")
 
 TIMEOUT = 60.0
 MAX_RETRIES = 3
 RETRY_DELAYS = [2, 5, 10]
 
-# Rate limiting — 1 req/min par défaut, override via LLM_REQUESTS_PER_MINUTE
-_REQUESTS_PER_MINUTE = float(os.getenv("LLM_REQUESTS_PER_MINUTE", "1"))
+# Rate limiting — 10 req/min par défaut, override via LLM_REQUESTS_PER_MINUTE
+_REQUESTS_PER_MINUTE = float(os.getenv("LLM_REQUESTS_PER_MINUTE", "10"))
 
 
 def _strip_markdown_json(text: str) -> str:
@@ -266,6 +269,30 @@ async def _call_anthropic(system: str, user: str) -> str:
         return resp.json()["content"][0]["text"]
 
 
+# ─── Groq ─────────────────────────────────────────────────────────────────────
+
+async def _call_groq(system: str, user: str) -> str:
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        resp = await client.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {_get_groq_key()}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": _get_model(),
+                "max_tokens": 16000,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                "response_format": {"type": "json_object"},
+            }
+        )
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
+
+
 # ─── OpenAI ───────────────────────────────────────────────────────────────────
 
 async def _call_openai(system: str, user: str) -> str:
@@ -297,14 +324,21 @@ RETRYABLE_STATUS = {429, 500, 502, 503, 529}
 
 async def _call_llm_direct(system: str, user: str) -> str:
     """Appel LLM brut avec retry — passer par llm_queue.call(), pas directement."""
-    if not (_get_anthropic_key() and _get_provider() == "anthropic") and not _get_openai_key():
-        raise RuntimeError("No API key configured (ANTHROPIC_API_KEY or OPENAI_API_KEY)")
+    provider = _get_provider()
+    if provider == "anthropic" and not _get_anthropic_key():
+        raise RuntimeError("No API key configured (ANTHROPIC_API_KEY)")
+    if provider == "openai" and not _get_openai_key():
+        raise RuntimeError("No API key configured (OPENAI_API_KEY)")
+    if provider == "groq" and not _get_groq_key():
+        raise RuntimeError("No API key configured (GROQ_API_KEY)")
 
     last_error = None
     for attempt in range(MAX_RETRIES):
         try:
-            if _get_anthropic_key() and _get_provider() == "anthropic":
+            if provider == "anthropic":
                 return await _call_anthropic(system, user)
+            elif provider == "groq":
+                return await _call_groq(system, user)
             else:
                 return await _call_openai(system, user)
         except httpx.HTTPStatusError as e:

@@ -63,10 +63,44 @@ export const decomposePrompt = async (rawPrompt: string, jobId: string): Promise
   return data
 }
 
-/** Poll le statut et (éventuellement) le résultat d'un job. */
-export const getJobStatus = async (jobId: string): Promise<JobPollResponse> => {
-  const { data } = await client.get<JobPollResponse>(`/queue/job/${jobId}`)
-  return data
+/**
+ * Ouvre une connexion WebSocket vers /api/ws/job/{jobId} et résout
+ * la promesse dès que le job est terminé (done/error).
+ * Pousse les updates de position via le callback `onStatus`.
+ */
+export function watchJobStatus(
+  jobId: string,
+  onStatus: (pos: number, status: 'queued' | 'processing') => void,
+): Promise<DecomposeResponse> {
+  return new Promise((resolve, reject) => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${protocol}//${window.location.host}/api/ws/job/${jobId}`
+    const ws = new WebSocket(wsUrl)
+
+    ws.onmessage = (event) => {
+      const data: JobPollResponse = JSON.parse(event.data as string)
+
+      if (data.status === 'done' && data.result) {
+        ws.close()
+        resolve(data.result)
+      } else if (data.status === 'error') {
+        ws.close()
+        const err = new Error(data.error ?? 'Job failed')
+        ;(err as Error & { jobError?: string }).jobError = data.error ?? ''
+        reject(err)
+      } else if (data.status === 'queued') {
+        onStatus(data.position ?? 1, 'queued')
+      } else if (data.status === 'processing') {
+        onStatus(0, 'processing')
+      }
+    }
+
+    ws.onerror = () => {
+      ws.close()
+      const err = new Error('WebSocket connection failed')
+      reject(err)
+    }
+  })
 }
 
 // compilePrompt supprimé — l'assemblage est désormais 100% local (voir PromptOutput.tsx)
