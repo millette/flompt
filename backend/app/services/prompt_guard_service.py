@@ -1,31 +1,33 @@
 """
-Prompt Guard Service — Filtre de sécurité via HuggingFace Inference API.
-Modèle : meta-llama/Llama-Guard-4-12B (serverless, aucun modèle local requis).
+Prompt Guard Service — Filtre de sécurité via Groq (llama-guard-3-8b).
 
-Pré-requis :
-  - HUGGINGFACE_TOKEN dans .env (compte HF + licence Meta acceptée sur hf.co)
-  - Aucune dépendance ML locale (torch, transformers non requis)
+Llama Guard 3 est le modèle de modération disponible sur Groq. Il utilise le même
+format de sortie que Guard 4 ("safe" / "unsafe\nS{N}") et la même taxonomie MLCommons.
 
-Taxonomie MLCommons Hazard S1–S14 :
+Avantages vs HF Inference API :
+  - Utilise le GROQ_API_KEY déjà configuré (aucune nouvelle clé requise)
+  - Latence très faible (~100-300ms sur Groq)
+  - Pas de cold start
+
+Taxonomie MLCommons Hazard S1–S13 (Llama Guard 3) :
   S1  Violent Crimes            S8  Intellectual Property
   S2  Non-Violent Crimes        S9  Indiscriminate Weapons
   S3  Sex-Related Crimes        S10 Hate
   S4  Child Sexual Exploitation S11 Suicide & Self-Harm
   S5  Defamation                S12 Sexual Content
   S6  Specialized Advice        S13 Elections
-  S7  Privacy                   S14 Code Interpreter Abuse
+  S7  Privacy
 
-Format de réponse du modèle :
+Format de réponse :
   "safe"           → prompt conforme
-  "unsafe\\nS9"    → 1 catégorie violée
-  "unsafe\\nS1\\nS3" → plusieurs catégories
+  "unsafe\\nS9"    → violation Indiscriminate Weapons
+  "unsafe\\nS1\\nS10" → violations multiples
 
-Comportement fail-open :
-  Si HUGGINGFACE_TOKEN absent ou si l'API échoue → tous les prompts passent + warning.
+Fail-open si GROQ_API_KEY absent ou si l'API échoue.
 
 Env vars :
-  HUGGINGFACE_TOKEN=hf_...       (requis)
-  PROMPT_GUARD_ENABLED=true      (défaut : true)
+  GROQ_API_KEY=gsk_...          (requis — même clé que le LLM principal)
+  PROMPT_GUARD_ENABLED=true     (défaut : true)
 """
 
 import os
@@ -34,11 +36,11 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-MODEL_ID   = "meta-llama/Llama-Guard-4-12B"
-HF_API_URL = "https://api-inference.huggingface.co/v1/chat/completions"
-TIMEOUT    = 30.0
+GUARD_MODEL = "llama-guard-3-8b"
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+TIMEOUT = 20.0
 
-# Taxonomie complète MLCommons Hazard Taxonomy
+# Taxonomie MLCommons Hazard Taxonomy — Llama Guard 3
 HAZARD_CATEGORIES: dict[str, str] = {
     "S1":  "Violent Crimes",
     "S2":  "Non-Violent Crimes",
@@ -53,7 +55,6 @@ HAZARD_CATEGORIES: dict[str, str] = {
     "S11": "Suicide & Self-Harm",
     "S12": "Sexual Content",
     "S13": "Elections",
-    "S14": "Code Interpreter Abuse",
 }
 
 
@@ -61,34 +62,28 @@ def _is_enabled() -> bool:
     return os.getenv("PROMPT_GUARD_ENABLED", "true").lower() not in ("false", "0", "no")
 
 
-def _get_token() -> str | None:
-    return os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HF_TOKEN")
+def _get_groq_key() -> str | None:
+    return os.getenv("GROQ_API_KEY")
 
 
-async def _call_hf_api(prompt: str) -> str:
+async def _call_groq_guard(prompt: str) -> str:
     """
-    Appelle l'API Inference HuggingFace (chat completions) avec Llama Guard 4.
-    Retourne la réponse brute du modèle ("safe" ou "unsafe\\nS9").
+    Appelle llama-guard-3-8b via l'API Groq.
+    Retourne la réponse brute : "safe" ou "unsafe\\nS9".
     """
-    token = _get_token()
+    key = _get_groq_key()
 
     async with httpx.AsyncClient(timeout=TIMEOUT) as client:
         resp = await client.post(
-            HF_API_URL,
+            GROQ_API_URL,
             headers={
-                "Authorization": f"Bearer {token}",
+                "Authorization": f"Bearer {key}",
                 "Content-Type": "application/json",
             },
             json={
-                "model": MODEL_ID,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
+                "model": GUARD_MODEL,
+                "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 20,
-                "stream": False,
             },
         )
         resp.raise_for_status()
@@ -97,11 +92,11 @@ async def _call_hf_api(prompt: str) -> str:
 
 def _parse_response(raw: str) -> tuple[bool, list[str], list[str]]:
     """
-    Parse la sortie de Llama Guard 4.
+    Parse la sortie de Llama Guard 3.
 
     "safe"              → (True, [], [])
     "unsafe\\nS9"       → (False, ["S9"], ["Indiscriminate Weapons"])
-    "unsafe\\nS1\\nS3"  → (False, ["S1","S3"], ["Violent Crimes","Sex-Related Crimes"])
+    "unsafe\\nS1\\nS10" → (False, ["S1","S10"], ["Violent Crimes","Hate"])
 
     Robuste aux variantes : majuscules, virgules, espaces.
     """
@@ -120,64 +115,46 @@ def _parse_response(raw: str) -> tuple[bool, list[str], list[str]]:
     names = [HAZARD_CATEGORIES.get(c, c) for c in codes]
 
     logger.warning(
-        f"[Prompt Guard] 🚨 UNSAFE — violations={codes} "
-        f"({', '.join(names) if names else 'catégorie inconnue'})"
+        f"[Prompt Guard] 🚨 UNSAFE — {codes} ({', '.join(names) if names else '?'})"
     )
     return False, codes, names
 
 
 async def classify(prompt: str) -> tuple[bool, list[str], list[str], str]:
     """
-    Classifie un prompt via Llama Guard 4 12B (HF Inference API).
+    Classifie un prompt via llama-guard-3-8b (Groq).
 
     Retourne : (is_safe, violation_codes, violation_names, raw_response)
       is_safe         : True → prompt conforme
-      violation_codes : ["S1", "S10"] — codes MLCommons
-      violation_names : ["Violent Crimes", "Hate"] — noms lisibles transmis au client
+      violation_codes : ["S9"] — codes MLCommons
+      violation_names : ["Indiscriminate Weapons"] — transmis au client
       raw_response    : réponse brute du modèle
 
-    Fail-open si : guard désactivé, token absent, ou erreur API.
+    Fail-open si guard désactivé, clé Groq absente, ou erreur API.
     """
     if not _is_enabled():
         return True, [], [], "safe"
 
-    token = _get_token()
-    if not token:
-        logger.warning(
-            "[Prompt Guard] ⚠️  HUGGINGFACE_TOKEN manquant — fail-open activé. "
-            "Ajoute HUGGINGFACE_TOKEN=hf_... dans ton .env."
-        )
+    key = _get_groq_key()
+    if not key:
+        logger.warning("[Prompt Guard] ⚠️  GROQ_API_KEY manquant — fail-open.")
         return True, [], [], "safe"
 
     try:
-        raw = await _call_hf_api(prompt)
+        raw = await _call_groq_guard(prompt)
         is_safe, codes, names = _parse_response(raw)
         if is_safe:
-            logger.debug(f"[Prompt Guard] ✅ safe — raw={raw!r}")
+            logger.debug(f"[Prompt Guard] ✅ safe")
         return is_safe, codes, names, raw
 
     except httpx.HTTPStatusError as e:
-        status = e.response.status_code
-        if status == 401:
-            logger.error(
-                "[Prompt Guard] 🔑 Token HF invalide ou licence Meta non acceptée "
-                "(401) — fail-open. Vérifie ton HUGGINGFACE_TOKEN sur hf.co."
-            )
-        elif status == 403:
-            logger.error(
-                "[Prompt Guard] 🚫 Accès refusé (403) — accepte la licence Meta "
-                "pour meta-llama/Llama-Guard-4-12B sur huggingface.co — fail-open."
-            )
-        elif status == 503:
-            logger.warning("[Prompt Guard] ⏳ Modèle en cours de chargement côté HF (503) — fail-open.")
-        else:
-            logger.warning(f"[Prompt Guard] ⚠️  Erreur HTTP {status} — fail-open.")
+        logger.warning(f"[Prompt Guard] ⚠️  Erreur Groq HTTP {e.response.status_code} — fail-open.")
         return True, [], [], "safe"
 
     except httpx.TimeoutException:
-        logger.warning("[Prompt Guard] ⏱️  Timeout API HF — fail-open.")
+        logger.warning("[Prompt Guard] ⏱️  Timeout Groq — fail-open.")
         return True, [], [], "safe"
 
     except Exception as exc:
-        logger.warning(f"[Prompt Guard] ⚠️  Erreur inattendue — fail-open. Raison : {exc}")
+        logger.warning(f"[Prompt Guard] ⚠️  Erreur inattendue — fail-open. {exc}")
         return True, [], [], "safe"
