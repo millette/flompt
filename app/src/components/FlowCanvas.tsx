@@ -22,7 +22,7 @@ const nodeTypes = { block: BlockNode }
 const edgeTypes = { custom: CustomEdge }
 
 const CanvasInner = () => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode, activeTab } = useFlowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, isDecomposing, addNode, activeTab, queueStatus } = useFlowStore()
   const { t } = useLocale()
   const { fitView, screenToFlowPosition } = useReactFlow()
   const prevNodeCount = useRef(nodes.length)
@@ -117,6 +117,15 @@ const CanvasInner = () => {
             <span className="compile-dot" style={{ animationDelay: '0.2s' }} />
             <span className="compile-dot" style={{ animationDelay: '0.4s' }} />
           </div>
+          {queueStatus && (
+            <div className={`queue-status${queueStatus.status === 'processing' ? ' queue-status--processing' : ''}`}>
+              <span className="queue-status__dot" />
+              {queueStatus.status === 'processing'
+                ? t.promptInput.queueProcessing
+                : t.promptInput.queuePosition(queueStatus.position)
+              }
+            </div>
+          )}
         </div>
       )}
 

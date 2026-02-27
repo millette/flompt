@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Zap, Loader, ClipboardPaste, Download } from 'lucide-react'
+import { Zap, ClipboardPaste, Download } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, getJobStatus, classifyError, classifyJobError } from '@/services/api'
 import type { DecomposeResponse } from '@/services/api'
@@ -46,7 +46,7 @@ const PromptInput = () => {
     setNodes, setEdges,
     setIsDecomposing, isDecomposing,
     setActiveTab,
-    queueStatus, setQueueStatus,
+    setQueueStatus,
   } = useFlowStore()
   const { t } = useLocale()
   const [error, setError] = useState<string | null>(null)
@@ -142,8 +142,6 @@ const PromptInput = () => {
     }
   }
 
-  const isProcessing = queueStatus?.status === 'processing'
-
   return (
     <div className="prompt-input-panel">
       <h2 className="panel-title">{t.promptInput.title}</h2>
@@ -186,27 +184,13 @@ const PromptInput = () => {
 
       {error && <p className="error-msg">{error}</p>}
 
-      {/* Badge de position en queue — visible pendant l'attente */}
-      {isDecomposing && queueStatus && (
-        <div className={`queue-status${isProcessing ? ' queue-status--processing' : ''}`}>
-          <span className="queue-status__dot" />
-          {isProcessing
-            ? t.promptInput.queueProcessing
-            : t.promptInput.queuePosition(queueStatus.position)
-          }
-        </div>
-      )}
-
       <button
         className="btn btn-primary"
         onClick={handleDecompose}
         disabled={isDecomposing || !rawPrompt.trim()}
         data-tour="decompose-btn"
       >
-        {isDecomposing
-          ? <><Loader size={14} className="icon-spin" /> {t.promptInput.decomposing}</>
-          : <><Zap size={14} /> {t.promptInput.decompose}</>
-        }
+        <Zap size={14} /> {t.promptInput.decompose}
       </button>
     </div>
   )
