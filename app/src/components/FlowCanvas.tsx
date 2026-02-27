@@ -9,7 +9,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { Play, Sparkles } from 'lucide-react'
+import { Play, Sparkles, ShieldCheck } from 'lucide-react'
 import { useFlowStore } from '@/store/flowStore'
 import { assemblePrompt } from '@/lib/assemblePrompt'
 import BlockNode from './BlockNode'
@@ -109,15 +109,23 @@ const CanvasInner = () => {
       {isDecomposing && (
         <div className="loading-overlay">
           <div className="compile-loading-icon">
-            <Sparkles size={32} className="compile-sparkle" />
+            {queueStatus?.status === 'analyzing'
+              ? <ShieldCheck size={32} className="compile-sparkle" />
+              : <Sparkles size={32} className="compile-sparkle" />
+            }
           </div>
-          <p className="compile-loading-text">{t.promptInput.decomposing}</p>
+          <p className="compile-loading-text">
+            {queueStatus?.status === 'analyzing'
+              ? t.promptInput.queueAnalyzing
+              : t.promptInput.decomposing
+            }
+          </p>
           <div className="compile-loading-dots">
             <span className="compile-dot" style={{ animationDelay: '0s' }} />
             <span className="compile-dot" style={{ animationDelay: '0.2s' }} />
             <span className="compile-dot" style={{ animationDelay: '0.4s' }} />
           </div>
-          {queueStatus && (
+          {queueStatus && queueStatus.status !== 'analyzing' && (
             <div className={`queue-status${queueStatus.status === 'processing' ? ' queue-status--processing' : ''}`}>
               <span className="queue-status__dot" />
               {queueStatus.status === 'processing'

@@ -13,8 +13,8 @@ interface Snapshot {
 export type Tab = 'input' | 'canvas' | 'output'
 
 export interface QueueStatus {
-  position: number  // 1 = prochain en file, 0 = en cours de traitement
-  status: 'queued' | 'processing'
+  position: number  // 1 = prochain en file, 0 = en cours de traitement / analyzing
+  status: 'analyzing' | 'queued' | 'processing'
 }
 
 interface FlowState {

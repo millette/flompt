@@ -68,9 +68,12 @@ const PromptInput = () => {
     setTimeout(() => setActiveTab('canvas'), 0)
 
     try {
-      // ── 1. Soumettre le job — retour immédiat ─────────────────────────────
-      const { position } = await decomposePrompt(prompt, jobId)
-      setQueueStatus({ position, status: 'queued' })
+      // ── 1. Soumettre le job — retour immédiat (statut initial : "analyzing") ──
+      const { status: initStatus, position } = await decomposePrompt(prompt, jobId)
+      setQueueStatus({
+        position: position ?? 0,
+        status: initStatus === 'analyzing' ? 'analyzing' : 'queued',
+      })
 
       // ── 2. Attendre le résultat via WebSocket ─────────────────────────────
       const result = await watchJobStatus(jobId, (pos, status) => {
@@ -85,14 +88,24 @@ const PromptInput = () => {
     } catch (e) {
       setActiveTab('input')
 
-      // Erreur job store (string) vs erreur réseau (AxiosError)
-      const jobErr = (e as Error & { jobError?: string })?.jobError
-      const errType = jobErr !== undefined
-        ? classifyJobError(jobErr)
-        : classifyError(e)
+      // Cas spécial : prompt bloqué par Llama Guard 4 avec catégories de violation
+      type BlockedErr = Error & { jobError?: string; violations?: string[] }
+      const jobErr = (e as BlockedErr)?.jobError
 
-      setError(t.errors[errType])
-      analytics.error('decompose', errType)
+      if (jobErr === 'PROMPT_BLOCKED') {
+        const violations: string[] = (e as BlockedErr).violations ?? []
+        const detail = violations.length > 0 ? ` — ${violations.join(', ')}` : ''
+        setError(`${t.errors.blocked}${detail}`)
+        analytics.error('decompose', 'blocked')
+      } else {
+        // Erreur job store générique vs erreur réseau (AxiosError)
+        const errType = jobErr !== undefined
+          ? classifyJobError(jobErr)
+          : classifyError(e)
+        setError(t.errors[errType])
+        analytics.error('decompose', errType)
+      }
+
       console.error(e)
     } finally {
       setQueueStatus(null)

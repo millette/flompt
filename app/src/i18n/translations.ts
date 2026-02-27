@@ -29,6 +29,7 @@ export interface Translations {
     importFromPlatform: string
     queuePosition: (n: number) => string
     queueProcessing: string
+    queueAnalyzing: string
   }
   promptOutput: {
     title: string
@@ -47,6 +48,7 @@ export interface Translations {
     timeout: string
     network: string
     server: string
+    blocked: string
     unknown: string
   }
   sidebar: {
@@ -114,6 +116,7 @@ const en: Translations = {
     importFromPlatform: 'Import prompt from page',
     queuePosition: (n) => `Queue position: ${n}`,
     queueProcessing: 'Processing…',
+    queueAnalyzing: 'Analyzing security…',
   },
   promptOutput: {
     title: 'Result',
@@ -132,6 +135,7 @@ const en: Translations = {
     timeout: 'Request timed out. The AI took too long to respond — try again.',
     network: 'Connection lost. Check your internet and try again.',
     server: 'Server error. Please try again in a few seconds.',
+    blocked: 'Your prompt was flagged by our security filter. Please rephrase it.',
     unknown: 'Something went wrong. Please try again.',
   },
   sidebar: {
@@ -221,6 +225,7 @@ const fr: Translations = {
     importFromPlatform: 'Importer le prompt depuis la page',
     queuePosition: (n) => `Position dans la file : ${n}`,
     queueProcessing: 'Traitement en cours…',
+    queueAnalyzing: 'Analyse de sécurité…',
   },
   promptOutput: {
     title: 'Résultat',
@@ -239,6 +244,7 @@ const fr: Translations = {
     timeout: 'Délai dépassé. L\'IA a mis trop de temps — réessayez.',
     network: 'Connexion perdue. Vérifiez votre internet et réessayez.',
     server: 'Erreur serveur. Réessayez dans quelques secondes.',
+    blocked: 'Ton prompt a été bloqué par notre filtre de sécurité. Reformule-le.',
     unknown: 'Une erreur est survenue. Réessayez.',
   },
   sidebar: {

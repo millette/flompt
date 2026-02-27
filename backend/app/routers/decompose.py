@@ -6,15 +6,40 @@ from app.models.blocks import DecomposeRequest
 from app.services.decomposer import decompose
 from app.services.job_store import job_store
 from app.services.ai_service import llm_queue
+from app.services import prompt_guard_service
 
 router = APIRouter()
 
 
 async def _decompose_task(job_id: str, prompt: str) -> None:
-    """Background task — traverse la LLMQueue puis stocke le résultat."""
+    """
+    Background task :
+      1. Analyse de sécurité via Prompt Guard (statut "analyzing")
+      2. Si bloqué → statut "blocked", fin.
+      3. Si safe → entre dans la LLMQueue (statut "queued" → "processing")
+      4. Résultat stocké : "done" ou "error".
+    """
     try:
+        # ── Étape 1 : Prompt Guard (Llama Guard 4 12B) ───────────────────────
+        is_safe, codes, names, raw = await prompt_guard_service.classify(prompt)
+
+        if not is_safe:
+            job_store.store_blocked(
+                job_id,
+                reason="PROMPT_BLOCKED",
+                violations=names,  # noms lisibles ex. ["Violent Crimes", "Hate"]
+            )
+            return
+
+        # ── Étape 2 : Mise en file LLM ────────────────────────────────────────
+        q = llm_queue.status
+        estimated_position = q["pending"] + (1 if q["currently_processing"] else 0) + 1
+        job_store.set_queued(job_id, estimated_position)
+
+        # ── Étape 3 : Décomposition LLM ───────────────────────────────────────
         result = await decompose(prompt, job_id=job_id)
         job_store.store_result(job_id, result.dict())
+
     except Exception as e:
         job_store.store_error(job_id, str(e))
 
@@ -24,26 +49,22 @@ async def decompose_prompt(body: DecomposeRequest) -> dict:
     """
     Soumet un job de décomposition de façon asynchrone (fire-and-forget).
 
-    Retourne immédiatement { job_id, status, position }.
-    Le client se connecte via WS /api/ws/job/{job_id} pour suivre la progression
-    et récupérer le résultat final { nodes, edges }.
+    Retourne immédiatement { job_id, status: "analyzing" }.
+    Le client se connecte via WS /api/ws/job/{job_id} pour suivre la progression :
+      analyzing → queued → processing → done | blocked | error
     """
     if not body.prompt.strip():
         raise HTTPException(status_code=422, detail="Le prompt ne peut pas être vide.")
 
     job_id = body.job_id or str(uuid.uuid4())
 
-    # Estimer la position initiale : jobs en file + job en cours + ce job
-    q = llm_queue.status
-    estimated_position = q["pending"] + (1 if q["currently_processing"] else 0) + 1
-
-    # Pré-enregistrer AVANT le create_task pour éviter le race condition
-    job_store.preregister(job_id, estimated_position)
+    # Enregistrer immédiatement comme "analyzing" (guard pas encore lancé)
+    job_store.set_analyzing(job_id)
 
     # Soumettre en arrière-plan — ne pas attendre
     asyncio.create_task(_decompose_task(job_id, body.prompt))
 
-    return {"job_id": job_id, "status": "queued", "position": estimated_position}
+    return {"job_id": job_id, "status": "analyzing"}
 
 
 @router.websocket("/ws/job/{job_id}")
@@ -78,7 +99,7 @@ async def ws_job_status(websocket: WebSocket, job_id: str) -> None:
                 last_payload = current
 
             # Fermer sur état terminal
-            if current.get("status") in ("done", "error"):
+            if current.get("status") in ("done", "error", "blocked"):
                 break
 
             await asyncio.sleep(0.3)

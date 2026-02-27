@@ -8,7 +8,7 @@ const client = axios.create({
 
 // ─── Error classification ────────────────────────────────────────────────────
 
-export type ApiErrorType = 'overloaded' | 'timeout' | 'network' | 'server' | 'unknown'
+export type ApiErrorType = 'overloaded' | 'timeout' | 'network' | 'server' | 'blocked' | 'unknown'
 
 export function classifyError(e: unknown): ApiErrorType {
   if (e instanceof AxiosError) {
@@ -26,6 +26,7 @@ export function classifyError(e: unknown): ApiErrorType {
 /** Classifie une erreur backend retournée via le job store (string). */
 export function classifyJobError(errorMsg: string): ApiErrorType {
   const msg = errorMsg.toLowerCase()
+  if (msg === 'prompt_blocked') return 'blocked'
   if (msg.includes('529') || msg.includes('overloaded')) return 'overloaded'
   if (msg.includes('timeout') || msg.includes('timed out')) return 'timeout'
   if (msg.includes('network') || msg.includes('connection')) return 'network'
@@ -44,17 +45,18 @@ export interface DecomposeResponse {
 /** Réponse immédiate du POST /api/decompose. */
 export interface DecomposeJobStarted {
   job_id: string
-  status: 'queued'
-  position: number
+  status: 'analyzing' | 'queued'
+  position?: number
 }
 
 /** Réponse du GET /api/queue/job/{job_id} au fil du polling. */
 export interface JobPollResponse {
   job_id: string
-  status: 'queued' | 'processing' | 'done' | 'error' | 'unknown'
+  status: 'analyzing' | 'queued' | 'processing' | 'done' | 'error' | 'blocked' | 'unknown'
   position?: number | null
   result?: DecomposeResponse   // présent quand status === 'done'
-  error?: string               // présent quand status === 'error'
+  error?: string               // présent quand status === 'error' | 'blocked'
+  violations?: string[]        // noms lisibles des catégories violées (status === 'blocked')
 }
 
 /** Soumet le job — retourne immédiatement avec job_id et position estimée. */
@@ -65,12 +67,12 @@ export const decomposePrompt = async (rawPrompt: string, jobId: string): Promise
 
 /**
  * Ouvre une connexion WebSocket vers /api/ws/job/{jobId} et résout
- * la promesse dès que le job est terminé (done/error).
- * Pousse les updates de position via le callback `onStatus`.
+ * la promesse dès que le job est terminé (done/error/blocked).
+ * Pousse les updates de statut via le callback `onStatus`.
  */
 export function watchJobStatus(
   jobId: string,
-  onStatus: (pos: number, status: 'queued' | 'processing') => void,
+  onStatus: (pos: number, status: 'analyzing' | 'queued' | 'processing') => void,
 ): Promise<DecomposeResponse> {
   return new Promise((resolve, reject) => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -88,6 +90,14 @@ export function watchJobStatus(
         const err = new Error(data.error ?? 'Job failed')
         ;(err as Error & { jobError?: string }).jobError = data.error ?? ''
         reject(err)
+      } else if (data.status === 'blocked') {
+        ws.close()
+        const err = new Error('PROMPT_BLOCKED')
+        ;(err as Error & { jobError?: string; violations?: string[] }).jobError = 'PROMPT_BLOCKED'
+        ;(err as Error & { jobError?: string; violations?: string[] }).violations = data.violations ?? []
+        reject(err)
+      } else if (data.status === 'analyzing') {
+        onStatus(0, 'analyzing')
       } else if (data.status === 'queued') {
         onStatus(data.position ?? 1, 'queued')
       } else if (data.status === 'processing') {

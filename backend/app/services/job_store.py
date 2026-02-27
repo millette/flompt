@@ -36,6 +36,41 @@ class JobStore:
         self._jobs[job_id] = {"status": "queued", "position": estimated_position}
         self._timestamps[job_id] = time.monotonic()
 
+    def set_analyzing(self, job_id: str) -> None:
+        """
+        Marque le job comme en cours d'analyse de sécurité (Prompt Guard).
+        Appelé juste avant de lancer l'inférence du guard.
+        """
+        self._jobs[job_id] = {"status": "analyzing"}
+        self._timestamps[job_id] = time.monotonic()
+
+    def set_queued(self, job_id: str, estimated_position: int) -> None:
+        """
+        Passe le job de 'analyzing' à 'queued' une fois le guard passé.
+        """
+        self._jobs[job_id] = {"status": "queued", "position": estimated_position}
+        self._timestamps[job_id] = time.monotonic()
+
+    def store_blocked(
+        self,
+        job_id: str,
+        reason: str = "PROMPT_BLOCKED",
+        violations: Optional[list] = None,
+    ) -> None:
+        """
+        Marque le job comme bloqué par le Prompt Guard (état terminal).
+
+        violations : liste des noms lisibles des catégories violées,
+                     ex. ["Violent Crimes", "Hate"] — transmis au client via WS.
+        """
+        self._jobs[job_id] = {
+            "status": "blocked",
+            "error": reason,
+            "violations": violations or [],
+        }
+        self._timestamps[job_id] = time.monotonic()
+        self._cleanup()
+
     def store_result(self, job_id: str, result: Any) -> None:
         """Marque le job comme terminé et stocke le résultat."""
         self._jobs[job_id] = {"status": "done", "result": result}
