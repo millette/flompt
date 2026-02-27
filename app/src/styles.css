@@ -354,7 +354,7 @@ body {
   flex-direction: column;
   gap: 3px;
   overflow-y: auto;
-  max-height: 250px;
+  height: 100%;
   padding-bottom: 4px;
   /* scrollbar fine */
   scrollbar-width: thin;
