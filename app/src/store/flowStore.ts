@@ -82,6 +82,7 @@ export const useFlowStore = create<FlowState>()(
           future: [],
           nodes,
           lastSaved: Date.now(),
+          compiledPrompt: null,
         })),
 
       setEdges: (edges) =>
@@ -90,6 +91,7 @@ export const useFlowStore = create<FlowState>()(
           future: [],
           edges,
           lastSaved: Date.now(),
+          compiledPrompt: null,
         })),
 
       onNodesChange: (changes) =>
