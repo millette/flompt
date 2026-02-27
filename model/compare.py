@@ -80,7 +80,7 @@ async def anthropic_decompose(prompt: str) -> tuple[list[dict], float, bool]:
                 },
                 json={
                     "model": ANTHROPIC_MODEL,
-                    "max_tokens": 2048,
+                    "max_tokens": 16000,
                     "system": DECOMPOSE_SYSTEM_PROMPT,
                     "messages": [{"role": "user", "content": prompt}],
                 }

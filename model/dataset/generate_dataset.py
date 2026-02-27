@@ -96,7 +96,7 @@ async def call_anthropic(prompt: str) -> Optional[list[dict]]:
                     },
                     json={
                         "model": MODEL,
-                        "max_tokens": 2048,
+                        "max_tokens": 16000,
                         "system": DECOMPOSE_SYSTEM_PROMPT,
                         "messages": [{"role": "user", "content": prompt}],
                     }
