@@ -1,10 +1,12 @@
 """
-Prompt Guard Service — Filtre de sécurité basé sur meta-llama/Llama-Guard-4-12B.
+Prompt Guard Service — Filtre de sécurité via HuggingFace Inference API.
+Modèle : meta-llama/Llama-Guard-4-12B (serverless, aucun modèle local requis).
 
-Llama Guard 4 est un modèle génératif (12B, basé sur Llama 4 Scout) qui analyse
-les prompts entrants et retourne "safe" ou "unsafe\n<catégorie(s)>".
+Pré-requis :
+  - HUGGINGFACE_TOKEN dans .env (compte HF + licence Meta acceptée sur hf.co)
+  - Aucune dépendance ML locale (torch, transformers non requis)
 
-Taxonomie MLCommons Hazard (S1–S14) :
+Taxonomie MLCommons Hazard S1–S14 :
   S1  Violent Crimes            S8  Intellectual Property
   S2  Non-Violent Crimes        S9  Indiscriminate Weapons
   S3  Sex-Related Crimes        S10 Hate
@@ -13,35 +15,30 @@ Taxonomie MLCommons Hazard (S1–S14) :
   S6  Specialized Advice        S13 Elections
   S7  Privacy                   S14 Code Interpreter Abuse
 
-Format de sortie du modèle :
-  "safe"          → prompt conforme
-  "unsafe\nS9"    → violation de la catégorie S9 (Indiscriminate Weapons)
-  "unsafe\nS1\nS3" → violations multiples
+Format de réponse du modèle :
+  "safe"           → prompt conforme
+  "unsafe\\nS9"    → 1 catégorie violée
+  "unsafe\\nS1\\nS3" → plusieurs catégories
 
-Comportement :
-  - Fail-open : si le modèle ne peut pas se charger, tous les prompts passent (+ warning).
-  - Lazy-load : chargement à la première requête (pas au démarrage).
-  - CPU/GPU : device_map="auto" → GPU si disponible, sinon CPU.
-  - Thread-safe : inférence dans asyncio.to_thread (non bloquant).
+Comportement fail-open :
+  Si HUGGINGFACE_TOKEN absent ou si l'API échoue → tous les prompts passent + warning.
 
 Env vars :
+  HUGGINGFACE_TOKEN=hf_...       (requis)
   PROMPT_GUARD_ENABLED=true      (défaut : true)
-  HUGGINGFACE_TOKEN=hf_...       (requis — modèle gated sur HuggingFace)
-
-Installation :
-  pip install "git+https://github.com/huggingface/transformers@v4.51.3-LlamaGuard-preview" hf_xet torch
 """
 
 import os
-import asyncio
 import logging
-from typing import Optional
+import httpx
 
 logger = logging.getLogger(__name__)
 
-MODEL_ID = "meta-llama/Llama-Guard-4-12B"
+MODEL_ID   = "meta-llama/Llama-Guard-4-12B"
+HF_API_URL = "https://api-inference.huggingface.co/v1/chat/completions"
+TIMEOUT    = 30.0
 
-# Taxonomie complète MLCommons Hazard Taxonomy (Llama Guard 4)
+# Taxonomie complète MLCommons Hazard Taxonomy
 HAZARD_CATEGORIES: dict[str, str] = {
     "S1":  "Violent Crimes",
     "S2":  "Non-Violent Crimes",
@@ -59,136 +56,62 @@ HAZARD_CATEGORIES: dict[str, str] = {
     "S14": "Code Interpreter Abuse",
 }
 
-# État global — lazy-loaded
-_processor = None
-_model = None
-_guard_lock = asyncio.Lock()
-_load_failed = False
-
 
 def _is_enabled() -> bool:
     return os.getenv("PROMPT_GUARD_ENABLED", "true").lower() not in ("false", "0", "no")
 
 
-def _load_model_sync():
+def _get_token() -> str | None:
+    return os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HF_TOKEN")
+
+
+async def _call_hf_api(prompt: str) -> str:
     """
-    Charge AutoProcessor + Llama4ForConditionalGeneration en mode synchrone.
-    Appelé via asyncio.to_thread pour ne pas bloquer la boucle d'événements.
+    Appelle l'API Inference HuggingFace (chat completions) avec Llama Guard 4.
+    Retourne la réponse brute du modèle ("safe" ou "unsafe\\nS9").
     """
-    try:
-        from transformers import AutoProcessor, Llama4ForConditionalGeneration
-        import torch
-    except (ImportError, AttributeError):
-        raise RuntimeError(
-            "transformers LlamaGuard preview non installé.\n"
-            "Installe via : pip install "
-            "'git+https://github.com/huggingface/transformers@v4.51.3-LlamaGuard-preview' "
-            "hf_xet torch"
+    token = _get_token()
+
+    async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+        resp = await client.post(
+            HF_API_URL,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": MODEL_ID,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                "max_tokens": 20,
+                "stream": False,
+            },
         )
-
-    hf_token = os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HF_TOKEN")
-    if not hf_token:
-        raise RuntimeError(
-            "HUGGINGFACE_TOKEN manquant — requis pour charger un modèle Meta gated."
-        )
-
-    logger.info(f"[Prompt Guard] ⏳ Chargement de {MODEL_ID}…")
-
-    processor = AutoProcessor.from_pretrained(MODEL_ID, token=hf_token)
-
-    model = Llama4ForConditionalGeneration.from_pretrained(
-        MODEL_ID,
-        device_map="auto",   # GPU si disponible, sinon CPU
-        torch_dtype="bfloat16",
-        token=hf_token,
-    )
-    model.eval()
-
-    device = next(model.parameters()).device
-    logger.info(f"[Prompt Guard] ✅ Llama Guard 4 12B chargé sur {device}")
-    return processor, model
-
-
-async def _get_model():
-    """Retourne (processor, model). None, None si fail-open."""
-    global _processor, _model, _load_failed
-
-    if _load_failed:
-        return None, None
-    if _processor is not None and _model is not None:
-        return _processor, _model
-
-    async with _guard_lock:
-        if _processor is not None:
-            return _processor, _model
-        if _load_failed:
-            return None, None
-
-        try:
-            _processor, _model = await asyncio.to_thread(_load_model_sync)
-            return _processor, _model
-        except Exception as exc:
-            _load_failed = True
-            logger.warning(
-                f"[Prompt Guard] ⚠️  Impossible de charger {MODEL_ID} — fail-open activé.\n"
-                f"  Raison : {exc}"
-            )
-            return None, None
-
-
-def _infer_sync(processor, model, prompt: str) -> str:
-    """
-    Inférence synchrone Llama Guard 4.
-    Le contenu est encapsulé au format multimodal text (requis par Llama 4).
-    Appelé via asyncio.to_thread.
-    """
-    messages = [
-        {
-            "role": "user",
-            "content": [{"type": "text", "text": prompt}],
-        }
-    ]
-
-    inputs = processor.apply_chat_template(
-        messages,
-        tokenize=True,
-        add_generation_prompt=True,
-        return_tensors="pt",
-        return_dict=True,
-    ).to(model.device)
-
-    with __import__("torch").no_grad():
-        output_ids = model.generate(
-            **inputs,
-            max_new_tokens=20,   # "safe" ou "unsafe\nS9" — très court
-            do_sample=False,
-        )
-
-    # Décoder uniquement les tokens générés (pas le prompt d'entrée)
-    generated = output_ids[:, inputs["input_ids"].shape[-1]:]
-    return processor.batch_decode(generated, skip_special_tokens=True)[0].strip()
+        resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"].strip()
 
 
 def _parse_response(raw: str) -> tuple[bool, list[str], list[str]]:
     """
     Parse la sortie de Llama Guard 4.
 
-    Format attendu :
-      "safe"               → (True, [], [])
-      "unsafe\\nS9"        → (False, ["S9"], ["Indiscriminate Weapons"])
-      "unsafe\\nS1\\nS3"   → (False, ["S1", "S3"], ["Violent Crimes", "Sex-Related Crimes"])
+    "safe"              → (True, [], [])
+    "unsafe\\nS9"       → (False, ["S9"], ["Indiscriminate Weapons"])
+    "unsafe\\nS1\\nS3"  → (False, ["S1","S3"], ["Violent Crimes","Sex-Related Crimes"])
 
-    Robuste aux variations de formatage (majuscules, virgules, espaces).
+    Robuste aux variantes : majuscules, virgules, espaces.
     """
-    lines = [line.strip() for line in raw.strip().splitlines() if line.strip()]
+    lines = [l.strip() for l in raw.strip().splitlines() if l.strip()]
 
     if not lines or lines[0].lower() == "safe":
         return True, [], []
 
-    # Extraire les codes de violation (toutes lignes après "unsafe")
     codes: list[str] = []
     for line in lines[1:]:
-        # Support "S1,S3" ou "S1" ou "S1\nS3"
         for part in line.split(","):
             code = part.strip().upper()
             if code.startswith("S") and code[1:].isdigit():
@@ -197,36 +120,64 @@ def _parse_response(raw: str) -> tuple[bool, list[str], list[str]]:
     names = [HAZARD_CATEGORIES.get(c, c) for c in codes]
 
     logger.warning(
-        f"[Prompt Guard] 🚨 Prompt UNSAFE — violations={codes} ({', '.join(names)})"
+        f"[Prompt Guard] 🚨 UNSAFE — violations={codes} "
+        f"({', '.join(names) if names else 'catégorie inconnue'})"
     )
     return False, codes, names
 
 
 async def classify(prompt: str) -> tuple[bool, list[str], list[str], str]:
     """
-    Classifie un prompt via Llama Guard 4 12B.
+    Classifie un prompt via Llama Guard 4 12B (HF Inference API).
 
     Retourne : (is_safe, violation_codes, violation_names, raw_response)
-      is_safe          : True → prompt conforme
-      violation_codes  : ["S1", "S9"] — codes de la taxonomie MLCommons
-      violation_names  : ["Violent Crimes", "Indiscriminate Weapons"] — noms lisibles
-      raw_response     : réponse brute du modèle
+      is_safe         : True → prompt conforme
+      violation_codes : ["S1", "S10"] — codes MLCommons
+      violation_names : ["Violent Crimes", "Hate"] — noms lisibles transmis au client
+      raw_response    : réponse brute du modèle
 
-    Fail-open : retourne (True, [], [], "safe") si modèle indisponible.
+    Fail-open si : guard désactivé, token absent, ou erreur API.
     """
     if not _is_enabled():
         return True, [], [], "safe"
 
-    processor, model = await _get_model()
-    if processor is None or model is None:
+    token = _get_token()
+    if not token:
+        logger.warning(
+            "[Prompt Guard] ⚠️  HUGGINGFACE_TOKEN manquant — fail-open activé. "
+            "Ajoute HUGGINGFACE_TOKEN=hf_... dans ton .env."
+        )
         return True, [], [], "safe"
 
     try:
-        raw = await asyncio.to_thread(_infer_sync, processor, model, prompt)
+        raw = await _call_hf_api(prompt)
         is_safe, codes, names = _parse_response(raw)
-        logger.debug(f"[Prompt Guard] raw={raw!r} → codes={codes}")
+        if is_safe:
+            logger.debug(f"[Prompt Guard] ✅ safe — raw={raw!r}")
         return is_safe, codes, names, raw
 
+    except httpx.HTTPStatusError as e:
+        status = e.response.status_code
+        if status == 401:
+            logger.error(
+                "[Prompt Guard] 🔑 Token HF invalide ou licence Meta non acceptée "
+                "(401) — fail-open. Vérifie ton HUGGINGFACE_TOKEN sur hf.co."
+            )
+        elif status == 403:
+            logger.error(
+                "[Prompt Guard] 🚫 Accès refusé (403) — accepte la licence Meta "
+                "pour meta-llama/Llama-Guard-4-12B sur huggingface.co — fail-open."
+            )
+        elif status == 503:
+            logger.warning("[Prompt Guard] ⏳ Modèle en cours de chargement côté HF (503) — fail-open.")
+        else:
+            logger.warning(f"[Prompt Guard] ⚠️  Erreur HTTP {status} — fail-open.")
+        return True, [], [], "safe"
+
+    except httpx.TimeoutException:
+        logger.warning("[Prompt Guard] ⏱️  Timeout API HF — fail-open.")
+        return True, [], [], "safe"
+
     except Exception as exc:
-        logger.warning(f"[Prompt Guard] ⚠️  Erreur d'inférence — fail-open. Raison : {exc}")
+        logger.warning(f"[Prompt Guard] ⚠️  Erreur inattendue — fail-open. Raison : {exc}")
         return True, [], [], "safe"
