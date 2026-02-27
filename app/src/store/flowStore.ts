@@ -23,8 +23,6 @@ interface FlowState {
   rawPrompt: string
   compiledPrompt: CompiledPrompt | null
   isDecomposing: boolean
-  isCompiling: boolean
-  lastSaved: number | null  // timestamp ms
   activeTab: Tab
   queueStatus: QueueStatus | null
 
@@ -44,7 +42,6 @@ interface FlowState {
   removeNode: (id: string) => void
   setCompiledPrompt: (prompt: CompiledPrompt | null) => void
   setIsDecomposing: (v: boolean) => void
-  setIsCompiling: (v: boolean) => void
   setActiveTab: (tab: Tab) => void
   setQueueStatus: (status: QueueStatus | null) => void
   reset: () => void
@@ -67,8 +64,6 @@ export const useFlowStore = create<FlowState>()(
       rawPrompt: '',
       compiledPrompt: null,
       isDecomposing: false,
-      isCompiling: false,
-      lastSaved: null,
       activeTab: 'input' as Tab,
       queueStatus: null,
       past: [],
@@ -81,7 +76,6 @@ export const useFlowStore = create<FlowState>()(
           past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
           future: [],
           nodes,
-          lastSaved: Date.now(),
           compiledPrompt: null,
         })),
 
@@ -90,7 +84,6 @@ export const useFlowStore = create<FlowState>()(
           past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
           future: [],
           edges,
-          lastSaved: Date.now(),
           compiledPrompt: null,
         })),
 
@@ -115,7 +108,6 @@ export const useFlowStore = create<FlowState>()(
       onConnect: (connection) =>
         set((state) => ({
           edges: addEdge({ ...connection, type: 'custom' }, state.edges) as FlomptEdge[],
-          lastSaved: Date.now(),
           compiledPrompt: null,
         })),
 
@@ -132,7 +124,6 @@ export const useFlowStore = create<FlowState>()(
           past: [...state.past.slice(-MAX_HISTORY), snapshot(state)],
           future: [],
           nodes: [...state.nodes, node],
-          lastSaved: Date.now(),
           compiledPrompt: null,
         })),
 
@@ -142,13 +133,11 @@ export const useFlowStore = create<FlowState>()(
           future: [],
           nodes: state.nodes.filter((n) => n.id !== id),
           edges: state.edges.filter((e) => e.source !== id && e.target !== id),
-          lastSaved: Date.now(),
           compiledPrompt: null,
         })),
 
       setCompiledPrompt: (prompt) => set({ compiledPrompt: prompt }),
       setIsDecomposing: (v) => set({ isDecomposing: v }),
-      setIsCompiling: (v) => set({ isCompiling: v }),
       setActiveTab: (tab) => set({ activeTab: tab }),
       setQueueStatus: (status) => set({ queueStatus: status }),
 
@@ -193,7 +182,7 @@ export const useFlowStore = create<FlowState>()(
         edges: state.edges,
         rawPrompt: state.rawPrompt,
         compiledPrompt: state.compiledPrompt,
-        // isDecomposing / isCompiling / past / future : états transitoires, non persistés
+        // isDecomposing / past / future : états transitoires, non persistés
       }),
     }
   )

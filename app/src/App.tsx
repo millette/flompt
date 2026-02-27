@@ -11,6 +11,7 @@ import { useFlowStore } from '@/store/flowStore'
 import type { Tab } from '@/store/flowStore'
 import { useLocale } from '@/i18n/LocaleContext'
 import type { Locale } from '@/i18n/translations'
+import { isExtension } from '@/lib/platform'
 import './styles.css'
 
 const TAB_IDS: { id: Tab; Icon: typeof Workflow }[] = [
@@ -18,8 +19,6 @@ const TAB_IDS: { id: Tab; Icon: typeof Workflow }[] = [
   { id: 'canvas', Icon: Network },
   { id: 'output', Icon: Sparkles },
 ]
-
-const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
 
 const App = () => {
   const { undo, redo, reset, past, future, nodes, activeTab, setActiveTab, isDecomposing } = useFlowStore()

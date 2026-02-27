@@ -4,8 +4,7 @@ import { useFlowStore } from '@/store/flowStore'
 import { decomposePrompt, watchJobStatus, classifyError, classifyJobError } from '@/services/api'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics, setSource } from '@/lib/analytics'
-
-const isExt = new URLSearchParams(window.location.search).get('extension') === '1'
+import { isExtension as isExt } from '@/lib/platform'
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 

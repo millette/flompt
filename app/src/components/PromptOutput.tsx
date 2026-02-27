@@ -4,9 +4,7 @@ import { useFlowStore } from '@/store/flowStore'
 import { useLocale } from '@/i18n/LocaleContext'
 import { analytics } from '@/lib/analytics'
 import { assemblePrompt } from '@/lib/assemblePrompt'
-
-/** Detect if flompt is running inside the browser extension sidebar */
-const isExtension = new URLSearchParams(window.location.search).get('extension') === '1'
+import { isExtension } from '@/lib/platform'
 
 // ─── Composant ────────────────────────────────────────────────────────────────
 
